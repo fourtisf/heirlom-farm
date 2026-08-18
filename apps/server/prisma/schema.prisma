@@ -1,0 +1,167 @@
+// HEIRLOOM — data model.
+//
+// Two rules the schema exists to enforce:
+//   1. Every coin and $SEED movement writes a LedgerEntry. No exceptions.
+//      When someone claims they were robbed, the ledger is the answer.
+//   2. Genes are only ever written by the server. No endpoint accepts them.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id          String   @id @default(cuid())
+  wallet      String   @unique
+  displayName String?
+  coins       BigInt   @default(260)
+  // Off-chain $SEED ledger balance. Nothing here touches a chain.
+  seedBalance Decimal  @default(0) @db.Decimal(18, 6)
+  xp          Int      @default(0)
+  rep         Int      @default(0)
+  mutagen     Int      @default(1)
+  createdAt   DateTime @default(now())
+
+  strains     Strain[]
+  beds        Bed[]
+  commissions Commission[]
+  produce     Produce[]
+  ledger      LedgerEntry[]
+  withdrawals WithdrawalRequest[]
+
+  @@index([seedBalance])
+}
+
+model Strain {
+  id         String   @id @default(cuid())
+  // Public identity, printed on the specimen plate. Generated server-side.
+  accession  String   @unique
+  playerId   String
+  species    String
+  // { Y:[a,b], V:[a,b], H:[a,b], E:[a,b] } — written only by the server.
+  genes      Json
+  color      String[]
+  name       String
+  named      Boolean  @default(false)
+  generation Int      @default(0)
+  qty        Int      @default(1)
+  parentAId  String?
+  parentBId  String?
+  // Audit trail of what shifted during the cross.
+  mutations  Json?
+  // Placed on record in the herbarium. Does not remove it from circulation.
+  pressed    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  beds   Bed[]
+
+  @@index([playerId])
+  @@index([playerId, species])
+}
+
+model Bed {
+  id           String    @id @default(cuid())
+  playerId     String
+  index        Int
+  strainId     String?
+  plantedAt    DateTime?
+  // Computed at plant time off the server clock. Never client-supplied.
+  ripeAt       DateTime?
+  blighted     Boolean   @default(false)
+  blightRolled Boolean   @default(false)
+
+  player Player  @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  strain Strain? @relation(fields: [strainId], references: [id], onDelete: SetNull)
+
+  @@unique([playerId, index])
+  @@index([strainId])
+}
+
+model Produce {
+  id        String @id @default(cuid())
+  playerId  String
+  species   String
+  color     String
+  qty       Int
+  // Frozen at harvest. Recomputing on sale would let a player harvest cheap,
+  // wait for a balance patch, and sell dear.
+  unitValue Int
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, species, color])
+}
+
+model Commission {
+  id         String   @id @default(cuid())
+  playerId   String
+  collector  String
+  note       String
+  species    String
+  // [{k:"E",min:4},{k:"C",color:"jade"}] — authoritative. The displayed text
+  // is derived from this, never the reverse.
+  reqs       Json
+  coins      Int
+  xp         Int
+  seedReward Decimal  @db.Decimal(18, 6)
+  // open | filled | declined | expired
+  status     String   @default("open")
+  filledWith String?
+  createdAt  DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId, status])
+}
+
+model LedgerEntry {
+  id        String   @id @default(cuid())
+  playerId  String
+  // harvest | sale | purchase | breed | commission | withdrawal
+  kind      String
+  coins     BigInt   @default(0)
+  seed      Decimal  @default(0) @db.Decimal(18, 6)
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId, createdAt])
+}
+
+// $SEED leaves the ledger only through here: a threshold, a cooldown, and a
+// review step for anything above the auto-release limit.
+model WithdrawalRequest {
+  id          String    @id @default(cuid())
+  playerId    String
+  amount      Decimal   @db.Decimal(18, 6)
+  destination String
+  // pending | approved | rejected | released
+  status      String    @default("pending")
+  reviewedBy  String?
+  reviewNote  String?
+  txHash      String?
+  createdAt   DateTime  @default(now())
+  reviewedAt  DateTime?
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId, status])
+  @@index([status, createdAt])
+}
+
+// Short-lived nonces for the wallet-signature login handshake.
+model AuthNonce {
+  nonce     String   @id
+  wallet    String
+  issuedAt  DateTime @default(now())
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  @@index([expiresAt])
+}

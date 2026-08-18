@@ -9,7 +9,7 @@
 import { LOCUS_KEYS, SPECIES } from './constants.js';
 import type { Rng } from './rng.js';
 import { hashStr } from './rng.js';
-import type { AllelePair, ColorPair, Genes, SpeciesKey } from './types.js';
+import type { AllelePair, ColorKey, ColorPair, Genes, SpeciesKey } from './types.js';
 
 const NAME_A = [
   'Ember', 'Hollow', 'Wren', 'Marrow', 'Thistle', 'Copper', 'Dusk', 'Kestrel', 'Salt',
@@ -38,7 +38,7 @@ export function nurseryStock(species: SpeciesKey, rng: Rng): NurseryStock {
   for (const k of LOCUS_KEYS) {
     genes[k] = [rng.int(1, 3), rng.int(1, 3)] as AllelePair;
   }
-  const colorAllele = () => (rng.chance(0.82) ? 'crimson' : 'amber') as const;
+  const colorAllele = (): ColorKey => (rng.chance(0.82) ? 'crimson' : 'amber');
   return {
     species,
     genes,
