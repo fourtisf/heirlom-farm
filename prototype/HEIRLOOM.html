@@ -1,0 +1,3497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>HEIRLOOM — a breeding farm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Karla:ital,wght@0,300..800;1,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   HEIRLOOM — design tokens
+   Palette taken from the subject's own world: conservatory brass,
+   wet loam, herbarium paper, and the five colour morphs.
+   ============================================================ */
+:root{
+  --soil:#241B12;
+  --soil-deep:#150E08;
+  --loam:#3B2A1B;
+  --loam-hi:#4A3626;
+  --parchment:#E8DCC0;
+  --bone:#EFE7D6;
+  --bone-dim:#B9AC94;
+  --brass:#C9A227;
+  --brass-lite:#EBC85C;
+  --verdant:#3E6B44;
+  --leaf:#7FB069;
+  --wine:#7A2E3B;
+  --ink:#2B2116;
+
+  --rule:rgba(201,162,39,.26);
+  --rule-soft:rgba(232,220,192,.12);
+  --shadow:0 18px 44px rgba(8,5,2,.55);
+
+  --f-display:'Fraunces',Georgia,serif;
+  --f-body:'Karla',system-ui,-apple-system,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,monospace;
+
+  --panel-w:436px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--soil-deep)}
+body{
+  font-family:var(--f-body);color:var(--bone);
+  font-size:15px;line-height:1.5;
+  overscroll-behavior:none;touch-action:none;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input{font-family:inherit}
+:focus-visible{outline:2px solid var(--brass-lite);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+#stage{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+
+/* ---------------- HUD rail ---------------- */
+.hud{
+  position:fixed;top:0;left:0;right:0;z-index:20;
+  display:flex;align-items:center;gap:14px;
+  padding:10px 14px calc(10px + 2px);
+  background:linear-gradient(180deg,rgba(21,14,8,.92) 0%,rgba(21,14,8,.66) 68%,rgba(21,14,8,0) 100%);
+  pointer-events:none;
+}
+.hud > *{pointer-events:auto}
+.brandmark{display:flex;align-items:baseline;gap:8px;padding-right:14px;border-right:1px solid var(--rule)}
+.brandmark b{
+  font-family:var(--f-display);font-weight:600;font-size:19px;letter-spacing:.14em;
+  font-variation-settings:'SOFT' 30,'WONK' 1;color:var(--parchment);
+}
+.brandmark i{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.22em;color:var(--brass);font-style:normal;text-transform:uppercase}
+
+.purse{display:flex;align-items:center;gap:13px}
+.coinbox{display:flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:13.5px;font-weight:500}
+.coinbox i{
+  width:16px;height:16px;border-radius:50%;display:grid;place-items:center;
+  font-size:9px;font-style:normal;font-weight:700;color:#2A2010;
+}
+.coinbox--coin i{background:linear-gradient(160deg,var(--brass-lite),#9C7B15);box-shadow:inset 0 -1px 0 rgba(0,0,0,.3)}
+.coinbox--seed i{background:linear-gradient(160deg,var(--leaf),#3E6B44);color:#123018}
+
+.lvl{display:flex;align-items:center;gap:9px;margin-left:auto}
+.lvl__badge{
+  display:grid;place-items:center;width:30px;height:30px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,var(--brass-lite),#8A6C13);
+  color:#241B12;font-family:var(--f-display);font-weight:700;font-size:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,.45),inset 0 -2px 4px rgba(0,0,0,.28);
+}
+.xp{width:120px}
+.xp__track{height:5px;border-radius:3px;background:rgba(232,220,192,.14);overflow:hidden}
+.xp__track i{display:block;height:100%;background:linear-gradient(90deg,var(--verdant),var(--leaf));transition:width .5s ease}
+.xp__meta{display:flex;justify-content:space-between;margin-top:3px;font-family:var(--f-mono);font-size:9px;color:var(--bone-dim);letter-spacing:.06em}
+.iconbtn{
+  width:32px;height:32px;border-radius:9px;display:grid;place-items:center;
+  border:1px solid var(--rule);background:rgba(36,27,18,.72);
+  color:var(--bone-dim);font-size:14px;transition:.16s;
+}
+.iconbtn:hover{color:var(--brass-lite);border-color:var(--brass)}
+.iconbtn.is-off{opacity:.45}
+@media (max-width:640px){
+  .xp{width:74px}
+  .hud{gap:9px;padding:8px 10px}
+  .brandmark i{display:none}
+}
+
+/* ---------------- harvest-all pill ---------------- */
+.harvestall{
+  position:fixed;left:50%;transform:translateX(-50%);z-index:22;
+  bottom:calc(104px + var(--safe-b));
+  display:none;align-items:center;gap:9px;
+  padding:9px 17px;border-radius:999px;
+  background:linear-gradient(180deg,#F0D477,var(--brass));
+  color:#2A2010;font-weight:700;font-size:13.5px;letter-spacing:.02em;
+  box-shadow:0 8px 22px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.4);
+  animation:pop .3s ease;
+}
+.harvestall b{font-family:var(--f-mono)}
+@keyframes pop{from{transform:translateX(-50%) scale(.86);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
+
+/* ---------------- dock ---------------- */
+.dock{
+  position:fixed;left:0;right:0;bottom:0;z-index:24;
+  display:flex;justify-content:center;gap:6px;
+  padding:9px 10px calc(9px + var(--safe-b));
+  background:linear-gradient(0deg,rgba(15,10,5,.94) 34%,rgba(15,10,5,0) 100%);
+}
+.dock__btn{
+  position:relative;flex:0 1 88px;min-width:62px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:8px 6px 7px;border-radius:13px;
+  border:1px solid transparent;transition:.18s;
+}
+.dock__btn svg{width:20px;height:20px;stroke:var(--bone-dim);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:.18s}
+.dock__btn span{font-size:10.5px;letter-spacing:.05em;color:var(--bone-dim);white-space:nowrap;transition:.18s}
+.dock__btn:hover{background:rgba(59,42,27,.6)}
+.dock__btn:hover svg{stroke:var(--parchment)}
+.dock__btn:hover span{color:var(--parchment)}
+.dock__btn.is-active{background:rgba(59,42,27,.92);border-color:var(--rule)}
+.dock__btn.is-active svg{stroke:var(--brass-lite)}
+.dock__btn.is-active span{color:var(--brass-lite)}
+.dock__btn[data-badge]:not([data-badge=""])::after{
+  content:attr(data-badge);position:absolute;top:3px;right:calc(50% - 22px);
+  min-width:16px;height:16px;padding:0 4px;border-radius:8px;
+  background:var(--wine);color:#F6ECDC;font-family:var(--f-mono);font-size:10px;
+  display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.5);
+}
+
+/* ---------------- panel ---------------- */
+.panel{
+  position:fixed;z-index:30;display:flex;flex-direction:column;
+  background:linear-gradient(180deg,#2C2016 0%,#1D150D 100%);
+  border:1px solid var(--rule);
+  box-shadow:var(--shadow);
+  transition:transform .34s cubic-bezier(.32,.72,.26,1),opacity .24s;
+}
+@media (min-width:861px){
+  .panel{top:64px;right:14px;bottom:88px;width:var(--panel-w);border-radius:18px;transform:translateX(calc(100% + 24px));opacity:0}
+  .panel.is-open{transform:none;opacity:1}
+}
+@media (max-width:860px){
+  .panel{left:0;right:0;bottom:0;max-height:80vh;border-radius:20px 20px 0 0;border-bottom:0;transform:translateY(102%)}
+  .panel.is-open{transform:none}
+}
+.panel__head{
+  position:relative;padding:16px 52px 13px 18px;border-bottom:1px solid var(--rule);
+  flex:0 0 auto;
+}
+.panel__head::before{
+  content:'';position:absolute;left:18px;right:18px;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,var(--brass),transparent);
+}
+.panel__head h2{
+  margin:0;font-family:var(--f-display);font-weight:600;font-size:21px;letter-spacing:.01em;
+  font-variation-settings:'SOFT' 26,'WONK' 1;color:var(--parchment);
+}
+.panel__head p{margin:4px 0 0;font-size:12.5px;color:var(--bone-dim);line-height:1.45;max-width:44ch}
+.panel__close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:9px;border:1px solid var(--rule);display:grid;place-items:center;color:var(--bone-dim);font-size:15px}
+.panel__close:hover{color:var(--brass-lite)}
+.panel__body{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;padding:14px 16px 22px;touch-action:pan-y}
+.panel__body::-webkit-scrollbar{width:8px}
+.panel__body::-webkit-scrollbar-thumb{background:rgba(201,162,39,.22);border-radius:4px}
+
+.sectionhead{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--brass);margin:20px 0 9px;padding-bottom:6px;border-bottom:1px solid var(--rule-soft);
+}
+.sectionhead:first-child{margin-top:2px}
+
+/* ---------------- cards ---------------- */
+.grid{display:flex;flex-direction:column;gap:10px}
+.grid--tight{gap:7px}
+.card{
+  position:relative;border-radius:13px;padding:12px 13px;
+  background:linear-gradient(180deg,var(--loam) 0%,#2B1F14 100%);
+  border:1px solid rgba(232,220,192,.09);
+  transition:.16s;
+}
+.card--strain{cursor:default}
+.card--strain::before{
+  content:'';position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:0 3px 3px 0;
+  background:var(--tier,#8A8577);
+}
+.card.is-selected{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass),0 6px 18px rgba(0,0,0,.4)}
+.card__top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:9px}
+.card__id{display:flex;gap:9px;align-items:flex-start}
+.tierdot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex:0 0 auto;box-shadow:0 0 0 3px rgba(0,0,0,.28)}
+.card__name{
+  font-family:var(--f-display);font-weight:600;font-size:16px;line-height:1.2;color:var(--parchment);
+  font-variation-settings:'SOFT' 24,'WONK' 1;
+}
+.card__name .qty{font-family:var(--f-mono);font-style:normal;font-size:11px;color:var(--brass);margin-left:6px;font-weight:500}
+.card__sub{font-size:11.5px;color:var(--bone-dim);margin-top:2px}
+.card__sub .tier{color:var(--tier,#8A8577);font-weight:600}
+.card__score{
+  font-family:var(--f-mono);font-size:17px;font-weight:600;color:var(--brass-lite);
+  line-height:1;padding-top:2px;
+}
+.card__stats{display:flex;flex-wrap:wrap;align-items:center;gap:11px;margin-top:9px;font-family:var(--f-mono);font-size:11px;color:var(--bone-dim)}
+.card__stats .traits{display:flex;gap:5px;flex-wrap:wrap}
+.card__stats .traits i{
+  font-style:normal;font-family:var(--f-body);font-size:10px;letter-spacing:.04em;
+  padding:2px 7px;border-radius:999px;background:rgba(201,162,39,.14);color:var(--brass-lite);
+  border:1px solid rgba(201,162,39,.3);
+}
+.card__actions{display:flex;gap:7px;margin-top:11px}
+
+/* ---------------- gene readout ---------------- */
+.genes{display:flex;flex-direction:column;gap:5px}
+.gene{display:grid;grid-template-columns:14px 1fr 16px auto;align-items:center;gap:8px}
+.gene__k{font-family:var(--f-mono);font-size:11px;color:var(--brass);font-weight:600}
+.gene__bar{height:5px;border-radius:3px;background:rgba(232,220,192,.11);overflow:hidden}
+.gene__bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#4E7C46,var(--leaf))}
+.gene__v{font-family:var(--f-mono);font-size:11px;color:var(--bone);text-align:right}
+.gene__v--wide{min-width:48px;text-align:left;font-size:10.5px}
+.gene__pair{display:flex;gap:3px}
+.al{
+  font-style:normal;font-family:var(--f-mono);font-size:9.5px;font-weight:600;
+  width:15px;height:15px;border-radius:4px;display:grid;place-items:center;
+  background:rgba(232,220,192,.09);color:var(--bone-dim);border:1px solid rgba(232,220,192,.09);
+}
+.al--4{color:#C9D9A8}.al--5{color:var(--leaf);border-color:rgba(127,176,105,.4)}
+.al--6{color:#2A2010;background:linear-gradient(160deg,var(--brass-lite),var(--brass));border-color:var(--brass)}
+.al--c{width:15px;height:15px;border-radius:50%;border:1px solid rgba(0,0,0,.4)}
+.gene__color{width:13px;height:13px;border-radius:50%;box-shadow:inset 0 -1px 2px rgba(0,0,0,.35),0 0 0 1px rgba(0,0,0,.3)}
+.gene--color{grid-template-columns:14px 13px 1fr auto}
+
+/* ---------------- buttons ---------------- */
+.btn{
+  padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:600;letter-spacing:.01em;
+  border:1px solid var(--rule);background:rgba(232,220,192,.05);color:var(--bone);
+  transition:.15s;white-space:nowrap;
+}
+.btn:hover:not(:disabled){background:rgba(232,220,192,.11);border-color:var(--brass)}
+.btn:disabled{opacity:.36;cursor:not-allowed}
+.btn--brass{background:linear-gradient(180deg,#F0D477,var(--brass));color:#2A2010;border-color:#8A6C13;box-shadow:inset 0 1px 0 rgba(255,255,255,.42)}
+.btn--brass:hover:not(:disabled){background:linear-gradient(180deg,#F7E093,#D4AC2C)}
+.btn--ghost{background:none}
+.btn--sm{padding:6px 11px;font-size:11.5px}
+.btn--wide{width:100%;margin-top:11px;padding:11px}
+
+/* ---------------- bench ---------------- */
+.bench__pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;gap:9px;margin-bottom:14px}
+.bench__x{align-self:center;font-family:var(--f-display);font-size:22px;color:var(--brass);font-weight:300}
+.slot{
+  position:relative;border-radius:13px;padding:11px 11px 12px;min-height:118px;
+  border:1px dashed rgba(232,220,192,.2);background:rgba(232,220,192,.03);
+}
+.slot--filled{border-style:solid;border-color:var(--tier,var(--rule));background:linear-gradient(180deg,var(--loam),#2B1F14)}
+.slot__label{font-family:var(--f-mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);margin-bottom:5px}
+.slot__name{font-family:var(--f-display);font-weight:600;font-size:14px;color:var(--parchment);line-height:1.2}
+.slot__sub{font-size:10.5px;color:var(--bone-dim);margin:2px 0 8px}
+.slot__hint{font-size:12px;color:var(--bone-dim);opacity:.65;margin-top:26px;text-align:center}
+.slot__clear{position:absolute;top:7px;right:8px;width:20px;height:20px;border-radius:6px;font-size:11px;color:var(--bone-dim);background:rgba(0,0,0,.3)}
+.slot__clear:hover{color:var(--wine)}
+
+.forecast{border-radius:12px;padding:11px 12px;background:rgba(62,107,68,.14);border:1px solid rgba(127,176,105,.24);margin-bottom:11px}
+.forecast__t{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--leaf);margin-bottom:8px}
+.forecast__row{display:flex;gap:14px}
+.fc{display:flex;flex-direction:column;align-items:center;gap:1px}
+.fc span{font-family:var(--f-mono);font-size:10px;color:var(--bone-dim)}
+.fc b{font-family:var(--f-mono);font-size:13px;color:var(--parchment)}
+.forecast__c{margin-top:8px;font-size:11px;color:var(--bone-dim)}
+
+.mutagen{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:12px;background:rgba(122,46,59,.14);border:1px solid rgba(122,46,59,.4)}
+.mutagen b{display:block;font-size:13px;color:var(--parchment)}
+.mutagen span{display:block;font-size:11px;color:var(--bone-dim);line-height:1.4;margin-top:2px}
+.mutagen__n{font-family:var(--f-mono);font-size:11px;color:var(--bone-dim);white-space:nowrap}
+.switch{position:relative;flex:0 0 auto;width:40px;height:23px}
+.switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.switch span{position:absolute;inset:0;border-radius:999px;background:rgba(232,220,192,.14);transition:.2s;pointer-events:none}
+.switch span::after{content:'';position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;background:var(--bone-dim);transition:.2s}
+.switch input:checked + span{background:var(--wine)}
+.switch input:checked + span::after{transform:translateX(17px);background:var(--parchment)}
+.switch input:disabled + span{opacity:.35}
+
+/* ---------------- market / lists ---------------- */
+.stacks{display:flex;flex-direction:column;gap:6px}
+.stack{
+  display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:11px;
+  background:rgba(232,220,192,.045);border:1px solid rgba(232,220,192,.07);
+}
+.stack.is-locked{opacity:.5}
+.stack__dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 3px rgba(0,0,0,.24)}
+.stack__t{flex:1 1 auto;min-width:0}
+.stack__t b{display:block;font-size:13.5px;color:var(--parchment);font-weight:600}
+.stack__t span{display:block;font-size:11px;color:var(--bone-dim);line-height:1.4}
+.latin{font-style:italic;color:var(--leaf);opacity:.85}
+.stack__n{font-family:var(--f-mono);font-size:12px;color:var(--brass-lite);white-space:nowrap}
+
+/* ---------------- commissions ---------------- */
+.repbar{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;background:rgba(201,162,39,.08);border:1px solid var(--rule);margin-bottom:12px}
+.repbar b{display:block;font-size:12.5px;color:var(--parchment)}
+.repbar span{font-size:11px;color:var(--bone-dim)}
+.repbar__slots{display:flex;gap:5px;margin-left:auto}
+.repbar__slots i{width:9px;height:9px;border-radius:50%;background:rgba(232,220,192,.16)}
+.repbar__slots i.on{background:var(--brass-lite);box-shadow:0 0 7px rgba(235,200,92,.6)}
+.repbar__note{font-family:var(--f-mono);font-size:9.5px;color:var(--bone-dim);text-align:right;max-width:88px;line-height:1.3}
+.card--comm{margin-bottom:9px}
+.comm__head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.comm__who{font-family:var(--f-display);font-weight:600;font-size:15px;color:var(--parchment);font-variation-settings:'SOFT' 24,'WONK' 1}
+.comm__want{font-size:11.5px;color:var(--bone-dim);margin-top:1px}
+.comm__want b{color:var(--leaf)}
+.comm__pay{display:flex;flex-direction:column;align-items:flex-end;gap:1px;font-family:var(--f-mono);font-size:12px;color:var(--brass-lite)}
+.comm__pay i{font-style:normal;font-size:9px;color:var(--bone-dim);letter-spacing:.06em}
+.comm__pay .pay--seed{color:var(--leaf)}
+.comm__spec{margin-top:9px;padding:7px 10px;border-radius:8px;background:rgba(0,0,0,.26);font-family:var(--f-mono);font-size:11.5px;color:var(--parchment)}
+.comm__note{margin-top:8px;font-size:12px;font-style:italic;color:var(--bone-dim);line-height:1.45}
+
+/* ---------------- codex ---------------- */
+.codexbar{display:flex;gap:7px;margin-bottom:14px}
+.cb{flex:1;text-align:center;padding:9px 4px;border-radius:11px;background:rgba(232,220,192,.045);border:1px solid rgba(232,220,192,.07)}
+.cb i{display:block;width:100%;height:3px;border-radius:2px;margin-bottom:6px}
+.cb b{display:block;font-family:var(--f-mono);font-size:15px;color:var(--parchment)}
+.cb span{display:block;font-size:9px;color:var(--bone-dim);letter-spacing:.04em;margin-top:1px}
+
+/* ---------------- prose (help) ---------------- */
+.prose{font-size:13.5px;line-height:1.65;color:#D9CFBA}
+.prose h4{font-family:var(--f-display);font-weight:600;font-size:15px;color:var(--brass-lite);margin:18px 0 6px;font-variation-settings:'SOFT' 24,'WONK' 1}
+.prose p{margin:0 0 10px}
+.prose ul{margin:0 0 10px;padding-left:17px}
+.prose li{margin-bottom:4px}
+.prose b{color:var(--parchment)}
+.prose code{font-family:var(--f-mono);font-size:12px;background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;color:var(--brass-lite)}
+.chiprow{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+.cchip{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;background:rgba(232,220,192,.05);border:1px solid rgba(232,220,192,.09);font-size:11px}
+.cchip i{width:9px;height:9px;border-radius:50%}
+
+.empty{padding:26px 16px;text-align:center;border-radius:13px;border:1px dashed rgba(232,220,192,.16);background:rgba(232,220,192,.02)}
+.empty--sm{padding:16px 12px}
+.empty b{display:block;font-family:var(--f-display);font-size:16px;color:var(--parchment);margin-bottom:5px;font-variation-settings:'SOFT' 24,'WONK' 1}
+.empty span{display:block;font-size:12.5px;color:var(--bone-dim);line-height:1.5;max-width:34ch;margin:0 auto}
+
+/* ---------------- modals ---------------- */
+.modal{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(10,6,3,.74);backdrop-filter:blur(5px)}
+.modal.is-open{display:flex}
+.sheet{
+  width:100%;max-width:430px;max-height:82vh;display:flex;flex-direction:column;
+  border-radius:18px;border:1px solid var(--rule);
+  background:linear-gradient(180deg,#2C2016,#1B140C);box-shadow:var(--shadow);
+}
+.sheet__head{padding:15px 46px 12px 17px;border-bottom:1px solid var(--rule);position:relative}
+.sheet__head h3{margin:0;font-family:var(--f-display);font-weight:600;font-size:18px;color:var(--parchment);font-variation-settings:'SOFT' 26,'WONK' 1}
+.sheet__head p{margin:3px 0 0;font-size:12px;color:var(--bone-dim)}
+.sheet__close{position:absolute;top:13px;right:13px;width:28px;height:28px;border-radius:8px;border:1px solid var(--rule);display:grid;place-items:center;color:var(--bone-dim)}
+.sheet__body{overflow-y:auto;padding:13px 15px 17px;display:flex;flex-direction:column;gap:8px}
+
+/* ---------------- the specimen plate (signature element) ---------------- */
+.plate{
+  width:100%;max-width:390px;max-height:90vh;overflow-y:auto;
+  background:
+    radial-gradient(ellipse at 22% 12%,rgba(255,252,242,.9),transparent 58%),
+    linear-gradient(168deg,#F1E7CE 0%,#E3D5B3 52%,#D6C6A0 100%);
+  border-radius:5px;color:var(--ink);
+  box-shadow:0 26px 70px rgba(0,0,0,.7),0 0 0 1px rgba(120,98,58,.4),inset 0 0 60px rgba(150,124,74,.18);
+  padding:20px 20px 18px;position:relative;
+  transform:scale(.94) rotate(-.5deg);opacity:0;transition:transform .5s cubic-bezier(.2,.9,.25,1),opacity .35s;
+}
+.plate.is-drawn{transform:none;opacity:1}
+.plate::before{
+  content:'';position:absolute;inset:8px;border:1px solid rgba(120,98,58,.42);border-radius:2px;pointer-events:none;
+}
+.plate::after{
+  content:'';position:absolute;inset:12px;border:1px solid rgba(120,98,58,.2);border-radius:1px;pointer-events:none;
+}
+.plate__ribbon{
+  position:absolute;top:20px;right:-6px;z-index:2;
+  padding:4px 12px 4px 14px;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;
+  box-shadow:0 3px 10px rgba(0,0,0,.35);
+}
+.plate__ribbon::after{content:'';position:absolute;right:0;bottom:-5px;border-width:0 6px 5px 0;border-style:solid;border-color:transparent rgba(0,0,0,.4) transparent transparent}
+.plate__eyebrow{
+  font-family:var(--f-mono);font-size:8.5px;letter-spacing:.3em;text-transform:uppercase;
+  color:rgba(70,55,32,.68);text-align:center;
+}
+.plate__species{
+  font-family:var(--f-display);font-weight:400;font-size:14px;letter-spacing:.06em;
+  text-align:center;margin-top:5px;color:rgba(50,38,20,.8);text-transform:uppercase;
+}
+.plate__latin{font-family:var(--f-display);font-style:italic;font-size:12.5px;text-align:center;color:rgba(80,64,36,.72);margin-top:1px}
+.plate__art{width:100%;height:236px;display:block;margin:4px 0 2px}
+.plate__name{
+  font-family:var(--f-display);font-weight:600;font-size:25px;line-height:1.12;text-align:center;
+  color:#2B2116;font-variation-settings:'SOFT' 40,'WONK' 1;margin-top:2px;
+  word-break:break-word;
+}
+.plate__gen{text-align:center;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(70,55,32,.6);margin-top:3px}
+.plate__rule{height:1px;background:linear-gradient(90deg,transparent,rgba(120,98,58,.5),transparent);margin:11px 0}
+.plate__notation{
+  font-family:var(--f-mono);font-size:13px;letter-spacing:.09em;text-align:center;color:#3B2E18;
+  background:rgba(255,252,242,.6);border:1px solid rgba(120,98,58,.3);border-radius:3px;padding:7px 4px;
+}
+.plate__traits{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:10px}
+.ptrait{
+  font-size:10px;letter-spacing:.05em;padding:3px 9px;border-radius:999px;
+  border:1px solid rgba(120,98,58,.45);color:#4A3A1E;background:rgba(255,252,242,.5);
+}
+.ptrait--none{opacity:.55;font-style:italic}
+.plate__meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-top:12px;font-size:11px;color:rgba(60,47,26,.85)}
+.plate__meta div span{display:block;font-family:var(--f-mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:rgba(90,72,42,.65);margin-bottom:1px}
+.plate__meta div b{font-weight:600;font-size:12px;color:#2B2116}
+.plate__parents{margin-top:9px;font-size:11.5px;font-style:italic;color:rgba(60,47,26,.82);text-align:center;line-height:1.5}
+.plate__parents b{font-style:normal}
+.plate__mut{margin-top:7px;font-family:var(--f-mono);font-size:10px;color:var(--wine);text-align:center}
+.plate__namewrap{margin-top:12px}
+.plate__namewrap label{display:block;font-family:var(--f-mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(90,72,42,.7);margin-bottom:4px}
+.plate__namewrap input{
+  width:100%;padding:9px 11px;border-radius:4px;border:1px solid rgba(120,98,58,.45);
+  background:rgba(255,252,242,.72);color:#2B2116;font-family:var(--f-display);font-weight:600;font-size:15px;
+}
+.plate__namewrap input:focus{outline:2px solid rgba(122,46,59,.5);outline-offset:1px}
+.plate__actions{display:flex;gap:8px;margin-top:14px}
+.plate__actions .btn{flex:1;justify-content:center;border-color:rgba(120,98,58,.5);color:#3B2E18;background:rgba(255,252,242,.5)}
+.plate__actions .btn:hover{background:rgba(255,252,242,.85);border-color:#8A6C13}
+.plate__actions .btn--brass{background:linear-gradient(180deg,#E4C463,#BE9820);color:#2A2010;border-color:#8A6C13}
+
+/* ---------------- toasts ---------------- */
+#toasts{position:fixed;left:50%;transform:translateX(-50%);top:64px;z-index:60;display:flex;flex-direction:column;gap:7px;align-items:center;pointer-events:none;width:min(92vw,400px)}
+.toast{
+  padding:9px 15px;border-radius:11px;font-size:12.5px;line-height:1.45;text-align:center;
+  background:rgba(28,20,12,.96);border:1px solid var(--rule);color:var(--bone);
+  box-shadow:0 10px 26px rgba(0,0,0,.5);
+  opacity:0;transform:translateY(-9px);transition:.3s cubic-bezier(.2,.9,.25,1);
+}
+.toast.is-in{opacity:1;transform:none}
+.toast--good{border-color:rgba(127,176,105,.5);color:#DCEBCB}
+.toast--warn{border-color:rgba(122,46,59,.6);color:#F0CFCF}
+
+/* ---------------- guided tutorial ---------------- */
+/* The scrim is produced by an enormous ring shadow on the cut-out, so the hole
+   tracks its target exactly. Nothing here ever swallows a click. */
+.coach{position:fixed;inset:0;z-index:80;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .38s ease,visibility .38s}
+.coach.is-on{opacity:1;visibility:visible}
+.coach__hole{
+  position:absolute;left:0;top:0;width:0;height:0;border-radius:16px;
+  box-shadow:0 0 0 9999px rgba(9,6,3,.74);
+  border:2px solid var(--brass-lite);
+  transition:left .42s cubic-bezier(.32,.72,.26,1),top .42s cubic-bezier(.32,.72,.26,1),
+             width .42s cubic-bezier(.32,.72,.26,1),height .42s cubic-bezier(.32,.72,.26,1),
+             opacity .3s;
+}
+.coach__hole::after{
+  content:'';position:absolute;inset:-7px;border-radius:inherit;
+  border:2px solid var(--brass-lite);opacity:.55;
+  animation:coachpulse 1.9s cubic-bezier(.3,.7,.3,1) infinite;
+}
+@keyframes coachpulse{
+  0%{transform:scale(.985);opacity:.6}
+  70%{transform:scale(1.055);opacity:0}
+  100%{transform:scale(1.055);opacity:0}
+}
+.coach__card{
+  position:absolute;left:0;top:0;pointer-events:auto;
+  width:min(336px,calc(100vw - 28px));
+  padding:15px 16px 13px;border-radius:16px;
+  background:linear-gradient(180deg,rgba(48,35,23,.985),rgba(26,19,11,.985));
+  border:1px solid var(--rule);
+  box-shadow:0 22px 52px rgba(0,0,0,.62);
+  opacity:0;transition:transform .42s cubic-bezier(.32,.72,.26,1),opacity .26s;
+}
+.coach__card.is-in{opacity:1}
+.coach__card::before{
+  content:'';position:absolute;left:var(--caret-x,50%);width:13px;height:13px;
+  margin-left:-6.5px;
+  background:linear-gradient(135deg,rgba(48,35,23,.985),rgba(48,35,23,.985));
+  border-left:1px solid var(--rule);border-top:1px solid var(--rule);
+}
+.coach__card[data-caret="up"]::before{top:-7px;transform:rotate(45deg)}
+.coach__card[data-caret="down"]::before{bottom:-7px;transform:rotate(225deg);
+  background:linear-gradient(135deg,rgba(26,19,11,.985),rgba(26,19,11,.985))}
+.coach__card[data-caret="none"]::before{display:none}
+.coach__step{font-family:var(--f-mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass)}
+.coach__title{
+  font-family:var(--f-display);font-weight:600;font-size:18px;line-height:1.2;color:var(--parchment);
+  margin-top:4px;font-variation-settings:'SOFT' 28,'WONK' 1;
+}
+.coach__body{font-size:12.8px;line-height:1.55;color:#CFC2A9;margin-top:6px}
+.coach__body b{color:var(--brass-lite);font-weight:600}
+.coach__hint{font-family:var(--f-mono);font-size:11px;color:var(--leaf);margin-top:7px;min-height:0}
+.coach__hint:empty{display:none}
+.coach__foot{display:flex;align-items:center;gap:10px;margin-top:13px}
+.coach__dots{display:flex;gap:4px;flex-wrap:wrap;flex:1 1 auto}
+.coach__dots i{width:5px;height:5px;border-radius:50%;background:rgba(232,220,192,.2)}
+.coach__dots i.done{background:var(--verdant)}
+.coach__dots i.now{background:var(--brass-lite);box-shadow:0 0 6px rgba(235,200,92,.7)}
+.coach__btns{display:flex;gap:7px;flex:0 0 auto}
+.coach__skip{
+  padding:7px 11px;border-radius:9px;font-size:11.5px;color:var(--bone-dim);
+  border:1px solid transparent;
+}
+.coach__skip:hover{color:var(--parchment);border-color:var(--rule)}
+.coach__next{
+  padding:7px 15px;border-radius:9px;font-size:12.5px;font-weight:700;
+  background:linear-gradient(180deg,#F0D477,var(--brass));color:#2A2010;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.42);
+}
+.coach__next:hover{background:linear-gradient(180deg,#F9E59A,#D4AC2C)}
+@media (max-width:640px){
+  .coach__title{font-size:16.5px}
+  .coach__body{font-size:12.2px}
+}
+
+/* ---------------- level banner ---------------- */
+.levelbanner{
+  position:fixed;left:50%;top:38%;transform:translate(-50%,-50%) scale(.9);z-index:50;
+  text-align:center;opacity:0;pointer-events:none;transition:.4s cubic-bezier(.2,.9,.25,1);
+}
+.levelbanner.is-on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.levelbanner i{display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:.42em;text-transform:uppercase;color:var(--brass);font-style:normal}
+.levelbanner b{
+  display:block;font-family:var(--f-display);font-weight:700;font-size:74px;line-height:1;color:var(--parchment);
+  font-variation-settings:'SOFT' 50,'WONK' 1;text-shadow:0 6px 30px rgba(0,0,0,.7);
+}
+
+/* ---------------- title screen ---------------- */
+/* The live world stays visible: a floating mark up top, a glass sheet below,
+   and nothing covering the middle of the estate. */
+.title{position:fixed;inset:0;z-index:70;pointer-events:none;transition:opacity .8s ease}
+.title.is-gone{opacity:0}
+.title::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(12,8,4,.82) 0%,rgba(12,8,4,.12) 34%,rgba(12,8,4,.1) 52%,rgba(12,8,4,.9) 100%);
+}
+.title__mark{position:absolute;top:9vh;left:0;right:0;text-align:center;animation:rise .9s cubic-bezier(.2,.9,.25,1) both}
+.title__mark i{display:block;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.46em;text-transform:uppercase;color:var(--brass);font-style:normal;margin-bottom:10px}
+.title__mark h1{
+  margin:0;font-family:var(--f-display);font-weight:600;font-size:clamp(42px,9vw,74px);letter-spacing:.13em;
+  color:var(--parchment);font-variation-settings:'SOFT' 44,'WONK' 1;
+  text-shadow:0 8px 40px rgba(0,0,0,.75);
+}
+.title__rule{width:min(200px,52vw);height:1px;margin:14px auto 0;background:linear-gradient(90deg,transparent,var(--brass),transparent)}
+.title__tag{margin-top:11px;font-family:var(--f-display);font-style:italic;font-size:14.5px;color:#D6C8AC;text-shadow:0 2px 12px rgba(0,0,0,.8)}
+.title__sheet{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:calc(26px + var(--safe-b));
+  width:min(460px,calc(100vw - 28px));pointer-events:auto;
+  padding:18px 20px 19px;border-radius:19px;
+  background:linear-gradient(180deg,rgba(38,28,18,.9),rgba(20,14,8,.94));
+  border:1px solid var(--rule);backdrop-filter:blur(12px);
+  box-shadow:0 24px 60px rgba(0,0,0,.6);
+  animation:rise 1s .18s cubic-bezier(.2,.9,.25,1) both;
+}
+.title__lede{font-size:13.5px;line-height:1.6;color:#CFC2A9;margin:0 0 14px}
+.title__lede b{color:var(--parchment)}
+.title__facts{display:flex;gap:8px;margin-bottom:15px}
+.tfact{flex:1;text-align:center;padding:9px 4px;border-radius:11px;background:rgba(232,220,192,.05);border:1px solid rgba(232,220,192,.08)}
+.tfact b{display:block;font-family:var(--f-mono);font-size:15px;color:var(--brass-lite)}
+.tfact span{display:block;font-size:9.5px;color:var(--bone-dim);letter-spacing:.05em;margin-top:2px}
+.title__start{
+  width:100%;padding:14px;border-radius:13px;font-size:14.5px;font-weight:700;letter-spacing:.03em;
+  background:linear-gradient(180deg,#F0D477,var(--brass));color:#2A2010;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 22px rgba(0,0,0,.45);
+  transition:.18s;
+}
+.title__start:hover{background:linear-gradient(180deg,#F9E59A,#D4AC2C);transform:translateY(-1px)}
+.title__skip{
+  display:block;width:100%;margin-top:9px;padding:7px;
+  font-size:11.5px;color:var(--bone-dim);letter-spacing:.01em;border-radius:9px;
+  border:1px solid transparent;transition:.16s;
+}
+.title__skip:hover{color:var(--parchment);border-color:var(--rule)}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.title__sheet{animation-name:riseX}
+@keyframes riseX{from{opacity:0;transform:translateX(-50%) translateY(18px)}to{opacity:1;transform:translateX(-50%)}}
+</style>
+</head>
+<body>
+
+<canvas id="stage"></canvas>
+
+<!-- HUD -->
+<div class="hud">
+  <div class="brandmark"><b>HEIRLOOM</b><i>Est. Vale</i></div>
+  <div class="purse">
+    <div class="coinbox coinbox--coin"><i>◆</i><span id="hudCoins">0</span></div>
+    <div class="coinbox coinbox--seed"><i>✦</i><span id="hudSeed">0.00</span></div>
+  </div>
+  <div class="lvl">
+    <div class="lvl__badge" id="hudLevel">1</div>
+    <div class="xp">
+      <div class="xp__track"><i id="xpFill"></i></div>
+      <div class="xp__meta"><span id="xpText">0 / 0</span><span id="hudPhase">Morning</span></div>
+    </div>
+  </div>
+  <button class="iconbtn" id="btnHelp" title="How breeding works">?</button>
+  <button class="iconbtn" id="btnMute" title="Sound on">♪</button>
+</div>
+
+<button class="harvestall" id="harvestAll">Harvest all ripe beds <b id="harvestAllN">0</b></button>
+
+<!-- dock -->
+<nav class="dock">
+  <button class="dock__btn" data-panel="vault">
+    <svg viewBox="0 0 24 24"><path d="M12 3c3 3 4.5 5.5 4.5 8a4.5 4.5 0 0 1-9 0c0-2.5 1.5-5 4.5-8Z"/><path d="M12 11v10"/></svg>
+    <span>Vault</span>
+  </button>
+  <button class="dock__btn" data-panel="bench">
+    <svg viewBox="0 0 24 24"><circle cx="6.5" cy="17.5" r="3"/><circle cx="17.5" cy="17.5" r="3"/><path d="M6.5 14.5V9m11 5.5V9M6.5 9h11M12 9V3"/></svg>
+    <span>Bench</span>
+  </button>
+  <button class="dock__btn" data-panel="codex">
+    <svg viewBox="0 0 24 24"><path d="M4 4h7a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4Z"/><path d="M20 4h-7a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h7Z"/></svg>
+    <span>Herbarium</span>
+  </button>
+  <button class="dock__btn" data-panel="market">
+    <svg viewBox="0 0 24 24"><path d="M3 8h18l-1.5 9.5a2 2 0 0 1-2 1.5H6.5a2 2 0 0 1-2-1.5Z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>
+    <span>Market</span>
+  </button>
+  <button class="dock__btn" data-panel="commission" id="dockCommission">
+    <svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4Z"/><path d="M9 8h6M9 12h4"/></svg>
+    <span>Commissions</span>
+  </button>
+</nav>
+
+<!-- panel -->
+<aside class="panel" id="panel">
+  <div class="panel__head">
+    <h2 id="panelTitle">Seed vault</h2>
+    <p id="panelSub"></p>
+    <button class="panel__close" id="panelClose">✕</button>
+  </div>
+  <div class="panel__body" id="panelBody"></div>
+</aside>
+
+<!-- seed picker -->
+<div class="modal" id="picker">
+  <div class="sheet">
+    <div class="sheet__head">
+      <h3>Choose a seed</h3>
+      <p>Yield, hardiness and colour will all show in the plant itself.</p>
+      <button class="sheet__close" id="pickerClose">✕</button>
+    </div>
+    <div class="sheet__body" id="pickerList"></div>
+  </div>
+</div>
+
+<!-- specimen plate -->
+<div class="modal" id="plate">
+  <div class="plate">
+    <div class="plate__ribbon" id="plateRibbon">Common</div>
+    <div class="plate__eyebrow">Vale Herbarium · Accession <span id="plateAcc">HB-0000</span></div>
+    <div class="plate__species" id="plateSpecies">Tomato</div>
+    <div class="plate__latin" id="plateLatin">Solanum lycopersicum</div>
+    <canvas class="plate__art" id="plateCanvas"></canvas>
+    <div class="plate__name" id="plateName">Unnamed</div>
+    <div class="plate__gen" id="plateGen">Generation 0</div>
+    <div class="plate__rule"></div>
+    <div class="plate__notation" id="plateNotation">Y11 V11 H11 E11 CC</div>
+    <div class="plate__traits" id="plateTraits"></div>
+    <div class="plate__meta">
+      <div><span>Collected</span><b id="plateDate">—</b></div>
+      <div><span>Breeding score</span><b id="plateScore">0</b></div>
+      <div><span>Recorded by</span><b id="plateBy">A. Vale</b></div>
+      <div><span>Locality</span><b>Vale estate, west beds</b></div>
+    </div>
+    <div class="plate__parents" id="plateParents"></div>
+    <div class="plate__mut" id="plateMut"></div>
+    <div class="plate__namewrap" id="plateNameWrap" style="display:none">
+      <label for="plateInput">Name this strain</label>
+      <input id="plateInput" maxlength="26" autocomplete="off">
+    </div>
+    <div class="plate__actions">
+      <button class="btn" id="plateClose">Close</button>
+      <button class="btn btn--brass" id="plateSave">Press into herbarium</button>
+    </div>
+  </div>
+</div>
+
+<!-- guided tutorial -->
+<div class="coach" id="coach">
+  <div class="coach__hole" id="coachHole"></div>
+  <div class="coach__card" id="coachCard" data-caret="up">
+    <div class="coach__step" id="coachStep">Step 1</div>
+    <div class="coach__title" id="coachTitle"></div>
+    <div class="coach__body" id="coachBody"></div>
+    <div class="coach__hint" id="coachHint"></div>
+    <div class="coach__foot">
+      <div class="coach__dots" id="coachDots"></div>
+      <div class="coach__btns">
+        <button class="coach__skip" id="coachSkip">Skip</button>
+        <button class="coach__next" id="coachNext">Got it</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="levelbanner" id="levelBanner"><i>Level</i><b id="levelBannerN">2</b></div>
+<div id="toasts"></div>
+
+<!-- title -->
+<div class="title" id="title">
+  <div class="title__mark">
+    <i>A breeding farm</i>
+    <h1>HEIRLOOM</h1>
+    <div class="title__rule"></div>
+    <div class="title__tag">Anyone can grow a crop. Few can fix a line.</div>
+  </div>
+  <div class="title__sheet">
+    <p class="title__lede">Every plant carries <b>two alleles at five loci</b>. Cross two parents and the offspring takes one from each — so the plainest seed in your vault may be hiding the colour you have been chasing for twenty generations.</p>
+    <div class="title__facts">
+      <div class="tfact"><b>5</b><span>Genes</span></div>
+      <div class="tfact"><b>5</b><span>Colour morphs</span></div>
+      <div class="tfact"><b>~200</b><span>Crosses to Ivory</span></div>
+    </div>
+    <button class="title__start" id="start">Walk out to the beds</button>
+    <button class="title__skip" id="skipTut">I know how breeding works — skip the tutorial</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   HEIRLOOM — Part A : core, genetics engine, state
+   ============================================================ */
+'use strict';
+
+const TAU = Math.PI * 2;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const rnd = (a = 1, b) => (b === undefined ? Math.random() * a : a + Math.random() * (b - a));
+const rint = (a, b) => Math.floor(rnd(a, b + 1));
+const pick = arr => arr[(Math.random() * arr.length) | 0];
+const chance = p => Math.random() < p;
+const now = () => Date.now();
+
+const fmtNum = n => {
+  n = Math.floor(n);
+  if (n >= 1000000) return (n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1) + 'M';
+  if (n >= 10000) return (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + 'k';
+  return n.toLocaleString('en-US');
+};
+const fmtTime = s => {
+  s = Math.max(0, Math.ceil(s));
+  if (s >= 60) return Math.floor(s / 60) + 'm ' + String(s % 60).padStart(2, '0') + 's';
+  return s + 's';
+};
+
+/* deterministic hash-rng for per-plant art variance */
+function hashStr(str) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  return h >>> 0;
+}
+function mulberry(seed) {
+  let t = seed >>> 0;
+  return function () {
+    t += 0x6D2B79F5;
+    let r = t;
+    r = Math.imul(r ^ (r >>> 15), r | 1);
+    r ^= r + Math.imul(r ^ (r >>> 7), r | 61);
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---------------- design tokens (mirrored from CSS) ---------------- */
+const C = {
+  soil:      '#241B12',
+  soilDeep:  '#150E08',
+  loam:      '#3B2A1B',
+  parchment: '#E8DCC0',
+  ink:       '#2B2116',
+  verdant:   '#3E6B44',
+  leaf:      '#7FB069',
+  leafLight: '#A9D18A',
+  brass:     '#C9A227',
+  brassLite: '#EBC85C',
+  glass:     '#6E8B7B',
+  wine:      '#7A2E3B',
+  sky:       '#8FB6A8',
+};
+
+/* ---------------- species ---------------- */
+const SPECIES = {
+  tomato: {
+    key: 'tomato', name: 'Tomato', latin: 'Solanum lycopersicum',
+    lvl: 1, grow: 16, price: 11, form: 'bush', seedCost: 40,
+    note: 'Reliable. Every archive starts here.',
+  },
+  corn: {
+    key: 'corn', name: 'Corn', latin: 'Zea mays',
+    lvl: 2, grow: 26, price: 21, form: 'stalk', seedCost: 120,
+    note: 'Tall stalks. Recessive alleles hide well in this line.',
+  },
+  chili: {
+    key: 'chili', name: 'Chili', latin: 'Capsicum annuum',
+    lvl: 4, grow: 22, price: 33, form: 'pod', seedCost: 340,
+    note: 'Small yield, high essence. Collectors pay for heat.',
+  },
+  pumpkin: {
+    key: 'pumpkin', name: 'Pumpkin', latin: 'Cucurbita pepo',
+    lvl: 6, grow: 40, price: 58, form: 'gourd', seedCost: 900,
+    note: 'Sprawling vine. Yield gene expresses dramatically.',
+  },
+  moonflower: {
+    key: 'moonflower', name: 'Moonflower', latin: 'Selene noctiflora',
+    lvl: 9, grow: 58, price: 130, form: 'bulb', seedCost: 2600,
+    note: 'Blooms after dusk. No ivory specimen has ever been recorded.',
+  },
+};
+const SPECIES_ORDER = ['tomato', 'corn', 'chili', 'pumpkin', 'moonflower'];
+
+/* ---------------- genetics ---------------- */
+/* Four quantitative loci, alleles 1..6. Expression is dominance-leaning:
+   the stronger allele carries most of the phenotype, the weaker one drags.  */
+const LOCI = [
+  { k: 'Y', name: 'Yield',     desc: 'Fruit produced per harvest.' },
+  { k: 'V', name: 'Vigor',     desc: 'How fast the plant reaches ripeness.' },
+  { k: 'H', name: 'Hardiness', desc: 'Resistance to blight and cold snaps.' },
+  { k: 'E', name: 'Essence',   desc: 'Market value and collector interest.' },
+];
+
+/* Colour locus is classically Mendelian: lower rank is dominant, so the
+   beautiful morphs are recessive and genuinely hard to fix. */
+const COLORS = {
+  crimson: { rank: 1, name: 'Crimson', hex: '#C0392B', deep: '#7E2118', bonus: 0 },
+  amber:   { rank: 2, name: 'Amber',   hex: '#D99A2B', deep: '#8A5A11', bonus: 1 },
+  jade:    { rank: 3, name: 'Jade',    hex: '#4E9E7A', deep: '#276049', bonus: 2 },
+  violet:  { rank: 4, name: 'Violet',  hex: '#7D5BA6', deep: '#452F63', bonus: 4 },
+  ivory:   { rank: 5, name: 'Ivory',   hex: '#F0E6CE', deep: '#B7A681', bonus: 7 },
+};
+const COLOR_KEYS = ['crimson', 'amber', 'jade', 'violet', 'ivory'];
+
+const TIERS = [
+  { key: 'common',    name: 'Common',    min: 0,  hex: '#8A8577', ring: '#6E6A5E' },
+  { key: 'heirloom',  name: 'Heirloom',  min: 10, hex: '#7FB069', ring: '#4E7A44' },
+  { key: 'rare',      name: 'Rare',      min: 15, hex: '#5FA8C7', ring: '#376E86' },
+  { key: 'prized',    name: 'Prized',    min: 20, hex: '#C9A227', ring: '#8A6E14' },
+  { key: 'legendary', name: 'Legendary', min: 25, hex: '#D06CA8', ring: '#8A3A68' },
+];
+
+/* traits are read off the phenotype — visible badges players chase */
+const TRAITS = [
+  { k: 'abundant',  name: 'Abundant',   test: p => p.Y >= 5, desc: 'Yield 5 or above' },
+  { k: 'swift',     name: 'Swift',      test: p => p.V >= 5, desc: 'Vigor 5 or above' },
+  { k: 'ironleaf',  name: 'Ironleaf',   test: p => p.H >= 5, desc: 'Hardiness 5 or above' },
+  { k: 'gilded',    name: 'Gilded',     test: p => p.E >= 5, desc: 'Essence 5 or above' },
+  { k: 'balanced',  name: 'Balanced',   test: p => [p.Y, p.V, p.H, p.E].every(v => v >= 4), desc: 'Every gene 4 or above' },
+  { k: 'truebred',  name: 'True-bred',  test: (p, g) => LOCI.every(l => g.genes[l.k][0] === g.genes[l.k][1]), desc: 'Every locus homozygous' },
+];
+
+function expressLocus(pair) {
+  const hi = Math.max(pair[0], pair[1]), lo = Math.min(pair[0], pair[1]);
+  return clamp(Math.round(hi * 0.68 + lo * 0.32), 1, 6);
+}
+function expressColor(pair) {
+  return COLORS[pair[0]].rank <= COLORS[pair[1]].rank ? pair[0] : pair[1];
+}
+function phenotype(strain) {
+  const p = {};
+  for (const l of LOCI) p[l.k] = expressLocus(strain.genes[l.k]);
+  p.color = expressColor(strain.color);
+  return p;
+}
+function strainScore(strain) {
+  const p = phenotype(strain);
+  return p.Y + p.V + p.H + p.E + COLORS[p.color].bonus;
+}
+function tierOf(strain) {
+  const s = strainScore(strain);
+  let t = TIERS[0];
+  for (const tt of TIERS) if (s >= tt.min) t = tt;
+  return t;
+}
+function traitsOf(strain) {
+  const p = phenotype(strain);
+  return TRAITS.filter(t => t.test(p, strain));
+}
+
+/* derived stats used by the sim */
+function growSeconds(strain) {
+  const p = phenotype(strain);
+  const base = SPECIES[strain.species].grow;
+  return Math.round(base * (1.34 - p.V * 0.115)); // V1 ≈ 1.22x, V6 ≈ 0.65x
+}
+/* quadratic on purpose: the difference between a Y2 and a Y6 line should be
+   the difference between a hobby and an estate. */
+function yieldCount(strain) {
+  const p = phenotype(strain);
+  return Math.max(1, Math.round(0.6 + p.Y * p.Y * 0.3));
+}
+function unitValue(strain) {
+  const p = phenotype(strain);
+  const base = SPECIES[strain.species].price;
+  return Math.round(base * (0.68 + p.E * 0.22) * (1 + COLORS[p.color].bonus * 0.09));
+}
+function blightChance(strain) {
+  const p = phenotype(strain);
+  return clamp(0.16 - p.H * 0.026, 0.006, 0.16);
+}
+
+/* ---------------- strain construction ---------------- */
+let ACCESSION = 1;
+const NAME_A = ['Ember', 'Hollow', 'Wren', 'Marrow', 'Thistle', 'Copper', 'Dusk', 'Kestrel', 'Salt', 'Bramble', 'Vellum', 'Cinder', 'Fallow', 'Pale', 'Ash', 'Reed', 'Lark', 'Quill'];
+const NAME_B = ['Row', 'Field', 'Crown', 'Line', 'Bell', 'Drift', 'Vein', 'Fold', 'Stone', 'Bloom', 'Ridge', 'Mark', 'Wick', 'Grove'];
+
+function autoName() { return pick(NAME_A) + ' ' + pick(NAME_B); }
+
+function makeStrain(species, genes, color, opts = {}) {
+  const s = {
+    id: 'S' + (ACCESSION++) + '-' + Math.floor(rnd(1000, 9999)),
+    species, genes, color,
+    name: opts.name || autoName(),
+    named: !!opts.named,
+    gen: opts.gen || 0,
+    parents: opts.parents || null,
+    born: opts.born || now(),
+    mutations: opts.mutations || [],
+  };
+  s.accession = 'HB-' + String(hashStr(s.id) % 9000 + 1000);
+  return s;
+}
+
+/* market stock — deliberately mediocre so breeding is the only way up */
+function baseStrain(speciesKey) {
+  const g = {};
+  for (const l of LOCI) {
+    const a = rint(1, 3), b = rint(1, 3);
+    g[l.k] = [a, b];
+  }
+  const col = () => (chance(0.82) ? 'crimson' : 'amber');
+  return makeStrain(speciesKey, g, [col(), col()], { name: SPECIES[speciesKey].name + ' (nursery stock)' });
+}
+
+/* ---------------- breeding ---------------- */
+function breed(pa, pb, mutagen) {
+  if (pa.species !== pb.species) return null;
+  const genes = {};
+  const mutations = [];
+  const mutRate = mutagen ? 0.26 : 0.09;
+  for (const l of LOCI) {
+    let a = pick(pa.genes[l.k]);
+    let b = pick(pb.genes[l.k]);
+    if (chance(mutRate)) {
+      const big = chance(0.16);
+      const delta = (chance(0.62) ? 1 : -1) * (big ? 2 : 1);
+      const before = a;
+      a = clamp(a + delta, 1, 6);
+      if (a !== before) mutations.push({ locus: l.k, from: before, to: a });
+    }
+    if (chance(mutRate * 0.7)) {
+      const delta = chance(0.62) ? 1 : -1;
+      const before = b;
+      b = clamp(b + delta, 1, 6);
+      if (b !== before) mutations.push({ locus: l.k, from: before, to: b });
+    }
+    genes[l.k] = [a, b];
+  }
+  /* Colour drifts along the dominance ladder, but each rung up is harder than
+     the last — that is what keeps Ivory a long chase rather than an afternoon.
+     Essence tilts the odds upward, so the E gene is worth fixing before you
+     start hunting colour. That ordering is the strategy the game is built on. */
+  let ca = pick(pa.color), cb = pick(pb.color);
+  const ess = (phenotype(pa).E + phenotype(pb).E) / 2;
+  const colRate = (mutagen ? 0.085 : 0.030) * (0.8 + ess * 0.075);
+  const stepColor = (allele, rate) => {
+    if (!chance(rate)) return allele;
+    const rank = COLORS[allele].rank;
+    const up = chance(clamp(0.66 - rank * 0.035 + (ess - 3) * 0.04, 0.52, 0.8));
+    const i = clamp(rank - 1 + (up ? 1 : -1), 0, 4);
+    const next = COLOR_KEYS[i];
+    if (next !== allele) mutations.push({ locus: 'C', from: COLORS[allele].name, to: COLORS[next].name });
+    return next;
+  };
+  ca = stepColor(ca, colRate);
+  cb = stepColor(cb, colRate * 0.7);
+  return makeStrain(pa.species, genes, [ca, cb], {
+    gen: Math.max(pa.gen, pb.gen) + 1,
+    parents: [{ id: pa.id, name: pa.name }, { id: pb.id, name: pb.name }],
+    mutations,
+  });
+}
+
+/* ---------------- progression ---------------- */
+const LEVELS = [0, 60, 170, 360, 640, 1050, 1650, 2500, 3700, 5300, 7500, 10400, 14200, 19000, 25000];
+function levelFor(xp) { let l = 1; for (let i = 1; i < LEVELS.length; i++) if (xp >= LEVELS[i]) l = i + 1; return l; }
+function xpSpan(level) {
+  const lo = LEVELS[level - 1] ?? 0;
+  const hi = LEVELS[level] ?? (lo + 12000);
+  return { lo, hi };
+}
+const PLOT_UNLOCK = { 1: 4, 2: 5, 3: 6, 4: 7, 5: 8, 6: 9, 7: 10, 8: 11, 9: 12, 10: 13, 11: 14, 12: 15 };
+
+/* ---------------- state ---------------- */
+const G = {
+  t: 0, last: 0, dt: 0,
+  coins: 260, seedToken: 0, xp: 0, level: 1, rep: 0,
+  plots: [], vault: [], produce: {}, codex: [], commissions: [],
+  mutagen: 1,
+  camera: { x: 0, y: 0, z: 1, tx: 0, ty: 0, tz: 1 },
+  selection: null, panel: null, hoverPlot: null,
+  toasts: [], fx: [], plate: null,
+  dayT: 0.28,          // 0..1 cycle
+  paused: false,
+  discovered: {},      // tierKey -> count
+  stats: { harvests: 0, bred: 0, sold: 0, commissions: 0 },
+  tutorial: { step: 0, done: false }, coachTarget: null,
+  seenSpecies: { tomato: true },
+  gardener: 'A. Vale',
+};
+
+function addXP(n) {
+  const before = G.level;
+  G.xp += n;
+  G.level = levelFor(G.xp);
+  if (G.level > before) onLevelUp(before, G.level);
+}
+
+function plotCapacity() { return PLOT_UNLOCK[Math.min(G.level, 12)] ?? 15; }
+
+function produceAdd(speciesKey, colorKey, n, value) {
+  const k = speciesKey + ':' + colorKey;
+  if (!G.produce[k]) G.produce[k] = { species: speciesKey, color: colorKey, n: 0, value };
+  G.produce[k].n += n;
+  G.produce[k].value = Math.round((G.produce[k].value + value) / 2);
+}
+
+function vaultAdd(strain, qty = 1) {
+  const existing = G.vault.find(s => s.id === strain.id);
+  if (existing) { existing.qty += qty; return existing; }
+  strain.qty = qty;
+  G.vault.push(strain);
+  const t = tierOf(strain).key;
+  G.discovered[t] = (G.discovered[t] || 0) + 1;
+  return strain;
+}
+
+function codexHas(strain) {
+  return G.codex.some(c => c.id === strain.id);
+}
+function codexAdd(strain) {
+  if (!codexHas(strain)) G.codex.push(strain);
+}
+
+
+/* ============================================================
+   HEIRLOOM — Part B : procedural art engine
+   Every sprite is drawn from code. Plants are drawn from genes.
+   ============================================================ */
+
+const TW = 104, TH = 52;            // iso tile footprint
+const iso = (gx, gy) => ({ x: (gx - gy) * TW / 2, y: (gx + gy) * TH / 2 });
+
+function diamond(ctx, x, y, w, h) {
+  ctx.beginPath();
+  ctx.moveTo(x, y - h / 2);
+  ctx.lineTo(x + w / 2, y);
+  ctx.lineTo(x, y + h / 2);
+  ctx.lineTo(x - w / 2, y);
+  ctx.closePath();
+}
+function roundRect(ctx, x, y, w, h, r) {
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
+function shade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  r = clamp(Math.round(r + amt * 255), 0, 255);
+  g = clamp(Math.round(g + amt * 255), 0, 255);
+  b = clamp(Math.round(b + amt * 255), 0, 255);
+  return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+}
+function withAlpha(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+
+/* ---------------- ground ---------------- */
+function drawGrassTile(ctx, gx, gy, seedBase, dark = 0) {
+  const p = iso(gx, gy);
+  const r = mulberry(hashStr(gx + ':' + gy + ':' + seedBase));
+  const tone = 0.5 + r() * 0.5;
+  const d = dark * 0.26;
+  const g1 = shade('#4E7C46', -0.018 + tone * 0.030 - d);
+  const g2 = shade('#3D6539', -0.012 + tone * 0.020 - d);
+  const grd = ctx.createLinearGradient(p.x, p.y - TH / 2, p.x, p.y + TH / 2);
+  grd.addColorStop(0, g1); grd.addColorStop(1, g2);
+  diamond(ctx, p.x, p.y, TW, TH);
+  ctx.fillStyle = grd; ctx.fill();
+  // sparse blade tufts
+  const tufts = dark > 0.35 ? 0 : 2 + ((r() * 3) | 0);
+  ctx.strokeStyle = withAlpha('#8FC17A', 0.32 * (1 - dark)); ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+  for (let i = 0; i < tufts; i++) {
+    const a = r() * TAU, d = r() * 0.36;
+    const bx = p.x + Math.cos(a) * TW * d, by = p.y + Math.sin(a) * TH * d;
+    ctx.beginPath();
+    ctx.moveTo(bx, by);
+    ctx.quadraticCurveTo(bx + (r() - 0.5) * 5, by - 5, bx + (r() - 0.5) * 8, by - 9);
+    ctx.stroke();
+  }
+}
+
+function drawPathTile(ctx, gx, gy, seedBase, dark = 0) {
+  const p = iso(gx, gy);
+  const r = mulberry(hashStr('path' + gx + ':' + gy + ':' + seedBase));
+  diamond(ctx, p.x, p.y, TW, TH);
+  ctx.fillStyle = shade('#9C8B6F', (r() - 0.5) * 0.06 - dark * 0.16);
+  ctx.fill();
+  for (let i = 0; i < 7; i++) {
+    const a = r() * TAU, d = r() * 0.4;
+    ctx.beginPath();
+    ctx.ellipse(p.x + Math.cos(a) * TW * d, p.y + Math.sin(a) * TH * d, 1.4 + r() * 2.2, 1 + r() * 1.4, 0, 0, TAU);
+    ctx.fillStyle = withAlpha(r() > 0.5 ? '#C4B392' : '#7C6C52', 0.5);
+    ctx.fill();
+  }
+}
+
+function drawBed(ctx, gx, gy, wet, hover, locked) {
+  const p = iso(gx, gy);
+  // recessed shadow
+  diamond(ctx, p.x, p.y + 3, TW * 0.9, TH * 0.9);
+  ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.fill();
+  diamond(ctx, p.x, p.y, TW * 0.84, TH * 0.84);
+  const grd = ctx.createLinearGradient(p.x, p.y - TH / 2, p.x, p.y + TH / 2);
+  if (locked) { grd.addColorStop(0, '#4A4136'); grd.addColorStop(1, '#332C24'); }
+  else if (wet) { grd.addColorStop(0, '#4A331F'); grd.addColorStop(1, '#301F11'); }
+  else { grd.addColorStop(0, '#5B4229'); grd.addColorStop(1, '#3A2917'); }
+  ctx.fillStyle = grd; ctx.fill();
+  // furrows
+  ctx.save(); ctx.clip();
+  ctx.strokeStyle = 'rgba(0,0,0,0.20)'; ctx.lineWidth = 2.2;
+  for (let i = -2; i <= 2; i++) {
+    const o = i * 11;
+    ctx.beginPath();
+    ctx.moveTo(p.x - TW / 2 + o, p.y + TH / 2 * (o > 0 ? 0 : 0));
+    ctx.lineTo(p.x + o, p.y + TH / 2);
+    ctx.moveTo(p.x - TW / 2 + o, p.y);
+    ctx.lineTo(p.x + o, p.y - TH / 2 + 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+  // inner rim catches light so an empty bed reads as tilled soil, not a pit
+  diamond(ctx, p.x, p.y - 1.5, TW * 0.74, TH * 0.74);
+  ctx.strokeStyle = 'rgba(255,228,180,0.10)'; ctx.lineWidth = 2; ctx.stroke();
+  // brass edging
+  diamond(ctx, p.x, p.y, TW * 0.84, TH * 0.84);
+  ctx.strokeStyle = locked ? 'rgba(140,130,110,0.45)' : (hover ? withAlpha(C.brassLite, 0.95) : withAlpha(C.brass, 0.42));
+  ctx.lineWidth = hover ? 2.4 : 1.4;
+  ctx.stroke();
+  if (locked) {
+    ctx.save();
+    ctx.globalAlpha = 0.75;
+    ctx.strokeStyle = '#A79A82'; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(p.x, p.y - 8, 5, Math.PI, 0); ctx.stroke();
+    roundRect(ctx, p.x - 7, p.y - 8, 14, 11, 2.5);
+    ctx.fillStyle = '#C6B79A'; ctx.fill();
+    ctx.restore();
+  }
+}
+
+/* ---------------- gene-driven plants ----------------
+   Every visual property is downstream of a gene:
+     Y -> how many fruit, and past the drawable cap, how large
+     V -> sway speed and stem slenderness
+     H -> stem thickness, leaf count, leaf depth
+     E -> shimmer motes and colour saturation
+   Pale morphs get a dark rim so Ivory still reads against a bright bed.
+------------------------------------------------------ */
+
+const FORM_CAP = { bush: 8, pod: 9, stalk: 4, gourd: 3, bulb: 4 };
+
+/* one leaf, mirrored properly via transform rather than signed lengths */
+function drawLeaf(ctx, px, py, len, wid, ang, side, fill, droop = 0.5) {
+  ctx.save();
+  ctx.translate(px, py);
+  ctx.scale(side, 1);
+  ctx.rotate(ang);
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.bezierCurveTo(len * 0.32, -wid, len * 0.72, -wid * 0.72, len, wid * droop * 0.5);
+  ctx.bezierCurveTo(len * 0.70, wid * 0.55, len * 0.34, wid * 0.85, 0, 0);
+  ctx.fillStyle = fill;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(24,46,26,0.42)';
+  ctx.lineWidth = 0.9;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.quadraticCurveTo(len * 0.55, -wid * 0.12, len * 0.94, wid * droop * 0.35);
+  ctx.strokeStyle = 'rgba(36,77,42,0.5)';
+  ctx.lineWidth = 0.85;
+  ctx.stroke();
+  ctx.restore();
+}
+
+/* a round fruit with rim, shading and specular so pale colours still read */
+function drawBerry(ctx, x, y, rad, col, squash = 1) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.beginPath();
+  ctx.ellipse(0, 0, rad, rad * squash, 0, 0, TAU);
+  const g = ctx.createRadialGradient(-rad * 0.38, -rad * 0.44, rad * 0.1, 0, 0, rad * 1.06);
+  g.addColorStop(0, shade(col.hex, 0.24));
+  g.addColorStop(0.62, col.hex);
+  g.addColorStop(1, col.deep);
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.strokeStyle = withAlpha(col.deep, 0.92);
+  ctx.lineWidth = 1.1;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(-rad * 0.34, -rad * 0.42, rad * 0.28, rad * 0.18, -0.5, 0, TAU);
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawPlant(ctx, x, y, strain, growth, t, opts = {}) {
+  const p = phenotype(strain);
+  const col = COLORS[p.color];
+  const sp = SPECIES[strain.species];
+  const R = mulberry(hashStr(strain.id));
+  const sA = R(), sB = R(), sC = R();
+  const ripe = growth >= 1;
+  const g = clamp(growth, 0, 1);
+  const ease = 1 - Math.pow(1 - g, 2.2);
+  const scale = (0.44 + ease * 0.56) * (opts.scale || 1);
+
+  const stemW = 1.9 + p.H * 0.58;
+  const dark = shade('#2C5531', -0.02 + p.H * 0.010);
+  const mid = shade('#477C40', -0.01 + p.H * 0.009);
+  const lite = shade('#79AA63', 0.015 + p.H * 0.006);
+  const sway = Math.sin(t * (0.62 + p.V * 0.12) + sA * 9) * (0.035 + p.V * 0.007);
+
+  const total = ripe ? yieldCount(strain) : 0;
+  const cap = FORM_CAP[sp.form];
+  const visN = Math.min(total, cap);
+  const boost = 1 + Math.max(0, total - cap) * 0.055;
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(sway * 0.28);
+  ctx.scale(scale, scale);
+
+  ctx.beginPath();
+  ctx.ellipse(0, 1, 19 + p.Y * 1.5, 7 + p.Y * 0.45, 0, 0, TAU);
+  ctx.fillStyle = 'rgba(0,0,0,0.26)';
+  ctx.fill();
+
+  /* ---------- bush / pod: layered tiers around a short stem ---------- */
+  if (sp.form === 'bush' || sp.form === 'pod') {
+    const H = sp.form === 'pod' ? 34 : 42;
+    const tiers = 3 + Math.round(p.H * 0.34);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(sway * 14, -H * 0.55, sway * 24, -H);
+    ctx.strokeStyle = shade('#4B6F35', 0);
+    ctx.lineWidth = stemW;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    for (let i = 0; i < tiers; i++) {
+      const f = i / Math.max(tiers - 1, 1);
+      const ly = -6 - f * (H - 6);
+      const len = (17 + p.H * 2.3) * (1 - f * 0.30);
+      const wid = 6.5 + p.H * 0.62;
+      const fill = i % 3 === 0 ? lite : i % 3 === 1 ? mid : dark;
+      drawLeaf(ctx, sway * 24 * f, ly, len, wid, 0.30 + f * 0.22, -1, fill);
+      drawLeaf(ctx, sway * 24 * f, ly, len, wid, 0.30 + f * 0.22, 1, i % 2 ? mid : dark);
+    }
+
+    /* fruit hang in small clusters off the upper stem, not in a ring */
+    for (let i = 0; i < visN; i++) {
+      const clusterI = Math.floor(i / 2);
+      const side = clusterI % 2 ? 1 : -1;
+      const cy = -16 - clusterI * 9 - (i % 2) * 5;
+      const cx = side * (8 + (i % 2) * 7 + clusterI * 1.6) + sway * 18;
+      ctx.beginPath();
+      ctx.moveTo(sway * 20, cy + 4);
+      ctx.quadraticCurveTo(cx * 0.6, cy - 2, cx, cy - 3);
+      ctx.strokeStyle = '#4E7A38';
+      ctx.lineWidth = 1.3;
+      ctx.stroke();
+      if (sp.form === 'pod') {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(side * 0.28 + 0.12);
+        ctx.beginPath();
+        ctx.moveTo(0, -1);
+        ctx.bezierCurveTo(4.4 * boost, 4, 3.2 * boost, 11 * boost, 0.6, 16 * boost);
+        ctx.bezierCurveTo(-1.6, 10 * boost, -3.6 * boost, 4, -2.6, -1);
+        ctx.closePath();
+        const pg = ctx.createLinearGradient(-4, 0, 5, 12);
+        pg.addColorStop(0, shade(col.hex, 0.2));
+        pg.addColorStop(1, col.deep);
+        ctx.fillStyle = pg;
+        ctx.fill();
+        ctx.strokeStyle = withAlpha(col.deep, 0.9);
+        ctx.lineWidth = 0.95;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-1.4, 0);
+        ctx.quadraticCurveTo(0.4, 6, 0.2, 13);
+        ctx.strokeStyle = 'rgba(255,255,255,0.34)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+        ctx.beginPath();
+        ctx.arc(cx, cy - 1, 2.4, Math.PI, 0);
+        ctx.strokeStyle = '#3E6B44';
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+      } else {
+        const rad = (4.6 + p.Y * 0.42) * boost;
+        drawBerry(ctx, cx, cy + rad * 0.6, rad, col, 0.94);
+        ctx.strokeStyle = '#3E6B44';
+        ctx.lineWidth = 1.2;
+        for (let k = 0; k < 3; k++) {
+          const ka = -1.9 + k * 0.62;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy + rad * 0.6 - rad * 0.82);
+          ctx.lineTo(cx + Math.cos(ka) * rad * 0.72, cy + rad * 0.6 - rad * 0.82 + Math.sin(ka) * rad * 0.5 + rad * 0.4);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  /* ---------- stalk: one tall cane, arching blades, husked cobs ---------- */
+  if (sp.form === 'stalk') {
+    const H = 64;
+    const nodes = 4 + Math.round(p.H * 0.5);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(sway * 12, -H * 0.55, sway * 30, -H);
+    ctx.strokeStyle = '#5E7C36';
+    ctx.lineWidth = stemW + 1.1;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-stemW * 0.3, 0);
+    ctx.quadraticCurveTo(sway * 12, -H * 0.55, sway * 30 - stemW * 0.3, -H);
+    ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    for (let i = 0; i < nodes; i++) {
+      const f = i / Math.max(nodes - 1, 1);
+      const ly = -8 - f * (H - 8);
+      const side = i % 2 ? 1 : -1;
+      const len = (30 + p.H * 3.4) * (1 - f * 0.22);
+      ctx.save();
+      ctx.translate(sway * 30 * f, ly);
+      ctx.scale(side, 1);
+      ctx.beginPath();
+      ctx.moveTo(0, 1.5);
+      ctx.bezierCurveTo(len * 0.42, -8 - f * 5, len * 0.8, -4 - f * 4, len, 12 - f * 9);
+      ctx.bezierCurveTo(len * 0.72, -0.5 - f * 3, len * 0.4, -1 - f * 2, 0, -1.5);
+      ctx.closePath();
+      ctx.fillStyle = i % 2 ? mid : dark;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(24,46,26,0.36)';
+      ctx.lineWidth = 0.85;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(len * 0.42, -4 - f * 4, len * 0.78, -2 - f * 3, len * 0.96, 10 - f * 8);
+      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+      ctx.lineWidth = 0.9;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    for (let i = 0; i < visN; i++) {
+      const side = i % 2 ? 1 : -1;
+      const cy = -20 - i * 13;
+      const cx = side * 5 + sway * 18;
+      const cw = 5.2 * boost, ch = 13 * boost;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(side * 0.30);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, cw, ch, 0, 0, TAU);
+      const cg = ctx.createLinearGradient(-cw, 0, cw, 0);
+      cg.addColorStop(0, col.deep);
+      cg.addColorStop(0.45, shade(col.hex, 0.16));
+      cg.addColorStop(1, col.deep);
+      ctx.fillStyle = cg;
+      ctx.fill();
+      ctx.strokeStyle = withAlpha(col.deep, 0.9);
+      ctx.lineWidth = 0.9;
+      ctx.stroke();
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(0, 0, cw, ch, 0, 0, TAU);
+      ctx.clip();
+      ctx.fillStyle = 'rgba(0,0,0,0.16)';
+      for (let r = -4; r <= 4; r++) {
+        for (let k = -3; k <= 3; k++) {
+          ctx.beginPath();
+          ctx.arc(k * 1.9 + (r % 2) * 0.9, r * 2.9, 0.85, 0, TAU);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+      // husk
+      for (const d of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(d * cw * 0.75, -ch * 0.92);
+        ctx.quadraticCurveTo(d * cw * 1.9, 0, d * cw * 0.55, ch * 0.98);
+        ctx.quadraticCurveTo(d * cw * 0.9, 0, d * cw * 0.72, -ch * 0.9);
+        ctx.closePath();
+        ctx.fillStyle = d < 0 ? mid : dark;
+        ctx.fill();
+      }
+      // silk
+      ctx.strokeStyle = withAlpha('#D8C071', 0.85);
+      ctx.lineWidth = 0.9;
+      for (let k = -2; k <= 2; k++) {
+        ctx.beginPath();
+        ctx.moveTo(k * 1.2, -ch * 0.95);
+        ctx.quadraticCurveTo(k * 2.4, -ch * 1.3, k * 3.4, -ch * 1.5);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  /* ---------- gourd: ground vine, lobed leaves, ribbed fruit ---------- */
+  if (sp.form === 'gourd') {
+    const runners = 4 + Math.round(p.H * 0.7);
+    for (let i = 0; i < runners; i++) {
+      const a = (i / runners) * TAU + sA * 5;
+      const len = 19 + p.H * 3.1;
+      const ex = Math.cos(a) * len, ey = Math.sin(a) * len * 0.5;
+      ctx.beginPath();
+      ctx.moveTo(0, -2);
+      ctx.quadraticCurveTo(ex * 0.55, ey * 0.5 - 7, ex, ey);
+      ctx.strokeStyle = '#4E7A38';
+      ctx.lineWidth = 2.1;
+      ctx.stroke();
+      // lobed leaf: three overlapping blades
+      ctx.save();
+      ctx.translate(ex, ey);
+      const lf = i % 2 ? mid : dark;
+      for (const o of [-0.55, 0, 0.55]) {
+        drawLeaf(ctx, 0, 0, 12 + p.H * 1.5, 7.5, a + o, 1, o === 0 ? lf : shade(lf, -0.03), 0.8);
+      }
+      ctx.restore();
+      // tendril
+      ctx.beginPath();
+      ctx.moveTo(ex * 0.7, ey * 0.7 - 4);
+      ctx.quadraticCurveTo(ex * 0.85, ey * 0.7 - 12, ex * 0.98, ey * 0.7 - 7);
+      ctx.strokeStyle = withAlpha('#6E9247', 0.8);
+      ctx.lineWidth = 1.1;
+      ctx.stroke();
+    }
+    for (let i = 0; i < visN; i++) {
+      const a = (i / Math.max(visN, 1)) * TAU + sB * 4 + 0.6;
+      const gx2 = Math.cos(a) * 15, gy2 = Math.sin(a) * 8 - 5;
+      const rad = (8.5 + p.Y * 1.25) * boost;
+      ctx.save();
+      ctx.translate(gx2, gy2);
+      ctx.beginPath();
+      ctx.ellipse(0, rad * 0.72, rad * 1.02, rad * 0.3, 0, 0, TAU);
+      ctx.fillStyle = 'rgba(0,0,0,0.22)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(0, 0, rad, rad * 0.84, 0, 0, TAU);
+      const gg = ctx.createRadialGradient(-rad * 0.32, -rad * 0.4, rad * 0.14, 0, 0, rad * 1.1);
+      gg.addColorStop(0, shade(col.hex, 0.22));
+      gg.addColorStop(0.6, col.hex);
+      gg.addColorStop(1, col.deep);
+      ctx.fillStyle = gg;
+      ctx.fill();
+      // ribs as soft shadow bands rather than outlines
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(0, 0, rad, rad * 0.84, 0, 0, TAU);
+      ctx.clip();
+      for (let k = -2; k <= 2; k++) {
+        ctx.beginPath();
+        ctx.moveTo(k * rad * 0.36, -rad);
+        ctx.quadraticCurveTo(k * rad * 0.5, 0, k * rad * 0.36, rad);
+        ctx.strokeStyle = withAlpha(col.deep, 0.42);
+        ctx.lineWidth = rad * 0.13;
+        ctx.stroke();
+      }
+      ctx.restore();
+      ctx.beginPath();
+      ctx.ellipse(0, 0, rad, rad * 0.84, 0, 0, TAU);
+      ctx.strokeStyle = withAlpha(col.deep, 0.95);
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(-rad * 0.36, -rad * 0.4, rad * 0.26, rad * 0.15, -0.5, 0, TAU);
+      ctx.fillStyle = 'rgba(255,255,255,0.42)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(0, -rad * 0.82);
+      ctx.lineTo(1.5, -rad * 1.28);
+      ctx.strokeStyle = '#6B5A2E';
+      ctx.lineWidth = 3.2;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  /* ---------- bulb: nodding bells, glow kept in check ---------- */
+  if (sp.form === 'bulb') {
+    const H = 44;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(sway * 18, -H * 0.6, sway * 26, -H);
+    ctx.strokeStyle = '#3E6B54';
+    ctx.lineWidth = stemW;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    const nl = 3 + Math.round(p.H * 0.5);
+    for (let i = 0; i < nl; i++) {
+      const f = i / Math.max(nl - 1, 1);
+      const side = i % 2 ? 1 : -1;
+      drawLeaf(ctx, sway * 18 * f, -8 - f * 28, 12 + p.H * 1.4, 5.5, 0.42, side, i % 2 ? mid : dark, 0.7);
+    }
+    const nightF = typeof nightAmount === 'function' ? nightAmount() : 0;
+    const glowA = (0.06 + p.E * 0.032) * (1 + nightF * 2.4);
+    for (let i = 0; i < Math.max(1, visN); i++) {
+      const a = (i / Math.max(visN, 1)) * TAU + sC * 6;
+      const bx = Math.cos(a) * (i ? 12 : 0) + sway * 22;
+      const by = -H + Math.sin(a) * 6 - (i ? 4 : 0);
+      const rad = (7 + p.Y * 0.55) * boost;
+      ctx.save();
+      ctx.translate(bx, by);
+      const gr = rad * (1.7 + nightF * 1.1);
+      const gl = ctx.createRadialGradient(0, 0, rad * 0.4, 0, 0, gr);
+      gl.addColorStop(0, withAlpha(col.hex, glowA));
+      gl.addColorStop(1, withAlpha(col.hex, 0));
+      ctx.fillStyle = gl;
+      ctx.beginPath();
+      ctx.arc(0, 0, gr, 0, TAU);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(0, -rad * 0.9);
+      ctx.lineTo(0, -rad * 1.7);
+      ctx.strokeStyle = '#3E6B54';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // five nodding petals, dark-edged so ivory keeps its shape
+      for (let k = 0; k < 5; k++) {
+        ctx.save();
+        ctx.rotate((k / 5) * TAU + 0.3);
+        ctx.scale(1, 0.78 + nightF * 0.34);
+        ctx.beginPath();
+        ctx.moveTo(0, -rad * 0.16);
+        ctx.bezierCurveTo(rad * 0.62, -rad * 0.5, rad * 0.42, -rad * 1.16, 0, -rad * 1.3);
+        ctx.bezierCurveTo(-rad * 0.42, -rad * 1.16, -rad * 0.62, -rad * 0.5, 0, -rad * 0.16);
+        ctx.closePath();
+        const pg = ctx.createLinearGradient(0, -rad * 0.2, 0, -rad * 1.3);
+        pg.addColorStop(0, col.deep);
+        pg.addColorStop(1, shade(col.hex, 0.26));
+        ctx.fillStyle = pg;
+        ctx.fill();
+        ctx.strokeStyle = withAlpha(col.deep, 0.9);
+        ctx.lineWidth = 0.9;
+        ctx.stroke();
+        ctx.restore();
+      }
+      ctx.beginPath();
+      ctx.arc(0, 0, rad * 0.3, 0, TAU);
+      ctx.fillStyle = withAlpha('#FFF4D2', 0.95);
+      ctx.fill();
+      ctx.strokeStyle = withAlpha(col.deep, 0.7);
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  /* essence shimmer: the gene you can see from across the garden */
+  if (p.E >= 4) {
+    const motes = (p.E - 3) * 3;
+    for (let i = 0; i < motes; i++) {
+      const ph = t * (0.45 + i * 0.11) + i * 2.1 + sC * 8;
+      const mx = Math.cos(ph) * (14 + (i % 3) * 7);
+      const my = -14 - ((ph * 8) % 42);
+      const al = (0.5 + 0.5 * Math.sin(ph * 2)) * 0.5;
+      ctx.beginPath();
+      ctx.arc(mx, my, 1.4, 0, TAU);
+      ctx.fillStyle = withAlpha(p.color === 'ivory' ? '#FFF6DC' : C.brassLite, al);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+
+  if (ripe && !opts.noBadge) {
+    const bob = Math.sin(t * 2.2 + sA * 6) * 2.5;
+    const lift = (sp.form === 'stalk' ? 82 : sp.form === 'gourd' ? 36 : sp.form === 'bulb' ? 62 : 58) * scale;
+    ctx.save();
+    ctx.translate(x, y - lift + bob);
+    ctx.beginPath();
+    ctx.moveTo(0, 8);
+    ctx.lineTo(-5, 2);
+    ctx.lineTo(5, 2);
+    ctx.closePath();
+    ctx.fillStyle = C.brassLite;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, -6, 9, 0, TAU);
+    ctx.fillStyle = C.brassLite;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(60,40,10,0.45)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#3A2A0C';
+    ctx.font = '700 11px Karla, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✿', 0, -6);
+    ctx.restore();
+  }
+}
+
+function drawSprout(ctx, x, y, t, seed) {
+  const R = mulberry(hashStr('sp' + seed));
+  const s = R();
+  ctx.save(); ctx.translate(x, y);
+  ctx.beginPath(); ctx.ellipse(0, 0, 9, 3.5, 0, 0, TAU);
+  ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.fill();
+  const sw = Math.sin(t * 1.6 + s * 8) * 0.1;
+  ctx.rotate(sw);
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -10);
+  ctx.strokeStyle = '#5F8C46'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.stroke();
+  for (const d of [-1, 1]) {
+    ctx.beginPath(); ctx.moveTo(0, -9);
+    ctx.quadraticCurveTo(d * 6, -14, d * 9, -8);
+    ctx.quadraticCurveTo(d * 5, -8, 0, -9);
+    ctx.fillStyle = d < 0 ? '#7FB069' : '#5E9450'; ctx.fill();
+  }
+  ctx.restore();
+}
+
+/* ---------------- structures ---------------- */
+function drawConservatory(ctx, gx, gy, t) {
+  const p = iso(gx, gy);
+  const W = 168, H = 96, ROOF = 62;
+  ctx.save(); ctx.translate(p.x, p.y);
+  ctx.beginPath(); ctx.ellipse(0, 8, W * 0.62, 30, 0, 0, TAU);
+  ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fill();
+  // stone base
+  ctx.beginPath();
+  ctx.moveTo(-W / 2, -H + 30); ctx.lineTo(0, -H + 4); ctx.lineTo(W / 2, -H + 30);
+  ctx.lineTo(W / 2, 6); ctx.lineTo(0, 32); ctx.lineTo(-W / 2, 6); ctx.closePath();
+  ctx.fillStyle = '#6C6152'; ctx.fill();
+  // glass walls
+  const left = ctx.createLinearGradient(-W / 2, -H, 0, 20);
+  left.addColorStop(0, withAlpha('#BFE0D2', 0.55)); left.addColorStop(1, withAlpha('#4E7166', 0.75));
+  ctx.beginPath();
+  ctx.moveTo(-W / 2, -H + 30); ctx.lineTo(0, -H + 4); ctx.lineTo(0, 20); ctx.lineTo(-W / 2, -6); ctx.closePath();
+  ctx.fillStyle = left; ctx.fill();
+  const right = ctx.createLinearGradient(0, -H, W / 2, 20);
+  right.addColorStop(0, withAlpha('#9FCBBC', 0.5)); right.addColorStop(1, withAlpha('#3E5C53', 0.8));
+  ctx.beginPath();
+  ctx.moveTo(W / 2, -H + 30); ctx.lineTo(0, -H + 4); ctx.lineTo(0, 20); ctx.lineTo(W / 2, -6); ctx.closePath();
+  ctx.fillStyle = right; ctx.fill();
+  // brass mullions
+  ctx.strokeStyle = withAlpha(C.brass, 0.85); ctx.lineWidth = 2;
+  for (let i = 1; i < 5; i++) {
+    const f = i / 5;
+    ctx.beginPath();
+    ctx.moveTo(-W / 2 * (1 - f), lerp(-H + 30, -H + 4, f)); ctx.lineTo(-W / 2 * (1 - f), lerp(-6, 20, f)); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(W / 2 * (1 - f), lerp(-H + 30, -H + 4, f)); ctx.lineTo(W / 2 * (1 - f), lerp(-6, 20, f)); ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.moveTo(-W / 2, -H + 30); ctx.lineTo(0, -H + 4); ctx.lineTo(W / 2, -H + 30);
+  ctx.lineTo(W / 2, -6); ctx.lineTo(0, 20); ctx.lineTo(-W / 2, -6); ctx.closePath();
+  ctx.strokeStyle = withAlpha(C.brass, 0.95); ctx.lineWidth = 2.6; ctx.stroke();
+  // domed roof
+  ctx.beginPath();
+  ctx.moveTo(-W / 2, -H + 30);
+  ctx.quadraticCurveTo(0, -H - ROOF, W / 2, -H + 30);
+  ctx.lineTo(0, -H + 4); ctx.closePath();
+  const rg = ctx.createLinearGradient(0, -H - ROOF, 0, -H + 30);
+  rg.addColorStop(0, withAlpha('#DFF1E8', 0.72)); rg.addColorStop(1, withAlpha('#6E8B7B', 0.68));
+  ctx.fillStyle = rg; ctx.fill();
+  ctx.strokeStyle = withAlpha(C.brass, 0.9); ctx.lineWidth = 2; ctx.stroke();
+  for (let i = 1; i < 6; i++) {
+    const f = i / 6, sx = lerp(-W / 2, W / 2, f);
+    ctx.beginPath(); ctx.moveTo(sx, -H + 30 - Math.sin(f * Math.PI) * 6);
+    ctx.quadraticCurveTo(sx * 0.5, -H - ROOF * 0.7, 0, -H + 4);
+    ctx.strokeStyle = withAlpha(C.brass, 0.4); ctx.lineWidth = 1.2; ctx.stroke();
+  }
+  // finial
+  ctx.beginPath(); ctx.arc(0, -H - ROOF + 8, 5, 0, TAU);
+  ctx.fillStyle = C.brassLite; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(0, -H - ROOF + 4); ctx.lineTo(0, -H - ROOF - 12);
+  ctx.strokeStyle = C.brassLite; ctx.lineWidth = 2.4; ctx.stroke();
+  // warm interior glow at night
+  const night = 0.12 + nightAmount() * 0.85;
+  ctx.beginPath();
+  ctx.moveTo(-W / 2, -H + 30); ctx.lineTo(0, -H + 4); ctx.lineTo(W / 2, -H + 30);
+  ctx.lineTo(W / 2, -6); ctx.lineTo(0, 20); ctx.lineTo(-W / 2, -6); ctx.closePath();
+  ctx.fillStyle = withAlpha('#FFD98A', 0.08 + night * 0.34 + Math.sin(t * 0.8) * 0.012);
+  ctx.fill();
+  if (night > 0.2) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    const spill = ctx.createRadialGradient(0, 10, 10, 0, 10, 210);
+    spill.addColorStop(0, withAlpha('#FFC86A', 0.30 * night));
+    spill.addColorStop(1, withAlpha('#FFC86A', 0));
+    ctx.fillStyle = spill;
+    ctx.beginPath();
+    ctx.ellipse(0, 16, 210, 92, 0, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+function drawBench(ctx, gx, gy, t, active) {
+  const p = iso(gx, gy);
+  ctx.save(); ctx.translate(p.x, p.y);
+  ctx.beginPath(); ctx.ellipse(0, 6, 52, 20, 0, 0, TAU); ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.fill();
+  // table
+  ctx.beginPath();
+  ctx.moveTo(-52, -14); ctx.lineTo(0, -34); ctx.lineTo(52, -14); ctx.lineTo(0, 6); ctx.closePath();
+  ctx.fillStyle = '#7A5B38'; ctx.fill();
+  ctx.strokeStyle = '#4E3822'; ctx.lineWidth = 1.6; ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-52, -14); ctx.lineTo(-52, -6); ctx.lineTo(0, 14); ctx.lineTo(0, 6); ctx.closePath();
+  ctx.fillStyle = '#5C4128'; ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(52, -14); ctx.lineTo(52, -6); ctx.lineTo(0, 14); ctx.lineTo(0, 6); ctx.closePath();
+  ctx.fillStyle = '#4A3320'; ctx.fill();
+  // legs
+  ctx.strokeStyle = '#3E2C1B'; ctx.lineWidth = 4;
+  for (const d of [[-40, -4], [40, -4], [0, 16]]) {
+    ctx.beginPath(); ctx.moveTo(d[0], d[1]); ctx.lineTo(d[0], d[1] + 16); ctx.stroke();
+  }
+  // brass crossing apparatus
+  ctx.save(); ctx.translate(0, -26);
+  ctx.strokeStyle = C.brass; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-16, 4); ctx.lineTo(-16, -16); ctx.lineTo(16, -16); ctx.lineTo(16, 4); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, -16); ctx.lineTo(0, -26); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, -30, 4.5, 0, TAU); ctx.fillStyle = C.brassLite; ctx.fill();
+  for (const d of [-16, 16]) {
+    ctx.beginPath(); ctx.ellipse(d, 4, 7, 4, 0, 0, TAU);
+    ctx.fillStyle = active ? withAlpha(C.brassLite, 0.9) : '#8E7A4A'; ctx.fill();
+  }
+  if (active) {
+    const a = 0.4 + 0.4 * Math.sin(t * 3);
+    ctx.beginPath(); ctx.arc(0, -22, 12, 0, TAU);
+    ctx.fillStyle = withAlpha(C.brassLite, a * 0.28); ctx.fill();
+  }
+  ctx.restore();
+  ctx.restore();
+}
+
+function drawMarketCart(ctx, gx, gy, t) {
+  const p = iso(gx, gy);
+  ctx.save(); ctx.translate(p.x, p.y);
+  ctx.beginPath(); ctx.ellipse(0, 6, 48, 18, 0, 0, TAU); ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.fill();
+  // body
+  ctx.beginPath();
+  ctx.moveTo(-44, -18); ctx.lineTo(0, -36); ctx.lineTo(44, -18); ctx.lineTo(0, 0); ctx.closePath();
+  ctx.fillStyle = '#8A6A42'; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-44, -18); ctx.lineTo(-44, -4); ctx.lineTo(0, 14); ctx.lineTo(0, 0); ctx.closePath();
+  ctx.fillStyle = '#6B5033'; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(44, -18); ctx.lineTo(44, -4); ctx.lineTo(0, 14); ctx.lineTo(0, 0); ctx.closePath();
+  ctx.fillStyle = '#57402A'; ctx.fill();
+  // striped awning
+  ctx.save(); ctx.translate(0, -56);
+  for (let i = 0; i < 7; i++) {
+    ctx.beginPath();
+    const x0 = -50 + i * 14.3;
+    ctx.moveTo(x0, 0); ctx.lineTo(x0 + 14.3, 0);
+    ctx.lineTo(x0 + 14.3, 10 + Math.sin(i * 1.4 + t) * 1.5); ctx.lineTo(x0, 10 + Math.sin(i * 1.4 + t + 0.4) * 1.5);
+    ctx.closePath();
+    ctx.fillStyle = i % 2 ? '#E8DCC0' : '#7A2E3B'; ctx.fill();
+  }
+  ctx.strokeStyle = withAlpha('#3A2A18', 0.5); ctx.lineWidth = 1;
+  ctx.strokeRect(-50, 0, 100, 10);
+  ctx.restore();
+  ctx.strokeStyle = '#5C4128'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(-44, -56); ctx.lineTo(-44, -18); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(44, -56); ctx.lineTo(44, -18); ctx.stroke();
+  // crates of produce
+  for (let i = 0; i < 3; i++) {
+    const cx = -22 + i * 22, cy = -26 - (i % 2) * 4;
+    roundRect(ctx, cx - 9, cy - 8, 18, 12, 2);
+    ctx.fillStyle = '#9A7A4E'; ctx.fill();
+    ctx.strokeStyle = '#5C4128'; ctx.lineWidth = 1; ctx.stroke();
+    for (let k = 0; k < 3; k++) {
+      ctx.beginPath(); ctx.arc(cx - 5 + k * 5, cy - 9, 3, 0, TAU);
+      ctx.fillStyle = [C.wine, '#D99A2B', '#4E9E7A'][(i + k) % 3]; ctx.fill();
+    }
+  }
+  // wheel
+  ctx.beginPath(); ctx.arc(-30, 6, 11, 0, TAU);
+  ctx.strokeStyle = '#4E3822'; ctx.lineWidth = 3.4; ctx.stroke();
+  ctx.beginPath(); ctx.arc(-30, 6, 2.5, 0, TAU); ctx.fillStyle = '#4E3822'; ctx.fill();
+  ctx.restore();
+}
+
+function drawCommissionPost(ctx, gx, gy, t, pending) {
+  const p = iso(gx, gy);
+  ctx.save(); ctx.translate(p.x, p.y);
+  ctx.beginPath(); ctx.ellipse(0, 4, 30, 12, 0, 0, TAU); ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.fill();
+  ctx.strokeStyle = '#5C4128'; ctx.lineWidth = 6; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-16, 2); ctx.lineTo(-16, -34); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(16, 2); ctx.lineTo(16, -34); ctx.stroke();
+  roundRect(ctx, -30, -66, 60, 36, 3);
+  ctx.fillStyle = '#6B5033'; ctx.fill();
+  ctx.strokeStyle = '#3E2C1B'; ctx.lineWidth = 2; ctx.stroke();
+  // pinned notes
+  for (let i = 0; i < Math.min(pending, 3); i++) {
+    ctx.save();
+    ctx.translate(-18 + i * 18, -50 + (i % 2) * 4);
+    ctx.rotate((i - 1) * 0.09 + Math.sin(t * 0.6 + i) * 0.02);
+    roundRect(ctx, -8, -11, 16, 21, 1.5);
+    ctx.fillStyle = C.parchment; ctx.fill();
+    ctx.strokeStyle = 'rgba(70,55,30,0.35)'; ctx.lineWidth = 0.8; ctx.stroke();
+    ctx.strokeStyle = 'rgba(70,55,30,0.35)'; ctx.lineWidth = 0.9;
+    for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.moveTo(-5, -6 + k * 4); ctx.lineTo(5, -6 + k * 4); ctx.stroke(); }
+    ctx.beginPath(); ctx.arc(0, -12, 2, 0, TAU); ctx.fillStyle = C.wine; ctx.fill();
+    ctx.restore();
+  }
+  // small roof
+  ctx.beginPath(); ctx.moveTo(-36, -66); ctx.lineTo(0, -78); ctx.lineTo(36, -66); ctx.closePath();
+  ctx.fillStyle = '#4E3822'; ctx.fill();
+  if (pending > 0) {
+    const a = 0.55 + 0.45 * Math.sin(t * 2.6);
+    ctx.beginPath(); ctx.arc(30, -70, 7, 0, TAU);
+    ctx.fillStyle = withAlpha(C.wine, a); ctx.fill();
+    ctx.fillStyle = '#F4EAD6'; ctx.font = '700 10px Karla, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(String(pending), 30, -70);
+  }
+  ctx.restore();
+}
+
+function drawHedge(ctx, gx, gy, seed) {
+  const p = iso(gx, gy);
+  const R = mulberry(hashStr('h' + gx + gy + seed));
+  ctx.save(); ctx.translate(p.x, p.y);
+  ctx.beginPath(); ctx.ellipse(0, 4, 44, 16, 0, 0, TAU); ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fill();
+  // sides
+  ctx.beginPath();
+  ctx.moveTo(-52, -4); ctx.lineTo(0, 22); ctx.lineTo(0, 8); ctx.lineTo(-52, -18); ctx.closePath();
+  ctx.fillStyle = '#27502D'; ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(52, -4); ctx.lineTo(0, 22); ctx.lineTo(0, 8); ctx.lineTo(52, -18); ctx.closePath();
+  ctx.fillStyle = '#1F4526'; ctx.fill();
+  // clipped top face, catching the light
+  ctx.beginPath();
+  ctx.moveTo(-52, -18); ctx.lineTo(0, -44); ctx.lineTo(52, -18); ctx.lineTo(0, 8); ctx.closePath();
+  ctx.fillStyle = '#456F41'; ctx.fill();
+  for (let i = 0; i < 14; i++) {
+    const a = R() * TAU, d = R();
+    const bx = Math.cos(a) * 42 * d, by = Math.sin(a) * 19 * d - 17;
+    ctx.beginPath(); ctx.ellipse(bx, by, 7 + R() * 6, 5 + R() * 4, R() * 1.2, 0, TAU);
+    ctx.fillStyle = ['#4E7C46', '#568349', '#3E6B44'][(R() * 3) | 0]; ctx.fill();
+  }
+  ctx.beginPath();
+  ctx.moveTo(-52, -18); ctx.lineTo(0, -44); ctx.lineTo(52, -18); ctx.lineTo(0, 8); ctx.closePath();
+  ctx.strokeStyle = 'rgba(20,40,22,0.5)'; ctx.lineWidth = 1.2; ctx.stroke();
+  ctx.restore();
+}
+
+function drawTree(ctx, gx, gy, t, seed) {
+  const p = iso(gx, gy);
+  const R = mulberry(hashStr('t' + seed + gx + gy));
+  const s = 0.56 + R() * 0.46;
+  const sway = Math.sin(t * 0.55 + R() * 8) * 0.022;
+  ctx.save(); ctx.translate(p.x, p.y); ctx.scale(s, s);
+  ctx.beginPath(); ctx.ellipse(0, 4, 30, 12, 0, 0, TAU); ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-5, 2);
+  ctx.quadraticCurveTo(-3, -26, -9, -46); ctx.lineTo(9, -46);
+  ctx.quadraticCurveTo(3, -26, 5, 2); ctx.closePath();
+  ctx.fillStyle = '#5A4429'; ctx.fill();
+  ctx.strokeStyle = '#3E2E1A'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.save(); ctx.translate(0, -46); ctx.rotate(sway);
+  const nb = 4 + ((R() * 3) | 0);
+  const tall = 0.75 + R() * 0.7;
+  for (let i = 0; i < nb; i++) {
+    const a = (i / nb) * TAU + R() * 1.4;
+    const rr = 15 + R() * 17;
+    const bx = Math.cos(a) * (9 + R() * 15);
+    const by = -18 * tall + Math.sin(a) * (10 + R() * 12) * tall;
+    ctx.beginPath(); ctx.ellipse(bx, by, rr, rr * (0.72 + R() * 0.24), R() * 0.6, 0, TAU);
+    ctx.fillStyle = ['#27502D', '#2F5B34', '#3E6B44', '#37613C', '#456F41'][i % 5]; ctx.fill();
+  }
+  ctx.beginPath(); ctx.ellipse(-9, -30 * tall, 13 + R() * 6, 9 + R() * 5, -0.3, 0, TAU);
+  ctx.fillStyle = withAlpha('#7FB069', 0.28); ctx.fill();
+  ctx.restore();
+  ctx.restore();
+}
+
+/* ---------------- ambience ---------------- */
+const AMB = { flutter: [], motes: [] };
+function initAmbience() {
+  AMB.flutter.length = 0; AMB.motes.length = 0;
+  for (let i = 0; i < 9; i++) AMB.flutter.push({ x: rnd(-400, 500), y: rnd(-120, 340), a: rnd(TAU), sp: rnd(14, 30), ph: rnd(TAU), kind: chance(0.5) ? 'bee' : 'fly', hue: pick(['#E8DCC0', '#D99A2B', '#7D5BA6', '#F0E6CE']) });
+  for (let i = 0; i < 34; i++) AMB.motes.push({ x: rnd(-620, 720), y: rnd(-260, 420), s: rnd(0.6, 2.1), sp: rnd(3, 11), ph: rnd(TAU) });
+}
+function drawAmbience(ctx, t, dt) {
+  for (const m of AMB.motes) {
+    m.y -= m.sp * dt; m.x += Math.sin(t * 0.5 + m.ph) * 6 * dt;
+    if (m.y < -300) { m.y = 440; m.x = rnd(-620, 720); }
+    ctx.beginPath(); ctx.arc(m.x, m.y, m.s, 0, TAU);
+    ctx.fillStyle = withAlpha('#F4E9C8', 0.14 + 0.14 * Math.sin(t + m.ph));
+    ctx.fill();
+  }
+  for (const f of AMB.flutter) {
+    f.a += Math.sin(t * 1.4 + f.ph) * 0.9 * dt;
+    f.x += Math.cos(f.a) * f.sp * dt; f.y += Math.sin(f.a) * f.sp * 0.5 * dt;
+    if (f.x < -560 || f.x > 660) f.a = Math.PI - f.a;
+    if (f.y < -240 || f.y > 400) f.a = -f.a;
+    const w = Math.abs(Math.sin(t * 16 + f.ph));
+    ctx.save(); ctx.translate(f.x, f.y);
+    if (f.kind === 'bee') {
+      ctx.beginPath(); ctx.ellipse(0, 0, 3.2, 2.2, f.a, 0, TAU);
+      ctx.fillStyle = '#D9A62B'; ctx.fill();
+      ctx.beginPath(); ctx.ellipse(-1, 0, 1.2, 2.2, f.a, 0, TAU);
+      ctx.fillStyle = '#2A2118'; ctx.fill();
+      ctx.beginPath(); ctx.ellipse(0, -2, 3.4 * w + 1, 1.4, 0, 0, TAU);
+      ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
+    } else {
+      ctx.rotate(f.a * 0.2);
+      for (const d of [-1, 1]) {
+        ctx.beginPath();
+        ctx.ellipse(d * (2 + w * 2.4), -1, 3.6, 2.4 * (0.35 + w * 0.65), d * 0.5, 0, TAU);
+        ctx.fillStyle = withAlpha(f.hue, 0.9); ctx.fill();
+      }
+      ctx.beginPath(); ctx.ellipse(0, 0, 1, 3, 0, 0, TAU);
+      ctx.fillStyle = '#3A2C1A'; ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+/* day-night tint over the whole world */
+function dayTint(dayT) {
+  const d = dayT % 1;
+  if (d < 0.08) return { c: 'rgba(255,170,104,0.28)', v: 0.34 };   // dawn
+  if (d < 0.42) return { c: 'rgba(255,240,196,0.05)', v: 0.05 };   // day
+  if (d < 0.55) return { c: 'rgba(255,142,66,0.26)', v: 0.20 };    // golden
+  if (d < 0.66) return { c: 'rgba(96,74,156,0.38)', v: 0.42 };     // dusk
+  return { c: 'rgba(26,44,108,0.52)', v: 0.60 };                    // night
+}
+/* 0 at midday, 1 deep in the night — used for lamps, glow and bloom */
+function nightAmount() {
+  const d = G.dayT % 1;
+  if (d < 0.08) return 1 - d / 0.08 * 0.65;
+  if (d < 0.45) return 0;
+  if (d < 0.58) return (d - 0.45) / 0.13 * 0.5;
+  if (d < 0.70) return 0.5 + (d - 0.58) / 0.12 * 0.5;
+  return 1;
+}
+
+
+/* ============================================================
+   HEIRLOOM — Part C : world layout, camera, renderer, input
+   ============================================================ */
+
+const WORLD_SEED = 20260818;
+let cv, ctx, DPR = 1, VW = 0, VH = 0;
+
+/* plot grid: three beds deep, five across */
+const PLOT_POS = [];
+for (let row = 0; row < 3; row++) for (let col = 0; col < 5; col++) PLOT_POS.push({ gx: 3.15 + col * 1.24, gy: 4.35 + row * 1.24 });
+
+const STRUCT = {
+  conservatory: { gx: 2.5, gy: 2.6 },
+  bench:        { gx: 8.5, gy: 3.4 },
+  cart:         { gx: 2.2, gy: 7.6 },
+  post:         { gx: 8.4, gy: 7.9 },
+};
+
+/* The estate is a walled garden: a hedge ring closes the composition, and a
+   dense treeline beyond it means the ground never reads as a floating island. */
+const EST = { x0: 1.0, x1: 9.9, y0: 1.5, y1: 9.4 };
+const DECOR = [];
+(function buildDecor() {
+  const R = mulberry(WORLD_SEED);
+  const gate = (gx, gy) =>
+    (Math.abs(gx - 2.2) < 0.8 && (gy < EST.y0 + 0.4 || gy > EST.y1 - 0.4)) ||
+    (Math.abs(gy - 3.4) < 0.8 && (gx < EST.x0 + 0.4 || gx > EST.x1 - 0.4));
+  for (let g = EST.x0; g <= EST.x1 + 0.01; g += 0.82) {
+    for (const [gx, gy] of [[g, EST.y0], [g, EST.y1], [EST.x0, g], [EST.x1, g]]) {
+      if (gate(gx, gy)) continue;
+      DECOR.push({ type: 'hedge', gx, gy, seed: (R() * 1e6) | 0 });
+    }
+  }
+  /* A single loose ring of trees frames the garden. Everything further out is
+     handled by darkening the ground, which is cheaper and reads as canopy. */
+  const pad = 3.4;
+  for (let g = EST.x0 - pad; g <= EST.x1 + pad + 0.01; g += 3.4) {
+    for (const [gx, gy] of [[g, EST.y0 - pad], [g, EST.y1 + pad], [EST.x0 - pad, g], [EST.x1 + pad, g]]) {
+      DECOR.push({ type: 'tree', gx: gx + (R() - 0.5) * 1.1, gy: gy + (R() - 0.5) * 1.1, seed: (R() * 1e6) | 0 });
+    }
+  }
+  for (let i = 0; i < 9; i++) {
+    const side = (R() * 4) | 0;
+    const along = R() * (EST.x1 - EST.x0 + 9) + EST.x0 - 4.5;
+    const out = pad + 2.2 + R() * 5.5;
+    const spot = [[along, EST.y0 - out], [along, EST.y1 + out], [EST.x0 - out, along], [EST.x1 + out, along]][side];
+    DECOR.push({ type: 'tree', gx: spot[0], gy: spot[1], seed: (R() * 1e6) | 0 });
+  }
+})();
+
+const GROUND = [];
+(function buildGround() {
+  for (let gx = -12; gx <= 22; gx++) {
+    for (let gy = -12; gy <= 22; gy++) {
+      const onPath =
+        (Math.abs(gy - 3.4) < 0.55 && gx >= 0 && gx <= 11) ||
+        (Math.abs(gx - 2.2) < 0.55 && gy >= 0 && gy <= 11) ||
+        (Math.abs(gy - 8.1) < 0.55 && gx >= 2 && gx <= 9) ||
+        (Math.abs(gx - 8.4) < 0.55 && gy >= 3 && gy <= 9);
+      const outX = Math.max(0, EST.x0 - gx, gx - EST.x1);
+      const outY = Math.max(0, EST.y0 - gy, gy - EST.y1);
+      const out = Math.hypot(outX, outY);
+      GROUND.push({ gx, gy, path: onPath && out < 0.9, dark: clamp(out / 3.2, 0, 1) });
+    }
+  }
+})();
+
+/* ---------------- plots ---------------- */
+function initPlots() {
+  G.plots = PLOT_POS.map((p, i) => ({
+    i, gx: p.gx, gy: p.gy,
+    strain: null, plantedAt: 0, growSec: 0,
+    state: 'empty', blighted: false,
+  }));
+}
+
+function plotUnlocked(i) { return i < plotCapacity(); }
+function plotProgress(pl) {
+  if (pl.state === 'empty') return 0;
+  const el = (now() - pl.plantedAt) / 1000;
+  return clamp(el / pl.growSec, 0, 1);
+}
+
+/* ---------------- camera ---------------- */
+function screenToWorld(sx, sy) {
+  const c = G.camera;
+  return { x: (sx - VW / 2) / c.z + c.x, y: (sy - VH / 2) / c.z + c.y };
+}
+function worldToGrid(wx, wy) {
+  const a = wx / (TW / 2), b = wy / (TH / 2);
+  return { gx: (a + b) / 2, gy: (b - a) / 2 };
+}
+function centerOn(gx, gy, z) {
+  const p = iso(gx, gy);
+  G.camera.tx = p.x; G.camera.ty = p.y;
+  if (z) G.camera.tz = z;
+}
+
+function pickPlot(sx, sy) {
+  const w = screenToWorld(sx, sy);
+  let best = null, bestD = 1e9;
+  for (const pl of G.plots) {
+    const p = iso(pl.gx, pl.gy);
+    const dx = (w.x - p.x) / (TW * 0.46), dy = (w.y - p.y) / (TH * 0.46);
+    const d = dx * dx + dy * dy;
+    if (d < 1 && d < bestD) { bestD = d; best = pl; }
+  }
+  return best;
+}
+function pickStructure(sx, sy) {
+  const w = screenToWorld(sx, sy);
+  const hits = [
+    { k: 'bench', p: iso(STRUCT.bench.gx, STRUCT.bench.gy), rx: 60, ry: 46, oy: -20 },
+    { k: 'cart', p: iso(STRUCT.cart.gx, STRUCT.cart.gy), rx: 56, ry: 50, oy: -26 },
+    { k: 'post', p: iso(STRUCT.post.gx, STRUCT.post.gy), rx: 42, ry: 46, oy: -34 },
+    { k: 'conservatory', p: iso(STRUCT.conservatory.gx, STRUCT.conservatory.gy), rx: 92, ry: 80, oy: -50 },
+  ];
+  for (const h of hits) {
+    const dx = (w.x - h.p.x) / h.rx, dy = (w.y - h.p.y - h.oy) / h.ry;
+    if (dx * dx + dy * dy < 1) return h.k;
+  }
+  return null;
+}
+
+/* ---------------- canvas ---------------- */
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const r = cv.getBoundingClientRect();
+  VW = r.width; VH = r.height;
+  cv.width = Math.round(VW * DPR); cv.height = Math.round(VH * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+
+/* ---------------- render ---------------- */
+function render(t, dt) {
+  const c = G.camera;
+  c.x = lerp(c.x, c.tx, 1 - Math.pow(0.001, dt));
+  c.y = lerp(c.y, c.ty, 1 - Math.pow(0.001, dt));
+  c.z = lerp(c.z, c.tz, 1 - Math.pow(0.002, dt));
+
+  // deep-woodland backdrop; the estate is always inland, never on an island edge
+  const tint = dayTint(G.dayT);
+  const nightF = clamp((G.dayT - 0.55) / 0.2, 0, 1);
+  const bg = ctx.createLinearGradient(0, 0, 0, VH);
+  bg.addColorStop(0, nightF > 0.4 ? '#101A16' : '#1E3220');
+  bg.addColorStop(0.55, nightF > 0.4 ? '#14201A' : '#26402A');
+  bg.addColorStop(1, nightF > 0.4 ? '#0C1410' : '#1B2C1D');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, VW, VH);
+
+  ctx.save();
+  ctx.translate(VW / 2, VH / 2);
+  ctx.scale(c.z, c.z);
+  ctx.translate(-c.x, -c.y);
+
+  // ground
+  for (const g of GROUND) {
+    const p = iso(g.gx, g.gy);
+    const sx = (p.x - c.x) * c.z + VW / 2, sy = (p.y - c.y) * c.z + VH / 2;
+    if (sx < -TW * c.z || sx > VW + TW * c.z || sy < -TH * 3 * c.z || sy > VH + TH * 4 * c.z) continue;
+    if (g.path) drawPathTile(ctx, g.gx, g.gy, WORLD_SEED);
+    else drawGrassTile(ctx, g.gx, g.gy, WORLD_SEED, g.dark);
+  }
+
+  // beds sit flat, drawn before anything standing
+  for (const pl of G.plots) {
+    const unlocked = plotUnlocked(pl.i);
+    drawBed(ctx, pl.gx, pl.gy, pl.state !== 'empty', G.hoverPlot === pl.i && unlocked, !unlocked);
+  }
+
+  // y-sorted standing entities
+  const ents = [];
+  ents.push({ d: STRUCT.conservatory.gx + STRUCT.conservatory.gy, fn: () => drawConservatory(ctx, STRUCT.conservatory.gx, STRUCT.conservatory.gy, t) });
+  ents.push({ d: STRUCT.bench.gx + STRUCT.bench.gy, fn: () => drawBench(ctx, STRUCT.bench.gx, STRUCT.bench.gy, t, G.selection && G.selection.length === 2) });
+  ents.push({ d: STRUCT.cart.gx + STRUCT.cart.gy, fn: () => drawMarketCart(ctx, STRUCT.cart.gx, STRUCT.cart.gy, t) });
+  ents.push({ d: STRUCT.post.gx + STRUCT.post.gy, fn: () => drawCommissionPost(ctx, STRUCT.post.gx, STRUCT.post.gy, t, G.commissions.length) });
+  for (const d of DECOR) {
+    ents.push({
+      d: d.gx + d.gy,
+      fn: d.type === 'tree'
+        ? () => drawTree(ctx, d.gx, d.gy, t, d.seed)
+        : () => drawHedge(ctx, d.gx, d.gy, d.seed),
+    });
+  }
+  for (const pl of G.plots) {
+    if (pl.state === 'empty' || !plotUnlocked(pl.i)) continue;
+    const prog = plotProgress(pl);
+    const p = iso(pl.gx, pl.gy);
+    ents.push({
+      d: pl.gx + pl.gy + 0.01,
+      fn: () => {
+        if (prog < 0.16) drawSprout(ctx, p.x, p.y, t, pl.strain.id);
+        else drawPlant(ctx, p.x, p.y, pl.strain, prog < 1 ? 0.2 + prog * 0.8 : 1, t);
+        if (pl.blighted) {
+          ctx.save(); ctx.translate(p.x, p.y - 34);
+          ctx.beginPath(); ctx.arc(0, 0, 9, 0, TAU);
+          ctx.fillStyle = withAlpha('#6B4B2A', 0.9); ctx.fill();
+          ctx.fillStyle = '#E8DCC0'; ctx.font = '700 11px Karla, sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('!', 0, 0); ctx.restore();
+        }
+      },
+    });
+  }
+  ents.sort((a, b) => a.d - b.d);
+  for (const e of ents) e.fn();
+
+  // growth rings on beds still ripening
+  for (const pl of G.plots) {
+    if (pl.state !== 'growing') continue;
+    const prog = plotProgress(pl);
+    const p = iso(pl.gx, pl.gy);
+    ctx.save();
+    ctx.translate(p.x, p.y + 18);
+    ctx.beginPath(); ctx.roundRect(-24, -4, 48, 7, 3.5);
+    ctx.fillStyle = 'rgba(10,8,4,0.55)'; ctx.fill();
+    ctx.beginPath(); ctx.roundRect(-23, -3, 46 * prog, 5, 2.5);
+    ctx.fillStyle = withAlpha(C.brassLite, 0.92); ctx.fill();
+    ctx.restore();
+  }
+
+  // tutorial pointer, drawn in world space so it tracks the bed under the camera
+  if (G.coachTarget) {
+    const p = iso(G.coachTarget.gx, G.coachTarget.gy);
+    const ph = (t * 0.8) % 1;
+    ctx.save();
+    diamond(ctx, p.x, p.y, TW * 0.9, TH * 0.9);
+    ctx.fillStyle = withAlpha(C.brassLite, 0.13 + 0.06 * Math.sin(t * 3));
+    ctx.fill();
+    for (let k = 0; k < 2; k++) {
+      const f = (ph + k * 0.5) % 1;
+      diamond(ctx, p.x, p.y, TW * (0.86 + f * 0.5), TH * (0.86 + f * 0.5));
+      ctx.strokeStyle = withAlpha(C.brassLite, (1 - f) * 0.9);
+      ctx.lineWidth = 3.2;
+      ctx.stroke();
+    }
+    const bob = Math.sin(t * 3) * 5;
+    ctx.translate(p.x, p.y - 74 + bob);
+    const glow = ctx.createRadialGradient(0, 6, 2, 0, 6, 30);
+    glow.addColorStop(0, withAlpha(C.brassLite, 0.45));
+    glow.addColorStop(1, withAlpha(C.brassLite, 0));
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(0, 6, 30, 0, TAU); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(0, 22); ctx.lineTo(-13, 0); ctx.lineTo(-5.5, 0);
+    ctx.lineTo(-5.5, -16); ctx.lineTo(5.5, -16); ctx.lineTo(5.5, 0);
+    ctx.lineTo(13, 0); ctx.closePath();
+    ctx.fillStyle = C.brassLite; ctx.fill();
+    ctx.strokeStyle = 'rgba(58,38,8,.55)'; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.restore();
+  }
+
+  drawAmbience(ctx, t, dt);
+
+  // world-space fx
+  for (const f of G.fx) {
+    if (f.space !== 'world') continue;
+    ctx.save(); ctx.globalAlpha = f.a;
+    if (f.kind === 'float') {
+      ctx.fillStyle = f.color; ctx.font = `700 ${f.size}px "IBM Plex Mono", monospace`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(f.text, f.x, f.y);
+    } else if (f.kind === 'spark') {
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.size, 0, TAU);
+      ctx.fillStyle = f.color; ctx.fill();
+    }
+    ctx.restore();
+  }
+  ctx.restore();
+
+  // atmosphere
+  ctx.fillStyle = tint.c; ctx.fillRect(0, 0, VW, VH);
+  const vg = ctx.createRadialGradient(VW / 2, VH * 0.44, Math.min(VW, VH) * 0.32, VW / 2, VH * 0.5, Math.max(VW, VH) * 0.82);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, `rgba(8,10,6,${0.34 + tint.v * 0.5})`);
+  ctx.fillStyle = vg; ctx.fillRect(0, 0, VW, VH);
+
+}
+
+/* ---------------- fx helpers ---------------- */
+function floatText(gx, gy, text, color, size = 15) {
+  const p = iso(gx, gy);
+  G.fx.push({ space: 'world', kind: 'float', x: p.x, y: p.y - 40, vy: -34, a: 1, text, color, size, life: 1.5 });
+}
+function burst(gx, gy, color, n = 14) {
+  const p = iso(gx, gy);
+  for (let i = 0; i < n; i++) {
+    const a = rnd(TAU), s = rnd(24, 90);
+    G.fx.push({
+      space: 'world', kind: 'spark', x: p.x, y: p.y - 18,
+      vx: Math.cos(a) * s, vy: Math.sin(a) * s * 0.5 - 40,
+      a: 1, size: rnd(1.4, 3.4), color, life: rnd(0.5, 1.1), grav: 120,
+    });
+  }
+}
+function stepFx(dt) {
+  for (let i = G.fx.length - 1; i >= 0; i--) {
+    const f = G.fx[i];
+    f.life -= dt;
+    if (f.life <= 0) { G.fx.splice(i, 1); continue; }
+    f.a = clamp(f.life * 1.4, 0, 1);
+    if (f.kind === 'float') { f.y += f.vy * dt; f.vy *= 0.94; }
+    else { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += (f.grav || 0) * dt; }
+  }
+}
+
+/* ---------------- audio ---------------- */
+const Audio_ = {
+  ctx: null, on: true,
+  init() { if (!this.ctx) { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { } } },
+  tone(freq, dur, type = 'sine', vol = 0.12, slide = 0) {
+    if (!this.on) return; this.init(); if (!this.ctx) return;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, this.ctx.currentTime);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), this.ctx.currentTime + dur);
+    g.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(vol, this.ctx.currentTime + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + dur);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime + dur + 0.02);
+  },
+  plant() { this.tone(220, 0.16, 'triangle', 0.09, 60); },
+  harvest() { this.tone(523, 0.13, 'sine', 0.1); setTimeout(() => this.tone(784, 0.16, 'sine', 0.08), 70); },
+  coin() { this.tone(880, 0.09, 'square', 0.05); setTimeout(() => this.tone(1180, 0.12, 'square', 0.04), 60); },
+  breed() { [392, 494, 587, 784].forEach((f, i) => setTimeout(() => this.tone(f, 0.34, 'sine', 0.075), i * 110)); },
+  rare() { [523, 659, 784, 1046, 1318].forEach((f, i) => setTimeout(() => this.tone(f, 0.5, 'triangle', 0.09), i * 95)); },
+  err() { this.tone(180, 0.16, 'sawtooth', 0.05, -60); },
+  ui() { this.tone(660, 0.05, 'sine', 0.045); },
+};
+
+/* ---------------- input ---------------- */
+function bindInput() {
+  let dragging = false, moved = false, lx = 0, ly = 0, pinch = 0, pinchZ = 1;
+  const pts = new Map();
+
+  const down = e => {
+    Audio_.init();
+    cv.setPointerCapture(e.pointerId);
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 1) { dragging = true; moved = false; lx = e.clientX; ly = e.clientY; }
+    if (pts.size === 2) {
+      const [a, b] = [...pts.values()];
+      pinch = Math.hypot(a.x - b.x, a.y - b.y); pinchZ = G.camera.tz;
+    }
+  };
+  const move = e => {
+    const r = cv.getBoundingClientRect();
+    if (pts.has(e.pointerId)) pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 2) {
+      const [a, b] = [...pts.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinch > 0) G.camera.tz = clamp(pinchZ * (d / pinch), 0.48, 1.9);
+      moved = true; return;
+    }
+    if (dragging) {
+      const dx = e.clientX - lx, dy = e.clientY - ly;
+      if (Math.abs(dx) + Math.abs(dy) > 5) moved = true;
+      G.camera.tx -= dx / G.camera.z; G.camera.ty -= dy / G.camera.z;
+      G.camera.x -= dx / G.camera.z; G.camera.y -= dy / G.camera.z;
+      lx = e.clientX; ly = e.clientY;
+    }
+    const pl = pickPlot(e.clientX - r.left, e.clientY - r.top);
+    G.hoverPlot = pl ? pl.i : null;
+    cv.style.cursor = pl || pickStructure(e.clientX - r.left, e.clientY - r.top) ? 'pointer' : 'grab';
+  };
+  const up = e => {
+    const r = cv.getBoundingClientRect();
+    pts.delete(e.pointerId);
+    if (pts.size < 2) pinch = 0;
+    if (dragging && !moved) {
+      const sx = e.clientX - r.left, sy = e.clientY - r.top;
+      const st = pickStructure(sx, sy);
+      const pl = pickPlot(sx, sy);
+      if (pl) onPlotClick(pl);
+      else if (st) onStructureClick(st);
+    }
+    if (pts.size === 0) dragging = false;
+  };
+  cv.addEventListener('pointerdown', down);
+  cv.addEventListener('pointermove', move);
+  cv.addEventListener('pointerup', up);
+  cv.addEventListener('pointercancel', up);
+  cv.addEventListener('wheel', e => {
+    e.preventDefault();
+    G.camera.tz = clamp(G.camera.tz * (e.deltaY > 0 ? 0.9 : 1.11), 0.48, 1.9);
+  }, { passive: false });
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closePanel();
+    if (e.key === 'h' || e.key === 'H') harvestAll();
+  });
+  window.addEventListener('resize', resize);
+}
+
+/* ---------------- loop ---------------- */
+function loop(ts) {
+  const dt = Math.min(0.05, (ts - G.last) / 1000 || 0);
+  G.last = ts; G.t += dt;
+  if (!G.paused) {
+    G.dayT = (G.dayT + dt / 240) % 1;
+    tickWorld(dt);
+  }
+  stepFx(dt);
+  render(G.t, dt);
+  requestAnimationFrame(loop);
+}
+
+
+/* ============================================================
+   HEIRLOOM — Part D : interface
+   ============================================================ */
+
+const $ = s => document.querySelector(s);
+function el(tag, cls, html) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html !== undefined) n.innerHTML = html;
+  return n;
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* ---------------- toasts ---------------- */
+function toast(msg, kind = 'info') {
+  const t = el('div', 'toast toast--' + kind, msg);
+  $('#toasts').appendChild(t);
+  requestAnimationFrame(() => t.classList.add('is-in'));
+  setTimeout(() => { t.classList.remove('is-in'); setTimeout(() => t.remove(), 320); }, 2600);
+}
+
+/* ---------------- HUD ---------------- */
+function updateHUD() {
+  const { lo, hi } = xpSpan(G.level);
+  const pct = clamp((G.xp - lo) / (hi - lo), 0, 1) * 100;
+  $('#hudCoins').textContent = fmtNum(G.coins);
+  $('#hudSeed').textContent = G.seedToken.toFixed(2);
+  $('#hudLevel').textContent = G.level;
+  $('#xpFill').style.width = pct + '%';
+  $('#xpText').textContent = fmtNum(G.xp - lo) + ' / ' + fmtNum(hi - lo);
+  const d = G.dayT;
+  const phase = d < 0.08 ? 'Dawn' : d < 0.42 ? 'Morning' : d < 0.55 ? 'Golden hour' : d < 0.66 ? 'Dusk' : 'Night';
+  $('#hudPhase').textContent = phase;
+  $('#dockCommission').dataset.badge = G.commissions.filter(c => canFulfill(c)).length || '';
+  const ripe = G.plots.filter(p => p.state === 'ripe').length;
+  $('#harvestAll').style.display = ripe ? 'flex' : 'none';
+  $('#harvestAllN').textContent = ripe;
+}
+
+/* ---------------- gene widgets ---------------- */
+function alleleChip(v) { return `<i class="al al--${v}">${v}</i>`; }
+function geneBlock(strain, compact) {
+  const p = phenotype(strain);
+  let h = '<div class="genes' + (compact ? ' genes--compact' : '') + '">';
+  for (const l of LOCI) {
+    const pair = strain.genes[l.k];
+    const val = p[l.k];
+    h += `<div class="gene" title="${l.name}: ${l.desc}">
+      <span class="gene__k">${l.k}</span>
+      <span class="gene__bar"><i style="width:${(val / 6) * 100}%"></i></span>
+      <span class="gene__v">${val}</span>
+      <span class="gene__pair">${alleleChip(pair[0])}${alleleChip(pair[1])}</span>
+    </div>`;
+  }
+  const c0 = COLORS[strain.color[0]], c1 = COLORS[strain.color[1]], ce = COLORS[p.color];
+  h += `<div class="gene gene--color" title="Colour: the lower-ranked allele is dominant, so rare morphs must be paired to appear.">
+    <span class="gene__k">C</span>
+    <span class="gene__color" style="background:${ce.hex}"></span>
+    <span class="gene__v gene__v--wide">${ce.name}</span>
+    <span class="gene__pair"><i class="al al--c" style="background:${c0.hex}"></i><i class="al al--c" style="background:${c1.hex}"></i></span>
+  </div>`;
+  h += '</div>';
+  return h;
+}
+
+function strainCard(s, opts = {}) {
+  const t = tierOf(s), p = phenotype(s), sp = SPECIES[s.species];
+  const tr = traitsOf(s);
+  const card = el('div', 'card card--strain');
+  card.style.setProperty('--tier', t.hex);
+  card.innerHTML = `
+    <div class="card__top">
+      <div class="card__id">
+        <span class="tierdot" style="background:${t.hex}"></span>
+        <div>
+          <div class="card__name">${esc(s.name)}${s.qty > 1 ? `<em class="qty">×${s.qty}</em>` : ''}</div>
+          <div class="card__sub">${sp.name} · <span class="tier">${t.name}</span> · Gen ${s.gen}</div>
+        </div>
+      </div>
+      <div class="card__score" title="Breeding score">${strainScore(s)}</div>
+    </div>
+    ${geneBlock(s, true)}
+    <div class="card__stats">
+      <span title="Fruit per harvest">✿ ${yieldCount(s)}</span>
+      <span title="Time to ripen">◷ ${fmtTime(growSeconds(s))}</span>
+      <span title="Coins per fruit">◆ ${unitValue(s)}</span>
+      ${tr.length ? `<span class="traits">${tr.map(x => `<i title="${x.desc}">${x.name}</i>`).join('')}</span>` : ''}
+    </div>`;
+  if (opts.actions) {
+    const row = el('div', 'card__actions');
+    for (const a of opts.actions) {
+      const b = el('button', 'btn ' + (a.style || 'btn--ghost'), a.label);
+      if (a.disabled) b.disabled = true;
+      b.onclick = ev => { ev.stopPropagation(); a.fn(); };
+      row.appendChild(b);
+    }
+    card.appendChild(row);
+  }
+  if (opts.onClick) card.onclick = () => opts.onClick(s);
+  if (opts.selected) card.classList.add('is-selected');
+  return card;
+}
+
+/* ---------------- panel shell ---------------- */
+const PANEL_TITLES = {
+  vault: ['Seed vault', 'Every strain you hold. Plant them, cross them, or send them to a collector.'],
+  bench: ['Breeding bench', 'Cross two parents of the same species. Each parent passes one allele per gene.'],
+  codex: ['Herbarium', 'Specimens you have named and pressed. This is the record that outlives the farm.'],
+  market: ['Market cart', 'Sell the harvest, restock nursery seed, buy mutagen.'],
+  commission: ['Commission board', 'Collectors want specific genetics. Meet the brief, earn $SEED.'],
+  help: ['How breeding works', 'Four quantitative genes, one colour gene, and a mutation rate you can raise.'],
+};
+
+function openPanel(kind) {
+  Audio_.ui();
+  G.panel = kind;
+  const p = $('#panel');
+  p.classList.add('is-open');
+  $('#panelTitle').textContent = PANEL_TITLES[kind][0];
+  $('#panelSub').textContent = PANEL_TITLES[kind][1];
+  renderPanel();
+  document.querySelectorAll('.dock__btn').forEach(b => b.classList.toggle('is-active', b.dataset.panel === kind));
+}
+function closePanel() {
+  G.panel = null;
+  $('#panel').classList.remove('is-open');
+  document.querySelectorAll('.dock__btn').forEach(b => b.classList.remove('is-active'));
+}
+function renderPanel() {
+  if (!G.panel) return;
+  const body = $('#panelBody');
+  body.innerHTML = '';
+  ({ vault: panelVault, bench: panelBench, codex: panelCodex, market: panelMarket, commission: panelCommission, help: panelHelp }[G.panel])(body);
+}
+
+/* ---------------- vault ---------------- */
+function sortedVault() {
+  return [...G.vault].sort((a, b) => strainScore(b) - strainScore(a));
+}
+function panelVault(body) {
+  if (!G.vault.length) {
+    body.appendChild(el('div', 'empty', '<b>The vault is empty.</b><span>Buy nursery seed at the market cart to start a line.</span>'));
+    const b = el('button', 'btn btn--brass', 'Open the market');
+    b.onclick = () => openPanel('market');
+    body.appendChild(b);
+    return;
+  }
+  const grid = el('div', 'grid');
+  for (const s of sortedVault()) {
+    grid.appendChild(strainCard(s, {
+      actions: [
+        { label: 'Plant', style: 'btn--brass', fn: () => beginPlantFlow(s) },
+        { label: 'Cross', fn: () => { toggleSelect(s); openPanel('bench'); } },
+        { label: 'Press', fn: () => showPlate(s, { mode: 'record' }) },
+      ],
+    }));
+  }
+  body.appendChild(grid);
+}
+
+/* ---------------- bench ---------------- */
+function toggleSelect(s) {
+  if (!G.selection) G.selection = [];
+  const i = G.selection.findIndex(x => x.id === s.id);
+  if (i >= 0) G.selection.splice(i, 1);
+  else {
+    if (G.selection.length >= 2) G.selection.shift();
+    G.selection.push(s);
+  }
+  if (G.panel) renderPanel();
+}
+function panelBench(body) {
+  const sel = G.selection || [];
+  const slot = (s, idx) => {
+    const d = el('div', 'slot' + (s ? ' slot--filled' : ''));
+    if (s) {
+      const t = tierOf(s);
+      d.style.setProperty('--tier', t.hex);
+      d.innerHTML = `<div class="slot__label">Parent ${idx + 1}</div>
+        <div class="slot__name">${esc(s.name)}</div>
+        <div class="slot__sub">${SPECIES[s.species].name} · ${t.name}</div>
+        ${geneBlock(s, true)}`;
+      const x = el('button', 'slot__clear', '✕');
+      x.onclick = () => toggleSelect(s);
+      d.appendChild(x);
+    } else {
+      d.innerHTML = `<div class="slot__label">Parent ${idx + 1}</div><div class="slot__hint">Pick a seed below</div>`;
+    }
+    return d;
+  };
+  const pair = el('div', 'bench__pair');
+  pair.appendChild(slot(sel[0], 0));
+  const cross = el('div', 'bench__x', '×');
+  pair.appendChild(cross);
+  pair.appendChild(slot(sel[1], 1));
+  body.appendChild(pair);
+
+  const ok = sel.length === 2 && sel[0].species === sel[1].species && sel[0].id !== sel[1].id;
+  const mism = sel.length === 2 && sel[0].species !== sel[1].species;
+
+  if (sel.length === 2 && ok) {
+    const rangeBox = el('div', 'forecast');
+    let rows = '';
+    for (const l of LOCI) {
+      const opts = [];
+      for (const a of sel[0].genes[l.k]) for (const b of sel[1].genes[l.k]) opts.push(expressLocus([a, b]));
+      const lo = Math.min(...opts), hi = Math.max(...opts);
+      rows += `<div class="fc"><span>${l.k}</span><b>${lo === hi ? lo : lo + '–' + hi}</b></div>`;
+    }
+    const cols = [...new Set([...sel[0].color, ...sel[1].color].map(c => COLORS[c].name))].join(' / ');
+    rangeBox.innerHTML = `<div class="forecast__t">Possible offspring, before mutation</div>
+      <div class="forecast__row">${rows}</div>
+      <div class="forecast__c">Colour alleles in play: ${cols}</div>`;
+    body.appendChild(rangeBox);
+  }
+
+  const mutRow = el('div', 'mutagen');
+  mutRow.innerHTML = `<div>
+      <b>Mutagen</b>
+      <span>Raises the mutation rate from 9% to 26% per allele, and triples the odds of a colour shift.</span>
+    </div>
+    <div class="mutagen__n">${G.mutagen} held</div>`;
+  const useMut = el('label', 'switch');
+  useMut.innerHTML = `<input type="checkbox" id="useMutagen" ${G.mutagen > 0 ? '' : 'disabled'}><span></span>`;
+  mutRow.appendChild(useMut);
+  body.appendChild(mutRow);
+
+  const go = el('button', 'btn btn--brass btn--wide', ok ? 'Cross these parents' : mism ? 'Parents must be the same species' : 'Select two parents');
+  go.disabled = !ok;
+  go.onclick = () => doBreed();
+  body.appendChild(go);
+
+  const h = el('div', 'sectionhead', 'Vault');
+  body.appendChild(h);
+  const grid = el('div', 'grid grid--tight');
+  for (const s of sortedVault()) {
+    grid.appendChild(strainCard(s, {
+      onClick: toggleSelect,
+      selected: sel.some(x => x.id === s.id),
+    }));
+  }
+  body.appendChild(grid);
+}
+
+/* ---------------- herbarium ---------------- */
+function panelCodex(body) {
+  const counts = TIERS.map(t => ({ t, n: G.codex.filter(c => tierOf(c).key === t.key).length }));
+  const bar = el('div', 'codexbar');
+  bar.innerHTML = counts.map(c => `<div class="cb"><i style="background:${c.t.hex}"></i><b>${c.n}</b><span>${c.t.name}</span></div>`).join('');
+  body.appendChild(bar);
+  if (!G.codex.length) {
+    body.appendChild(el('div', 'empty', '<b>No specimens pressed yet.</b><span>Name a strain you are proud of and it is recorded here permanently, with its accession number and parentage.</span>'));
+    return;
+  }
+  const grid = el('div', 'grid');
+  for (const s of [...G.codex].sort((a, b) => strainScore(b) - strainScore(a))) {
+    grid.appendChild(strainCard(s, { actions: [{ label: 'View plate', fn: () => showPlate(s, { mode: 'view' }) }] }));
+  }
+  body.appendChild(grid);
+}
+
+/* ---------------- market ---------------- */
+function panelMarket(body) {
+  const stacks = Object.values(G.produce).filter(x => x.n > 0);
+  body.appendChild(el('div', 'sectionhead', 'Sell harvest'));
+  if (!stacks.length) {
+    body.appendChild(el('div', 'empty empty--sm', '<b>Nothing to sell.</b><span>Harvest a ripe bed first.</span>'));
+  } else {
+    const total = stacks.reduce((a, x) => a + x.n * x.value, 0);
+    const list = el('div', 'stacks');
+    for (const st of stacks) {
+      const col = COLORS[st.color];
+      const row = el('div', 'stack');
+      row.innerHTML = `<span class="stack__dot" style="background:${col.hex}"></span>
+        <div class="stack__t"><b>${SPECIES[st.species].name}</b><span>${col.name} · ${st.value} coins each</span></div>
+        <div class="stack__n">×${st.n}</div>`;
+      const b = el('button', 'btn btn--sm', 'Sell');
+      b.onclick = () => sellStack(st);
+      row.appendChild(b);
+      list.appendChild(row);
+    }
+    body.appendChild(list);
+    const all = el('button', 'btn btn--brass btn--wide', `Sell everything · ${fmtNum(total)} coins`);
+    all.onclick = () => { stacks.slice().forEach(sellStack); };
+    body.appendChild(all);
+  }
+
+  body.appendChild(el('div', 'sectionhead', 'Nursery seed'));
+  const shop = el('div', 'stacks');
+  for (const key of SPECIES_ORDER) {
+    const sp = SPECIES[key];
+    const locked = G.level < sp.lvl;
+    const row = el('div', 'stack' + (locked ? ' is-locked' : ''));
+    row.innerHTML = `<span class="stack__dot" style="background:${locked ? '#5A5348' : C.leaf}"></span>
+      <div class="stack__t"><b>${sp.name}</b><span><i class="latin">${sp.latin}</i> · ${sp.note}</span></div>
+      <div class="stack__n">${locked ? 'Level ' + sp.lvl : fmtNum(sp.seedCost)}</div>`;
+    const b = el('button', 'btn btn--sm', locked ? 'Locked' : 'Buy');
+    b.disabled = locked || G.coins < sp.seedCost;
+    b.onclick = () => buySeed(key);
+    row.appendChild(b);
+    shop.appendChild(row);
+  }
+  body.appendChild(shop);
+
+  body.appendChild(el('div', 'sectionhead', 'Supplies'));
+  const sup = el('div', 'stacks');
+  const mrow = el('div', 'stack');
+  mrow.innerHTML = `<span class="stack__dot" style="background:${C.wine}"></span>
+    <div class="stack__t"><b>Mutagen</b><span>One vial per cross. Higher mutation rate, both directions.</span></div>
+    <div class="stack__n">450</div>`;
+  const mb = el('button', 'btn btn--sm', 'Buy');
+  mb.disabled = G.coins < 450;
+  mb.onclick = () => { if (G.coins < 450) return; G.coins -= 450; G.mutagen++; Audio_.coin(); toast('Mutagen added. You hold ' + G.mutagen + '.'); updateHUD(); renderPanel(); };
+  mrow.appendChild(mb);
+  sup.appendChild(mrow);
+  body.appendChild(sup);
+}
+
+/* ---------------- commissions ---------------- */
+function specText(c) {
+  const parts = [];
+  for (const r of c.reqs) {
+    if (r.k === 'C') parts.push(`colour ${COLORS[r.color].name}`);
+    else parts.push(`${LOCI.find(l => l.k === r.k).name} ${r.min}+`);
+  }
+  return parts.join(' · ');
+}
+function matches(strain, c) {
+  if (strain.species !== c.species) return false;
+  const p = phenotype(strain);
+  for (const r of c.reqs) {
+    if (r.k === 'C') { if (COLORS[p.color].rank < COLORS[r.color].rank) return false; }
+    else if (p[r.k] < r.min) return false;
+  }
+  return true;
+}
+function canFulfill(c) { return G.vault.some(s => matches(s, c)); }
+
+function panelCommission(body) {
+  const slots = repSlots();
+  const info = el('div', 'repbar');
+  info.innerHTML = `<div><b>Standing</b><span>${G.rep} with the collectors' guild</span></div>
+    <div class="repbar__slots">${[0, 1, 2].map(i => `<i class="${i < slots ? 'on' : ''}"></i>`).join('')}</div>
+    <div class="repbar__note">${slots < 3 ? `Next slot at ${slots === 1 ? 12 : 30} standing` : 'All slots open'}</div>`;
+  body.appendChild(info);
+  if (!G.commissions.length) {
+    body.appendChild(el('div', 'empty', '<b>The board is bare.</b><span>New briefs get pinned every minute or so.</span>'));
+    return;
+  }
+  for (const c of G.commissions) {
+    const wrap = el('div', 'card card--comm');
+    const match = G.vault.filter(s => matches(s, c)).sort((a, b) => strainScore(a) - strainScore(b))[0];
+    wrap.innerHTML = `
+      <div class="comm__head">
+        <div>
+          <div class="comm__who">${esc(c.who)}</div>
+          <div class="comm__want">wants <b>${SPECIES[c.species].name}</b></div>
+        </div>
+        <div class="comm__pay">
+          <span>${fmtNum(c.coins)} <i>coins</i></span>
+          <span>${c.xp} <i>xp</i></span>
+          ${c.seed ? `<span class="pay--seed">${c.seed.toFixed(2)} <i>$SEED</i></span>` : ''}
+        </div>
+      </div>
+      <div class="comm__spec">${specText(c)}</div>
+      <div class="comm__note">“${esc(c.note)}”</div>`;
+    const row = el('div', 'card__actions');
+    const b = el('button', 'btn ' + (match ? 'btn--brass' : ''), match ? `Send ${esc(match.name)}` : 'No match in vault');
+    b.disabled = !match;
+    b.onclick = () => fulfill(c, match);
+    const d = el('button', 'btn btn--ghost', 'Decline');
+    d.onclick = () => { G.commissions = G.commissions.filter(x => x !== c); renderPanel(); updateHUD(); };
+    row.appendChild(b); row.appendChild(d);
+    wrap.appendChild(row);
+    body.appendChild(wrap);
+  }
+}
+
+/* ---------------- help ---------------- */
+function panelHelp(body) {
+  const replay = el('button', 'btn btn--brass btn--wide', 'Replay the guided tutorial');
+  replay.style.marginTop = '0';
+  replay.onclick = () => { closePanel(); setTimeout(() => startCoach(true), 260); };
+  body.appendChild(replay);
+  const wrap = el('div');
+  body.appendChild(wrap);
+  wrap.innerHTML = `
+  <div class="prose">
+    <p>Every plant carries two alleles at each of five loci. When you cross two parents, the offspring takes <b>one allele at random from each parent</b> per locus — so a weak-looking plant can still be worth breeding if it hides a strong recessive.</p>
+    <h4>The four quantitative genes</h4>
+    <ul>
+      ${LOCI.map(l => `<li><b>${l.k} — ${l.name}.</b> ${l.desc}</li>`).join('')}
+    </ul>
+    <p>Expression leans on the stronger allele: a <code>5/2</code> pair reads as 4, not 3.5. Fixing a pair to <code>6/6</code> is the only way to guarantee the trait passes on.</p>
+    <h4>Colour is classically Mendelian</h4>
+    <p>Dominance runs Crimson → Amber → Jade → Violet → Ivory, and the <b>lower-ranked allele wins</b>. That makes the beautiful morphs recessive: an Ivory plant only appears when both alleles are Ivory. Carriers show nothing, which is exactly why you keep them.</p>
+    <div class="chiprow">${COLOR_KEYS.map(k => `<span class="cchip"><i style="background:${COLORS[k].hex}"></i>${COLORS[k].name}</span>`).join('')}</div>
+    <h4>Mutation</h4>
+    <p>Each allele has a 9% chance to shift by one step when copied, occasionally two. Mutagen raises that to 26%. Mutation runs both ways — it is how new material enters the pool, and how a good line gets ruined.</p>
+    <h4>Where $SEED comes from</h4>
+    <p>Only commissions pay $SEED. Selling produce pays coins. Standing with the guild opens more commission slots, so the token supply is gated by reputation rather than by farm size.</p>
+  </div>`;
+}
+
+/* ---------------- plant flow ---------------- */
+let plantTarget = null;
+function beginPlantFlow(strain) {
+  const free = G.plots.find(p => p.state === 'empty' && plotUnlocked(p.i));
+  if (!free) { Audio_.err(); toast('Every bed is occupied.', 'warn'); return; }
+  plantStrain(free, strain);
+  closePanel();
+}
+function onPlotClick(pl) {
+  if (!plotUnlocked(pl.i)) {
+    Audio_.err();
+    toast(`Bed opens at level ${Object.keys(PLOT_UNLOCK).find(k => PLOT_UNLOCK[k] > pl.i) || '—'}.`, 'warn');
+    return;
+  }
+  if (pl.state === 'ripe') { harvest(pl); return; }
+  if (pl.state === 'growing') { toast(`${pl.strain.name} ripens in ${fmtTime(pl.growSec - (now() - pl.plantedAt) / 1000)}.`); return; }
+  plantTarget = pl;
+  openSeedPicker(pl);
+}
+function openSeedPicker(pl) {
+  const m = $('#picker');
+  const list = $('#pickerList');
+  list.innerHTML = '';
+  if (!G.vault.length) {
+    list.appendChild(el('div', 'empty empty--sm', '<b>No seed in the vault.</b><span>Buy nursery stock at the market cart.</span>'));
+  } else {
+    for (const s of sortedVault()) {
+      list.appendChild(strainCard(s, { onClick: x => { plantStrain(pl, x); closePicker(); } }));
+    }
+  }
+  m.classList.add('is-open');
+}
+function closePicker() { $('#picker').classList.remove('is-open'); }
+
+function onStructureClick(k) {
+  if (k === 'bench') openPanel('bench');
+  else if (k === 'cart') openPanel('market');
+  else if (k === 'post') openPanel('commission');
+  else if (k === 'conservatory') openPanel('codex');
+}
+
+/* ---------------- specimen plate (signature) ---------------- */
+function showPlate(strain, opts = {}) {
+  G.plate = { strain, mode: opts.mode || 'view' };
+  const m = $('#plate');
+  const t = tierOf(strain), p = phenotype(strain), sp = SPECIES[strain.species];
+  const tr = traitsOf(strain);
+  const cc = k => COLORS[k].name.slice(0, 2);
+  const notation = LOCI.map(l => `${l.k}${strain.genes[l.k][0]}/${strain.genes[l.k][1]}`).join('  ') +
+    `  C${cc(strain.color[0])}/${cc(strain.color[1])}`;
+  const d = new Date(strain.born);
+  const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  $('#plateRibbon').textContent = t.name;
+  $('#plateRibbon').style.background = t.hex;
+  $('#plateRibbon').style.color = t.key === 'common' || t.key === 'prized' ? '#231A10' : '#FFF6E6';
+  $('#plateSpecies').textContent = sp.name;
+  $('#plateLatin').textContent = sp.latin;
+  $('#plateName').textContent = strain.name;
+  $('#plateAcc').textContent = strain.accession;
+  $('#plateNotation').textContent = notation;
+  $('#plateDate').textContent = dateStr;
+  $('#plateBy').textContent = G.gardener;
+  $('#plateGen').textContent = 'Generation ' + strain.gen;
+  $('#plateScore').textContent = strainScore(strain);
+  $('#plateParents').innerHTML = strain.parents
+    ? `Crossed from <b>${esc(strain.parents[0].name)}</b> × <b>${esc(strain.parents[1].name)}</b>`
+    : 'Nursery stock — no recorded parentage';
+  $('#plateTraits').innerHTML = tr.length
+    ? tr.map(x => `<span class="ptrait" title="${x.desc}">${x.name}</span>`).join('')
+    : '<span class="ptrait ptrait--none">No distinguishing traits</span>';
+  $('#plateMut').innerHTML = strain.mutations && strain.mutations.length
+    ? `<b>Mutations recorded:</b> ` + strain.mutations.map(mu => `${mu.locus} ${mu.from}→${mu.to}`).join(', ')
+    : '';
+
+  // name field only for a fresh cross
+  const nameWrap = $('#plateNameWrap');
+  if (opts.mode === 'new' || (opts.mode === 'record' && !strain.named)) {
+    nameWrap.style.display = 'block';
+    $('#plateInput').value = strain.name;
+    $('#plateInput').oninput = e => { $('#plateName').textContent = e.target.value || strain.name; };
+  } else nameWrap.style.display = 'none';
+
+  $('#plateSave').textContent = opts.mode === 'new' ? 'Name it and keep' : 'Press into herbarium';
+  $('#plateSave').onclick = () => {
+    const v = ($('#plateInput').value || '').trim();
+    if (v) { strain.name = v.slice(0, 26); strain.named = true; }
+    codexAdd(strain);
+    Audio_.coin();
+    toast(`${strain.name} pressed into the herbarium.`, 'good');
+    closePlate();
+    if (G.panel) renderPanel();
+  };
+  $('#plateClose').textContent = opts.mode === 'new' ? 'Keep in vault' : 'Close';
+
+  m.classList.add('is-open');
+  m.querySelector('.plate').classList.remove('is-drawn');
+  drawPlateArt(strain);
+  requestAnimationFrame(() => {
+    drawPlateArt(strain);
+    m.querySelector('.plate').classList.add('is-drawn');
+  });
+}
+function closePlate() { $('#plate').classList.remove('is-open'); G.plate = null; }
+
+function drawPlateArt(strain) {
+  const c = $('#plateCanvas');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = c.clientWidth || 240, h = c.clientHeight || 260;
+  c.width = w * dpr; c.height = h * dpr;
+  const x = c.getContext('2d');
+  x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  x.clearRect(0, 0, w, h);
+  // pressed-specimen paper wash
+  const g = x.createRadialGradient(w / 2, h * 0.45, 10, w / 2, h * 0.5, h * 0.75);
+  g.addColorStop(0, 'rgba(255,251,238,0.85)');
+  g.addColorStop(1, 'rgba(226,213,183,0.35)');
+  x.fillStyle = g; x.fillRect(0, 0, w, h);
+  // faint grid, like a herbarium sheet
+  x.strokeStyle = 'rgba(90,72,44,0.09)'; x.lineWidth = 1;
+  for (let i = 20; i < w; i += 20) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i, h); x.stroke(); }
+  for (let i = 20; i < h; i += 20) { x.beginPath(); x.moveTo(0, i); x.lineTo(w, i); x.stroke(); }
+  const sp = SPECIES[strain.species];
+  const scale = sp.form === 'stalk' ? 1.35 : sp.form === 'gourd' ? 1.5 : 1.7;
+  x.save();
+  x.translate(w / 2, h * (sp.form === 'gourd' ? 0.62 : 0.82));
+  drawPlant(x, 0, 0, strain, 1, 0.4, { scale, noBadge: true });
+  x.restore();
+  // mounting tape
+  x.fillStyle = 'rgba(214,196,150,0.75)';
+  for (const [tx, ty, rot] of [[w * 0.5, h * 0.34, -0.12], [w * 0.5, h * 0.66, 0.1]]) {
+    x.save(); x.translate(tx, ty); x.rotate(rot);
+    x.fillRect(-16, -5, 32, 10);
+    x.strokeStyle = 'rgba(150,130,90,0.5)'; x.lineWidth = 0.8; x.strokeRect(-16, -5, 32, 10);
+    x.restore();
+  }
+}
+
+/* ============================================================
+   HEIRLOOM — guided tutorial
+   A spotlight cuts a hole over whatever the player needs to touch, a card
+   explains why, and the step clears itself when the player actually does it.
+   Nothing is blocked: the overlay never swallows a click.
+   ============================================================ */
+
+const Coach = {
+  on: false, i: 0, steps: [], rect: null, raf: 0, settle: 0, entered: false,
+};
+
+/* --- target helpers, all returning a screen-space rect --- */
+function domRect(sel, pad = 10, round = 14) {
+  const e = document.querySelector(sel);
+  if (!e) return null;
+  const r = e.getBoundingClientRect();
+  if (!r.width && !r.height) return null;
+  return { x: r.left - pad, y: r.top - pad, w: r.width + pad * 2, h: r.height + pad * 2, round };
+}
+function worldRect(gx, gy, w, h) {
+  const p = iso(gx, gy);
+  const z = G.camera.z;
+  const sx = (p.x - G.camera.x) * z + VW / 2;
+  const sy = (p.y - G.camera.y) * z + VH / 2;
+  return { x: sx - w / 2, y: sy - h / 2, w, h, round: 18, world: { gx, gy } };
+}
+function plotRect(i) {
+  const pl = G.plots[i] || G.plots[0];
+  const z = G.camera.z;
+  const r = worldRect(pl.gx, pl.gy - 0.35, 130 * z, 130 * z);
+  r.world = { gx: pl.gx, gy: pl.gy };   // the screen hole is lifted; the ring is not
+  return r;
+}
+function firstPlantedPlot() {
+  return G.plots.find(p => p.state !== 'empty') || G.plots[0];
+}
+
+/* --- the script --- */
+function buildCoachSteps() {
+  return [
+    {
+      id: 'welcome',
+      title: 'Welcome to the Vale estate',
+      body: 'You have four cleared beds, one line of seed, and a reputation to build. The whole game is one question: can you make the plant better than the one you were given?',
+      target: () => { const r = worldRect(5.5, 5.6, 330 * G.camera.z, 220 * G.camera.z); r.world = null; return r; },
+      cta: 'Show me',
+      manual: true,
+    },
+    {
+      id: 'plant',
+      title: 'Plant your first seed',
+      body: 'Tap the highlighted bed, then choose <b>Vale Row</b>. It is ordinary nursery stock — that is deliberate. Ordinary is where every line starts.',
+      target: () => plotRect(0),
+      advance: () => G.plots.some(p => p.state !== 'empty'),
+    },
+    {
+      id: 'read',
+      title: 'The drawing is the genotype',
+      body: 'This is not decoration. <b>Yield</b> sets how many fruit appear, <b>Hardiness</b> thickens the stem and adds leaves, <b>Vigor</b> speeds the sway, <b>Essence</b> adds the shimmer, and <b>Colour</b> is the colour. You can read a plant from across the garden.',
+      target: () => {
+        const p = firstPlantedPlot();
+        const r = worldRect(p.gx, p.gy - 0.4, 150 * G.camera.z, 150 * G.camera.z);
+        r.world = { gx: p.gx, gy: p.gy };
+        return r;
+      },
+      cta: 'Understood',
+      manual: true,
+    },
+    {
+      id: 'harvest',
+      title: 'Harvest when the marker appears',
+      body: 'A brass flower floats over any ripe bed. Harvesting gives you fruit to sell <b>and</b> one or two copies of the same seed — a good line multiplies itself.',
+      target: () => {
+        const p = firstPlantedPlot();
+        const r = worldRect(p.gx, p.gy - 0.4, 150 * G.camera.z, 150 * G.camera.z);
+        r.world = { gx: p.gx, gy: p.gy };
+        return r;
+      },
+      advance: () => G.stats.harvests > 0,
+      hint: () => {
+        const p = G.plots.find(x => x.state === 'growing');
+        if (!p) return '';
+        return 'Ripens in ' + fmtTime(p.growSec - (now() - p.plantedAt) / 1000) + '.';
+      },
+    },
+    {
+      id: 'sell',
+      title: 'Sell the harvest',
+      body: 'Open the market cart. Fruit becomes coins; coins buy seed and mutagen. Coins are the soft currency — they never become $SEED.',
+      target: () => (G.panel === 'market'
+        ? (domRect('#panelBody .btn--brass', 8, 14) || domRect('#panelBody', 6, 16))
+        : domRect('.dock__btn[data-panel="market"]', 6, 16)),
+      advance: () => G.stats.sold > 0,
+      hint: () => (G.panel === 'market' ? '' : 'Tap Market in the bar below.'),
+    },
+    {
+      id: 'buy',
+      title: 'Buy a second line',
+      body: 'You cannot cross a plant with itself. Buy one more tomato from the nursery so you have two distinct parents to work with.',
+      target: () => (G.panel === 'market'
+        ? domRect('#panelBody', 6, 16)
+        : domRect('.dock__btn[data-panel="market"]', 6, 16)),
+      advance: () => G.vault.length >= 2,
+      hint: () => (G.panel === 'market' ? 'Nursery seed is further down the panel.' : 'Reopen the market cart.'),
+    },
+    {
+      id: 'bench',
+      title: 'Open the breeding bench',
+      body: 'This is where the game actually happens. Everything before it was just growing food.',
+      target: () => domRect('.dock__btn[data-panel="bench"]', 6, 16),
+      advance: () => G.panel === 'bench',
+      hint: () => 'You can also tap the bench itself, out by the east path.',
+    },
+    {
+      id: 'parents',
+      title: 'Choose two parents',
+      body: 'Tap two seeds below to load them into the slots. Look at the allele pairs on each card — <b>a weak plant can still carry a strong recessive</b>, and that hidden allele is worth more than the plant you can see.',
+      target: () => domRect('#panelBody', 6, 16),
+      advance: () => (G.selection || []).length === 2,
+    },
+    {
+      id: 'cross',
+      title: 'Make the cross',
+      body: 'The offspring takes <b>one allele at random from each parent</b> at every locus. The forecast above shows the range you might get, before mutation has its say.',
+      target: () => domRect('#panelBody .btn--brass', 8, 14) || domRect('#panelBody', 6, 16),
+      advance: () => G.stats.bred > 0,
+    },
+    {
+      id: 'notation',
+      title: 'Read the specimen plate',
+      body: 'The line in the middle is the full genotype. <b>Y3/2</b> means this plant carries a 3 and a 2 at the Yield locus, and passes on one of them. <b>CCr/Am</b> means it looks Crimson but carries Amber — and only you know that.',
+      target: () => domRect('#plateNotation', 10, 8),
+      cta: 'Understood',
+      manual: true,
+      guard: () => document.getElementById('plate').classList.contains('is-open'),
+    },
+    {
+      id: 'name',
+      title: 'Name it and press it',
+      body: 'Give the strain a name and it is recorded permanently in the herbarium — accession number, parentage, mutations and all. This is the part that outlives the farm.',
+      target: () => domRect('#plateNameWrap', 8, 12) || domRect('#plateSave', 8, 12),
+      advance: () => G.codex.length > 0,
+      guard: () => document.getElementById('plate').classList.contains('is-open'),
+      hint: () => (document.getElementById('plate').classList.contains('is-open')
+        ? '' : 'Plate closed — open the vault and tap Press on any strain.'),
+    },
+    {
+      id: 'commission',
+      title: 'Where $SEED comes from',
+      body: 'Collectors post briefs asking for specific genetics. Meeting one is the <b>only</b> way to earn $SEED, and your standing with the guild decides how many briefs you can hold at once.',
+      target: () => domRect('.dock__btn[data-panel="commission"]', 6, 16),
+      advance: () => G.panel === 'commission',
+      hint: () => 'The notice board stands at the south gate.',
+    },
+    {
+      id: 'done',
+      title: 'The rest is selection',
+      body: 'Fix Essence first — it tilts colour mutations upward. Then chase the ladder: Crimson, Amber, Jade, Violet, Ivory. Roughly two hundred crosses to the end of it. Keep your carriers.',
+      target: () => { const r = worldRect(5.5, 5.6, 330 * G.camera.z, 220 * G.camera.z); r.world = null; return r; },
+      cta: 'Start breeding',
+      manual: true,
+    },
+  ];
+}
+
+function startCoach(fromScratch = true) {
+  Coach.steps = buildCoachSteps();
+  if (fromScratch) Coach.i = 0;
+  Coach.on = true;
+  G.tutorial.done = false;
+  document.getElementById('coach').classList.add('is-on');
+  enterCoachStep();
+  if (!Coach.raf) Coach.raf = requestAnimationFrame(coachTick);
+}
+
+function endCoach(completed) {
+  Coach.on = false;
+  G.tutorial.done = true;
+  G.coachTarget = null;
+  document.getElementById('coach').classList.remove('is-on');
+  if (Coach.raf) { cancelAnimationFrame(Coach.raf); Coach.raf = 0; }
+  if (completed) toast('The estate is yours. Chase the Ivory.', 'good');
+}
+
+function enterCoachStep() {
+  const s = Coach.steps[Coach.i];
+  if (!s) { endCoach(true); return; }
+  Coach.entered = true;
+  Coach.settle = 0;
+  const card = document.getElementById('coachCard');
+  card.classList.remove('is-in');
+  document.getElementById('coachStep').textContent = `Step ${Coach.i + 1} of ${Coach.steps.length}`;
+  document.getElementById('coachTitle').textContent = s.title;
+  document.getElementById('coachBody').innerHTML = s.body;
+  const next = document.getElementById('coachNext');
+  next.style.display = s.manual ? 'block' : 'none';
+  next.textContent = s.cta || 'Got it';
+  document.getElementById('coachHint').textContent = '';
+  document.getElementById('coachDots').innerHTML =
+    Coach.steps.map((_, i) => `<i class="${i < Coach.i ? 'done' : i === Coach.i ? 'now' : ''}"></i>`).join('');
+  requestAnimationFrame(() => card.classList.add('is-in'));
+}
+
+function nextCoachStep() {
+  const card = document.getElementById('coachCard');
+  card.classList.remove('is-in');
+  Coach.i++;
+  setTimeout(() => { if (Coach.on) enterCoachStep(); }, 180);
+}
+
+function placeCoachCard(rect) {
+  const card = document.getElementById('coachCard');
+  const cw = card.offsetWidth || 320, ch = card.offsetHeight || 170;
+  const M = 14;
+  let x = rect ? rect.x + rect.w / 2 - cw / 2 : window.innerWidth / 2 - cw / 2;
+  let y;
+  const below = rect ? rect.y + rect.h + 16 : 0;
+  const above = rect ? rect.y - ch - 16 : 0;
+  let caret = 'up';
+  if (!rect) { y = window.innerHeight - ch - 120; caret = 'none'; }
+  else if (below + ch < window.innerHeight - 96) { y = below; caret = 'up'; }
+  else if (above > 78) { y = above; caret = 'down'; }
+  else { y = window.innerHeight - ch - 110; caret = 'none'; }
+  x = clamp(x, M, window.innerWidth - cw - M);
+  y = clamp(y, 66, window.innerHeight - ch - M);
+  card.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+  card.dataset.caret = caret;
+  const cx = rect ? clamp(rect.x + rect.w / 2 - x, 22, cw - 22) : cw / 2;
+  card.style.setProperty('--caret-x', cx + 'px');
+}
+
+function coachTick() {
+  Coach.raf = requestAnimationFrame(coachTick);
+  if (!Coach.on) return;
+  const s = Coach.steps[Coach.i];
+  if (!s) return;
+
+  if (s.guard && !s.guard()) {
+    // the thing this step points at is gone; wait rather than point at nothing
+    document.getElementById('coachHole').style.opacity = '0';
+  } else {
+    document.getElementById('coachHole').style.opacity = '1';
+  }
+
+  const rect = s.target ? s.target() : null;
+  Coach.rect = rect;
+  const hole = document.getElementById('coachHole');
+  if (rect) {
+    hole.style.left = Math.round(rect.x) + 'px';
+    hole.style.top = Math.round(rect.y) + 'px';
+    hole.style.width = Math.round(rect.w) + 'px';
+    hole.style.height = Math.round(rect.h) + 'px';
+    hole.style.borderRadius = (rect.round || 14) + 'px';
+    G.coachTarget = rect.world || null;
+  } else {
+    G.coachTarget = null;
+  }
+  placeCoachCard(rect);
+
+  if (s.hint) {
+    const h = s.hint();
+    const el = document.getElementById('coachHint');
+    if (el.textContent !== h) el.textContent = h;
+  }
+
+  if (!s.manual && s.advance) {
+    if (s.advance()) {
+      Coach.settle += 1;
+      if (Coach.settle > 12) { Audio_.ui(); nextCoachStep(); }
+    } else Coach.settle = 0;
+  }
+}
+
+/* legacy hook kept so gameplay code can nudge the tutorial without knowing about it */
+function updateTutorial() {
+  if (!Coach.on) return;
+  const s = Coach.steps[Coach.i];
+  if (s && !s.manual && s.advance && s.advance()) Coach.settle = 12;
+}
+
+
+/* ============================================================
+   HEIRLOOM — Part E : simulation, economy, boot
+   ============================================================ */
+
+/* ---------------- planting & harvest ---------------- */
+function plantStrain(pl, strain) {
+  if (pl.state !== 'empty') return;
+  const held = G.vault.find(s => s.id === strain.id);
+  if (!held || held.qty < 1) { Audio_.err(); toast('That seed is gone.', 'warn'); return; }
+  held.qty--;
+  if (held.qty <= 0) G.vault = G.vault.filter(s => s.id !== held.id);
+  if (G.selection) G.selection = G.selection.filter(s => s.id !== held.id || held.qty > 0);
+
+  pl.strain = strain;
+  pl.plantedAt = now();
+  pl.growSec = growSeconds(strain);
+  pl.state = 'growing';
+  pl.blighted = false;
+  pl.blightRolled = false;
+  Audio_.plant();
+  burst(pl.gx, pl.gy, withAlpha('#7FB069', 0.9), 8);
+  updateHUD(); updateTutorial();
+  if (G.panel) renderPanel();
+}
+
+function harvest(pl) {
+  if (pl.state !== 'ripe') return;
+  const s = pl.strain;
+  const p = phenotype(s);
+  let n = yieldCount(s);
+  if (pl.blighted) n = Math.max(1, Math.round(n * 0.55));
+  const val = unitValue(s);
+  produceAdd(s.species, p.color, n, val);
+
+  let seeds = 1 + (chance(0.32 + p.E * 0.03) ? 1 : 0);
+  if (pl.blighted && seeds > 1) seeds = 1;
+  vaultAdd(s, seeds);
+
+  const xp = 6 + Math.round(strainScore(s) * 1.1);
+  addXP(xp);
+  G.stats.harvests++;
+
+  floatText(pl.gx, pl.gy, `+${n} ✿`, COLORS[p.color].hex, 17);
+  setTimeout(() => floatText(pl.gx, pl.gy, `+${seeds} seed`, '#E8DCC0', 13), 180);
+  burst(pl.gx, pl.gy, COLORS[p.color].hex, 16);
+  Audio_.harvest();
+
+  pl.state = 'empty'; pl.strain = null; pl.blighted = false;
+  updateHUD(); updateTutorial();
+  if (G.panel) renderPanel();
+}
+
+function harvestAll() {
+  const ripe = G.plots.filter(p => p.state === 'ripe');
+  if (!ripe.length) return;
+  ripe.forEach((p, i) => setTimeout(() => harvest(p), i * 90));
+}
+
+/* ---------------- market ---------------- */
+function sellStack(st) {
+  if (!st || st.n <= 0) return;
+  const gain = st.n * st.value;
+  G.coins += gain;
+  G.stats.sold += st.n;
+  addXP(Math.round(st.n * 1.5));
+  delete G.produce[st.species + ':' + st.color];
+  Audio_.coin();
+  toast(`Sold ${st.n} × ${SPECIES[st.species].name} for ${fmtNum(gain)} coins.`, 'good');
+  updateHUD();
+  if (G.panel) renderPanel();
+}
+
+function buySeed(key) {
+  const sp = SPECIES[key];
+  if (G.level < sp.lvl) return;
+  if (G.coins < sp.seedCost) { Audio_.err(); toast('Not enough coins.', 'warn'); return; }
+  G.coins -= sp.seedCost;
+  const s = baseStrain(key);
+  vaultAdd(s, 1);
+  if (!G.seenSpecies[key]) { G.seenSpecies[key] = true; }
+  Audio_.coin();
+  toast(`${sp.name} nursery stock added to the vault.`, 'good');
+  updateHUD(); updateTutorial();
+  if (G.panel) renderPanel();
+}
+
+/* ---------------- breeding ---------------- */
+function doBreed() {
+  const sel = G.selection || [];
+  if (sel.length !== 2 || sel[0].species !== sel[1].species) return;
+  const useMut = $('#useMutagen') && $('#useMutagen').checked && G.mutagen > 0;
+  const a = G.vault.find(s => s.id === sel[0].id);
+  const b = G.vault.find(s => s.id === sel[1].id);
+  if (!a || !b) { Audio_.err(); toast('One of those parents is no longer in the vault.', 'warn'); return; }
+  if (useMut) G.mutagen--;
+
+  const child = breed(a, b, useMut);
+  vaultAdd(child, 1);
+  G.stats.bred++;
+  addXP(14 + child.gen * 3);
+
+  const t = tierOf(child);
+  if (t.key === 'legendary' || t.key === 'prized') Audio_.rare(); else Audio_.breed();
+  G.selection = [];
+  updateHUD(); updateTutorial();
+  showPlate(child, { mode: 'new' });
+  if (G.panel) renderPanel();
+  if (t.key === 'legendary') toast('A legendary specimen. Record it.', 'good');
+}
+
+/* ---------------- commissions ---------------- */
+const COLLECTORS = [
+  'Curator Bramwell', 'The Ivory Society', 'Marguerite Hollis', 'Ashgrove Seed Bank',
+  'Dr. Oyelaran', 'The Pale Row Guild', 'Vellum & Sons', 'Kestrel Hall',
+];
+const NOTES = [
+  'The colour matters more than the yield. Do not send me something merely large.',
+  'My last three plantings failed. Send something that survives a cold week.',
+  'For the autumn exhibition. It must photograph well.',
+  'I am rebuilding a line my grandmother lost. Anything close will do.',
+  'Price is not the concern. Purity is.',
+  'The buyer is particular and will not be named.',
+];
+
+function repSlots() { return G.rep >= 30 ? 3 : G.rep >= 12 ? 2 : 1; }
+
+function genCommission() {
+  const avail = SPECIES_ORDER.filter(k => G.level >= SPECIES[k].lvl);
+  const species = pick(avail);
+  const hard = clamp(1 + Math.floor(G.level / 3), 1, 3);
+  const reqs = [];
+  const pool = ['Y', 'V', 'H', 'E'].sort(() => Math.random() - 0.5);
+  const nReq = Math.min(hard, 2 + (chance(0.3) ? 1 : 0));
+  for (let i = 0; i < nReq; i++) {
+    const k = pool[i];
+    reqs.push({ k, min: clamp(2 + Math.floor(rnd(0, hard + 1)), 2, 6) });
+  }
+  if (chance(0.30 + G.level * 0.02)) {
+    const tierIdx = clamp(1 + Math.floor(rnd(0, Math.min(3, 1 + G.level / 4))), 1, 4);
+    reqs.push({ k: 'C', color: COLOR_KEYS[tierIdx] });
+  }
+  const difficulty = reqs.reduce((a, r) => a + (r.k === 'C' ? COLORS[r.color].rank * 2.2 : r.min * 1.1), 0);
+  const base = SPECIES[species].price;
+  return {
+    id: 'C' + Math.floor(rnd(10000, 99999)),
+    who: pick(COLLECTORS), note: pick(NOTES),
+    species, reqs,
+    coins: Math.round(base * (6 + difficulty * 2.6)),
+    xp: Math.round(18 + difficulty * 5),
+    seed: G.level >= 3 ? Math.round(difficulty * 9) / 100 : 0,
+    born: now(),
+  };
+}
+
+function fulfill(c, strain) {
+  if (!strain || !matches(strain, c)) return;
+  const held = G.vault.find(s => s.id === strain.id);
+  if (!held) return;
+  held.qty--;
+  if (held.qty <= 0) G.vault = G.vault.filter(s => s.id !== held.id);
+  G.coins += c.coins;
+  G.seedToken += c.seed;
+  G.rep += 1 + Math.round(c.seed * 6);
+  addXP(c.xp);
+  G.stats.commissions++;
+  G.commissions = G.commissions.filter(x => x !== c);
+  Audio_.rare();
+  toast(`${c.who} paid ${fmtNum(c.coins)} coins${c.seed ? ` and ${c.seed.toFixed(2)} $SEED` : ''}.`, 'good');
+  codexAdd(strain);
+  updateHUD(); updateTutorial();
+  if (G.panel) renderPanel();
+}
+
+/* ---------------- world tick ---------------- */
+let commissionTimer = 6;
+function tickWorld(dt) {
+  for (const pl of G.plots) {
+    if (pl.state !== 'growing') continue;
+    const prog = plotProgress(pl);
+    if (!pl.blightRolled && prog > 0.55) {
+      pl.blightRolled = true;
+      if (chance(blightChance(pl.strain))) {
+        pl.blighted = true;
+        floatText(pl.gx, pl.gy, 'blight', '#D9A05B', 13);
+        toast(`Blight took hold in a bed of ${pl.strain.name}. Hardiness would have helped.`, 'warn');
+      }
+    }
+    if (prog >= 1) {
+      pl.state = 'ripe';
+      burst(pl.gx, pl.gy, withAlpha(COLORS[phenotype(pl.strain).color].hex, 0.9), 10);
+      updateHUD();
+    }
+  }
+  commissionTimer -= dt;
+  if (commissionTimer <= 0) {
+    commissionTimer = 34 + rnd(0, 16);
+    if (G.commissions.length < repSlots()) {
+      G.commissions.push(genCommission());
+      updateHUD();
+      if (G.panel === 'commission') renderPanel();
+    }
+  }
+}
+
+function onLevelUp(from, to) {
+  Audio_.rare();
+  const before = PLOT_UNLOCK[Math.min(from, 12)] ?? 15;
+  const after = plotCapacity();
+  const newSpecies = SPECIES_ORDER.filter(k => SPECIES[k].lvl > from && SPECIES[k].lvl <= to);
+  let msg = `Level ${to}.`;
+  if (after > before) msg += ` ${after - before} more bed${after - before > 1 ? 's' : ''} cleared.`;
+  if (newSpecies.length) msg += ` ${newSpecies.map(k => SPECIES[k].name).join(' and ')} now sold at the cart.`;
+  toast(msg, 'good');
+  const ban = $('#levelBanner');
+  $('#levelBannerN').textContent = to;
+  ban.classList.add('is-on');
+  setTimeout(() => ban.classList.remove('is-on'), 2400);
+}
+
+/* ---------------- boot ---------------- */
+function boot() {
+  cv = $('#stage');
+  ctx = cv.getContext('2d', { alpha: false });
+  resize();
+  initPlots();
+  initAmbience();
+  centerOn(5.5, 5.6, window.innerWidth < 720 ? 0.66 : 1.02);
+  G.camera.x = G.camera.tx; G.camera.y = G.camera.ty; G.camera.z = G.camera.tz;
+  bindInput();
+
+  // opening kit: a competent-but-unremarkable line, so the first harvest lands
+  // well and the ceiling is still obviously far above it
+  const starter = makeStrain('tomato', { Y: [3, 2], V: [3, 2], H: [3, 1], E: [2, 3] }, ['crimson', 'crimson']);
+  starter.name = 'Vale Row';
+  vaultAdd(starter, 2);
+  G.commissions.push(genCommission());
+
+  document.querySelectorAll('.dock__btn').forEach(b => {
+    b.onclick = () => (G.panel === b.dataset.panel ? closePanel() : openPanel(b.dataset.panel));
+  });
+  $('#panelClose').onclick = closePanel;
+  $('#pickerClose').onclick = closePicker;
+  $('#picker').onclick = e => { if (e.target.id === 'picker') closePicker(); };
+  $('#plateClose').onclick = closePlate;
+  $('#plate').onclick = e => { if (e.target.id === 'plate') closePlate(); };
+  $('#harvestAll').onclick = harvestAll;
+  $('#btnHelp').onclick = () => openPanel('help');
+  $('#btnMute').onclick = e => {
+    Audio_.on = !Audio_.on;
+    e.currentTarget.classList.toggle('is-off', !Audio_.on);
+    e.currentTarget.title = Audio_.on ? 'Sound on' : 'Sound off';
+  };
+  $('#coachSkip').onclick = () => endCoach(false);
+  $('#coachNext').onclick = () => nextCoachStep();
+
+  $('#start').onclick = () => {
+    Audio_.init();
+    $('#title').classList.add('is-gone');
+    setTimeout(() => { $('#title').style.display = 'none'; }, 900);
+    if (!G.tutorial.done) setTimeout(() => startCoach(true), 700);
+  };
+  $('#skipTut').onclick = () => {
+    G.tutorial.done = true;
+    $('#title').classList.add('is-gone');
+    setTimeout(() => { $('#title').style.display = 'none'; }, 900);
+    toast('Tutorial skipped. You can replay it from the ? menu.');
+  };
+
+  updateHUD();
+  setInterval(() => { updateHUD(); }, 500);
+  requestAnimationFrame(ts => { G.last = ts; requestAnimationFrame(loop); });
+}
+
+/* Debug bridge. Top-level declarations in a classic script never land on
+   window, so expose the pieces worth poking at from the console. */
+window.HEIRLOOM = {
+  startCoach, endCoach, nextCoachStep, Coach, buildCoachSteps, coachTick, updateTutorial,
+  G, SPECIES, SPECIES_ORDER, LOCI, COLORS, COLOR_KEYS, TIERS, TRAITS,
+  makeStrain, baseStrain, breed, phenotype, tierOf, traitsOf, strainScore,
+  growSeconds, yieldCount, unitValue, blightChance, vaultAdd, codexAdd,
+  plantStrain, harvest, harvestAll, sellStack, buySeed, doBreed,
+  genCommission, matches, specText, fulfill, repSlots, tickWorld,
+  plotCapacity, plotProgress, openPanel, closePanel, closePicker, showPlate,
+  onPlotClick, onStructureClick, pickPlot, iso, render, drawPlant, addXP,
+  version: '0.1.0',
+};
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
+
+</script>
+</body>
+</html>

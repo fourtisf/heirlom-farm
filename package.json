@@ -1,0 +1,23 @@
+{
+  "name": "heirloom",
+  "private": true,
+  "version": "0.1.0",
+  "description": "HEIRLOOM — a browser farm game where the genetics are the product.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @heirloom/genetics && npm run build -w @heirloom/server && npm run build -w @heirloom/web",
+    "test": "npm run test -w @heirloom/genetics && npm run test -w @heirloom/server",
+    "test:genetics": "npm run test -w @heirloom/genetics",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "dev:server": "npm run dev -w @heirloom/server",
+    "dev:web": "npm run dev -w @heirloom/web",
+    "db:push": "npm run db:push -w @heirloom/server",
+    "db:migrate": "npm run db:migrate -w @heirloom/server"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
