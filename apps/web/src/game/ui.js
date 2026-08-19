@@ -17,11 +17,15 @@ import {
   PLOT_UNLOCK,
   SPECIES,
   SPECIES_ORDER,
+  SPECIES_TRAITS,
   TIERS,
   TRAITS,
   MARKET_FEE_RATE,
   colorPunnett,
+  dayPhase,
+  dayPhaseName,
   expressColor,
+  isNight,
   expressLocus,
   matches,
   repSlots,
@@ -208,8 +212,20 @@ function sortedVault() {
   return [...G.vault].sort((a, b) => b.score - a.score);
 }
 function panelVault(body) {
+  /* Running out of seed with beds standing open is the one state a new player
+     can reach and not understand. A playtest sat in it for a full minute. */
+  const freeBeds = G.plots.filter((p) => plotUnlocked(p.i) && p.state === 'empty').length;
+  if (freeBeds > 0 && G.vault.length) {
+    const note = el('div', 'note');
+    note.innerHTML = `<b>${freeBeds} bed${freeBeds > 1 ? 's' : ''} standing empty.</b> ` +
+      'Every bed left fallow is a harvest you are not getting.';
+    body.appendChild(note);
+  }
   if (!G.vault.length) {
-    body.appendChild(el('div', 'empty', '<b>The vault is empty.</b><span>Buy nursery seed at the market cart to start a line.</span>'));
+    body.appendChild(el('div', 'empty',
+      '<b>No seed left.</b><span>Every seed you held is in the ground. A harvest returns at ' +
+      'least one seed of the line it came from, so the beds will restock you — or buy fresh ' +
+      'nursery stock at the cart if you would rather not wait.</span>'));
     const b = el('button', 'btn btn--brass', 'Open the market');
     b.onclick = () => openPanel('market');
     body.appendChild(b);
@@ -296,7 +312,15 @@ function panelBench(body) {
   mutRow.appendChild(useMut);
   body.appendChild(mutRow);
 
-  const go = el('button', 'btn btn--brass btn--wide', ok ? 'Cross these parents' : mism ? 'Parents must be the same species' : 'Select two parents');
+  const distinct = new Set(G.vault.map((v) => v.id)).size;
+  const label = ok
+    ? 'Cross these parents'
+    : mism
+      ? 'Parents must be the same species'
+      : distinct < 2
+        ? 'A cross needs two different lines'
+        : 'Select two parents';
+  const go = el('button', 'btn btn--brass btn--wide', label);
   go.disabled = !ok;
   go.onclick = () => actions.doBreed();
   body.appendChild(go);
@@ -431,14 +455,31 @@ function panelMarket(body) {
     body.appendChild(all);
   }
 
+  /* Moonflower is the one species whose grow time depends on when you plant it,
+     so the market is where that becomes actionable. */
+  if (G.level >= SPECIES.moonflower.lvl) {
+    const phase = dayPhase(serverNow());
+    const night = isNight(phase);
+    const clock = el('div', 'note');
+    clock.innerHTML = night
+      ? `<b>It is ${dayPhaseName(phase)}.</b> Moonflower planted now comes on fast.`
+      : `<b>It is ${dayPhaseName(phase)}.</b> Moonflower planted now will sulk — it wants to go in after dusk.`;
+    body.appendChild(clock);
+  }
+
   body.appendChild(el('div', 'sectionhead', 'Nursery seed'));
   const shop = el('div', 'stacks');
   for (const key of SPECIES_ORDER) {
     const sp = SPECIES[key];
     const locked = G.level < sp.lvl;
     const row = el('div', 'stack' + (locked ? ' is-locked' : ''));
+    const tr = SPECIES_TRAITS[key];
     row.innerHTML = `<span class="stack__dot" style="background:${locked ? '#5A5348' : C.leaf}"></span>
-      <div class="stack__t"><b>${sp.name}</b><span><i class="latin">${sp.latin}</i> · ${sp.note}</span></div>
+      <div class="stack__t">
+        <b>${sp.name}</b>
+        <span><i class="latin">${sp.latin}</i> · ${sp.note}</span>
+        <em class="stack__trait">${esc(tr.trait)}</em>
+      </div>
       <div class="stack__n">${locked ? 'Level ' + sp.lvl : fmtNum(sp.seedCost)}</div>`;
     const b = el('button', 'btn btn--sm', locked ? 'Locked' : 'Buy');
     b.disabled = locked || G.coins < sp.seedCost;

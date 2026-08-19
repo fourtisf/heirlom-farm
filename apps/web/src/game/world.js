@@ -10,6 +10,7 @@
  * decides an outcome.
  */
 
+import { dayPhase } from '@heirloom/genetics';
 import {
   C,
   G,
@@ -23,6 +24,7 @@ import {
   plotProgress,
   plotUnlocked,
   rnd,
+  serverNow,
   tickPlots,
 } from './store.js';
 import {
@@ -430,9 +432,12 @@ function loop(ts) {
   const dt = Math.min(0.05, (ts - G.last) / 1000 || 0);
   G.last = ts; G.t += dt;
   if (!G.paused) {
-    /* A 240-second cosmetic cycle. It has no gameplay effect beyond Moonflower
-       bloom intensity, so the client is allowed to own it. */
-    G.dayT = (G.dayT + dt / 240) % 1;
+    /* Derived from the server clock rather than counted locally. It used to be
+       a free-running animation counter, which was fine while the cycle was
+       cosmetic — but moonflower now grows at a rate the server decides from the
+       same phase, and a sky that disagrees with the mechanic is worse than no
+       sky at all. */
+    G.dayT = dayPhase(serverNow());
     tickPlots();
   }
   stepFx(dt);

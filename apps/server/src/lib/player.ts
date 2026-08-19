@@ -47,15 +47,29 @@ export async function ensurePlayer(wallet: string): Promise<string> {
       data: Array.from({ length: MAX_PLOTS }, (_, index) => ({ playerId: player.id, index })),
     });
 
-    const stock = nurseryStock('tomato', cryptoRng);
-    await createStrain(tx, player.id, {
-      species: stock.species,
-      genes: stock.genes,
-      color: stock.color,
-      name: stock.name,
-      generation: 0,
-      qty: 2,
-    });
+    /* Two distinct lines, not one line twice.
+     *
+     * A playtest of the first two minutes found a new player planting their two
+     * seeds, emptying the vault, and then having nothing to do and nothing to
+     * decide until the first harvest came back — and crucially, no way to cross
+     * anything, because a cross needs two *distinct* parents. The single most
+     * interesting thing in the game was unreachable for the opening minutes.
+     *
+     * Two lines of two seeds fills all four opening beds and makes the breeding
+     * bench work from the first minute. They are still ordinary nursery stock:
+     * mediocre, and rolled separately so they differ. */
+    const openingKit = ['Vale Row', 'Hollow Line'];
+    for (const name of openingKit) {
+      const stock = nurseryStock('tomato', cryptoRng);
+      await createStrain(tx, player.id, {
+        species: stock.species,
+        genes: stock.genes,
+        color: stock.color,
+        name,
+        generation: 0,
+        qty: 2,
+      });
+    }
 
     await recordLedger(tx, {
       playerId: player.id,

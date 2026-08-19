@@ -753,3 +753,10 @@ input{font-family:inherit}
 
 /* The public plate is not inside a modal, so its ribbon needs the same room. */
 .publicplate .plate__eyebrow{padding-right:78px}
+
+/* Species disposition line in the market — what the plant actually does. */
+.stack__trait{
+  display:block;font-style:normal;margin-top:3px;
+  font-family:var(--f-mono);font-size:10px;line-height:1.45;color:var(--leaf);
+}
+.stack.is-locked .stack__trait{color:var(--bone-dim);opacity:.7}

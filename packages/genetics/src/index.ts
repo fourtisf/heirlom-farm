@@ -27,4 +27,5 @@ export type { CommissionReq, CommissionSpec } from './commission.js';
 export { forecast, colorPunnett } from './breed.js';
 export type { ColorPunnett, PunnettCell } from './breed.js';
 export * from './estate.js';
+export * from './species-traits.js';
 export * from './milestones.js';

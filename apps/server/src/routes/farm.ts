@@ -12,6 +12,7 @@ import {
   UPGRADE_ORDER,
   blightChance,
   blightChanceMultiplier,
+  dayPhase,
   growTimeMultiplier,
   saleMultiplier,
   seedCopyBonus,
@@ -103,7 +104,14 @@ export async function farmRoutes(app: FastifyInstance) {
       const levels = await upgradeLevels(playerId, tx);
 
       const now = new Date();
-      const seconds = Math.max(1, Math.round(growSeconds(shaped) * growTimeMultiplier(levels)));
+      /* The day phase is read once, here. Moonflower planted after dusk comes on
+         fast; planted at noon it sulks. Stamping it at plant time means the
+         outcome cannot be changed by when the player chooses to come back. */
+      const phase = dayPhase(now);
+      const seconds = Math.max(
+        1,
+        Math.round(growSeconds(shaped, phase) * growTimeMultiplier(levels)),
+      );
       const ripeAt = new Date(now.getTime() + seconds * 1000);
 
       /* Blight is rolled once, here, and hidden from the client until the bed

@@ -9,6 +9,7 @@
  */
 
 import { COLORS, LEVELS, LOCUS_KEYS, MAX_PLOTS, PLOT_UNLOCK, SPECIES, TIERS, TRAITS, GROW_TIME_SCALE } from './constants.js';
+import { dayPhase, moonlightFactor, traitsFor } from './species-traits.js';
 import type {
   AllelePair,
   ColorKey,
@@ -80,30 +81,48 @@ function speciesOf(key: string) {
   return s;
 }
 
-/** V1 ≈ 1.22× base, V6 ≈ 0.65× base. */
-export function growSeconds(strain: StrainLike): number {
+/**
+ * V1 ≈ 1.22× base, V6 ≈ 0.65× base.
+ *
+ * `phase` is the day phase at the moment of planting. Only moonflower reads it —
+ * it comes on fast if put in the ground after dusk and sulks if planted at noon,
+ * which is the one thing in the game that makes the day cycle matter. The server
+ * stamps the phase once at plant time, so the outcome cannot be changed by when
+ * the player chooses to come back.
+ */
+export function growSeconds(strain: StrainLike, phase: number = dayPhase()): number {
   const p = phenotype(strain);
-  return Math.round(speciesOf(strain.species).grow * (1.34 - p.V * 0.115) * GROW_TIME_SCALE);
+  const base = speciesOf(strain.species).grow * (1.34 - p.V * 0.115) * GROW_TIME_SCALE;
+  return Math.max(1, Math.round(base * moonlightFactor(strain.species, phase)));
 }
 
 /**
  * Quadratic on purpose: the difference between a Y2 and a Y6 line should be the
- * difference between a hobby and an estate. Range 1..11.
+ * difference between a hobby and an estate.
+ *
+ * Species shape the curve — pumpkin steepens it so a poor Y line is barely worth
+ * the bed, chili flattens it because its value is in Essence instead. Tomato is
+ * the baseline and comes out exactly as the prototype did.
  */
 export function yieldCount(strain: StrainLike): number {
   const p = phenotype(strain);
-  return Math.max(1, Math.round(0.6 + p.Y * p.Y * 0.3));
+  const t = traitsFor(strain.species);
+  const shaped = Math.pow(p.Y, 2 * t.yieldExponent);
+  return Math.max(1, Math.round((0.6 + shaped * 0.3) * t.yieldScale));
 }
 
 export function unitValue(strain: StrainLike): number {
   const p = phenotype(strain);
+  const t = traitsFor(strain.species);
   const base = speciesOf(strain.species).price;
-  return Math.round(base * (0.68 + p.E * 0.22) * (1 + COLORS[p.color].bonus * 0.09));
+  return Math.round(
+    base * (0.68 + p.E * 0.22 * t.essenceWeight) * (1 + COLORS[p.color].bonus * 0.09),
+  );
 }
 
 export function blightChance(strain: StrainLike): number {
   const p = phenotype(strain);
-  return clamp(0.16 - p.H * 0.026, 0.006, 0.16);
+  return clamp((0.16 - p.H * 0.026) * traitsFor(strain.species).blightScale, 0.006, 0.3);
 }
 
 /** Blighted beds yield 55% of normal, rounded, never below 1. */
@@ -111,10 +130,16 @@ export function blightedYield(fullYield: number): number {
   return Math.max(1, Math.round(fullYield * 0.55));
 }
 
-/** Chance a harvest returns a second seed copy on top of the guaranteed one. */
+/**
+ * Chance a harvest returns a second seed copy on top of the guaranteed one.
+ *
+ * Corn is generous here, which is what "recessive alleles hide well in this
+ * line" actually means in play: a line hides an allele by surviving long enough
+ * to pass it on, and a corn carrier is hard to lose by accident.
+ */
 export function seedCopyChance(strain: StrainLike): number {
   const p = phenotype(strain);
-  return clamp(0.32 + p.E * 0.03, 0, 1);
+  return clamp(0.32 + p.E * 0.03 + traitsFor(strain.species).seedCopyBonus, 0, 1);
 }
 
 /* ---------------- progression ---------------- */
