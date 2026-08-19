@@ -14,6 +14,7 @@
 import { COLORS, MILESTONES, PLOT_UNLOCK, SPECIES, SPECIES_ORDER } from '@heirloom/genetics';
 import * as api from './api';
 import { G, hydrate, plotCapacity } from './store.js';
+import { hasSeen, markSeen, primerById, unlocksFor } from './primers.js';
 import { Audio_ } from './audio.js';
 import { withAlpha } from './art.js';
 import { burst, floatText } from './world.js';
@@ -48,6 +49,8 @@ function announceMilestones(keys) {
 function refresh(snapshot) {
   const beforeLevel = G.level;
   hydrate(snapshot);
+  // Covers a returning player who levelled past an unlock in a previous session.
+  if (beforeLevel === 1 && G.level > 1) announceUnlocks(G.level);
   ui.updateHUD();
   ui.updateTutorial();
   if (G.panel) ui.renderPanel();
@@ -111,6 +114,12 @@ export async function harvest(pl) {
         'warn',
       );
       Audio_.err();
+      /* The first time this happens, say what could have prevented it. */
+      if (!hasSeen('blight')) {
+        markSeen('blight');
+        const primer = primerById('blight');
+        setTimeout(() => ui.toast(primer.body.replace(/<[^>]+>/g, ''), 'warn'), 2800);
+      }
     } else if (res.blighted) {
       ui.toast(`${strain?.name ?? 'That bed'} came up blighted — a reduced crop.`, 'warn');
     }
@@ -422,6 +431,19 @@ export async function shareSpecimen(strain) {
 
 /* ---------------- progression feedback ---------------- */
 
+/**
+ * Tells the player when something new has opened up.
+ *
+ * Without this a feature simply appears in the dock one day and the player is
+ * left to work out what it is for. Each announcement fires once.
+ */
+function announceUnlocks(level) {
+  for (const unlock of unlocksFor(level)) {
+    markSeen(unlock.id);
+    ui.toast(unlock.message, 'good');
+  }
+}
+
 function onLevelUp(from, to) {
   Audio_.rare();
   const before = PLOT_UNLOCK[Math.min(from, 12)] ?? 15;
@@ -435,6 +457,7 @@ function onLevelUp(from, to) {
   }
   ui.toast(msg, 'good');
   ui.levelBanner(to);
+  announceUnlocks(to);
 }
 
 /* ---------------- polling ---------------- */

@@ -114,6 +114,21 @@ Pressed specimens get a public page at `/herbarium/HB-xxxx` with a share button.
 opt-in act: unpressed specimens 404, and the page carries nothing about the owner beyond their
 chosen gardener name.
 
+## How players learn the game
+
+Three layers, because one thirteen-step tutorial could never cover it:
+
+1. **The guided tutorial** — the prototype's script, teaching the opening loop
+   from planting to a first cross. Replayable from the `?` menu.
+2. **Primers** — a short explainer at the top of each panel the first time that
+   feature is relevant. Shown once; dismissal survives a reload. Severe blight,
+   which has no panel, explains itself the first time it destroys a planting.
+3. **The help panel** — the full reference, covering genetics, blight, species
+   dispositions, the estate and the exchange.
+
+Features that unlock with level announce themselves when they open, so nothing
+appears in the dock unexplained.
+
 ## What is not built
 
 - **No chain.** `$SEED` is an off-chain ledger balance. Withdrawal is a request queue with a

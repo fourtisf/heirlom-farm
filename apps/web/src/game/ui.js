@@ -44,6 +44,7 @@ import { drawPlant, iso } from './art.js';
 import { Audio_ } from './audio.js';
 import { viewport } from './world.js';
 import { actions } from './actions.js';
+import { markSeen, primerFor, resetPrimers } from './primers.js';
 
 /** Tier and trait definitions, matched to the keys the server sent. */
 const tierOf = (s) => TIERS.find((t) => t.key === s.tier) ?? TIERS[0];
@@ -197,10 +198,33 @@ function closePanel() {
   $('#panel').classList.remove('is-open');
   document.querySelectorAll('.dock__btn').forEach(b => b.classList.remove('is-active'));
 }
+/**
+ * A one-off explainer, shown at the top of the panel it belongs to.
+ *
+ * Dismissing it is permanent — a player who understands a feature should not
+ * have to close the same card every time they open the panel.
+ */
+function primerCard(primer) {
+  const card = el('div', 'primer');
+  card.innerHTML = `
+    <div class="primer__t">${esc(primer.title)}</div>
+    <div class="primer__b">${primer.body}</div>`;
+  const ok = el('button', 'btn btn--sm primer__ok', 'Got it');
+  ok.onclick = () => {
+    markSeen(primer.id);
+    renderPanel();
+  };
+  card.appendChild(ok);
+  return card;
+}
+
 function renderPanel() {
   if (!G.panel) return;
   const body = $('#panelBody');
   body.innerHTML = '';
+
+  const primer = primerFor(G.panel);
+  if (primer) body.appendChild(primerCard(primer));
   ({
     vault: panelVault,
     bench: panelBench,
@@ -817,9 +841,27 @@ function panelHelp(body) {
     <div class="chiprow">${COLOR_KEYS.map(k => `<span class="cchip"><i style="background:${COLORS[k].hex}"></i>${COLORS[k].name}</span>`).join('')}</div>
     <h4>Mutation</h4>
     <p>Each allele has a 9% chance to shift by one step when copied, occasionally two. Mutagen raises that to 26%. Mutation runs both ways — it is how new material enters the pool, and how a good line gets ruined.</p>
+    <h4>Blight, and losing a line</h4>
+    <p>A blighted bed usually yields poorly. Some plantings are <b>lost outright</b> — no crop, no seed back. <b>Hardiness</b> both prevents blight and decides whether you survive it, which is why H is worth breeding for even though it never shows on the plant. Think before you put the last seed of a line in the ground.</p>
+    <h4>Species behave differently</h4>
+    <ul>
+      ${SPECIES_ORDER.map(k => `<li><b>${SPECIES[k].name}.</b> ${esc(SPECIES_TRAITS[k].trait)}</li>`).join('')}
+    </ul>
+    <p>Match the ground to the genes you have: a Yield-heavy line belongs in pumpkin, an Essence-heavy one in chili, and a fragile carrier in corn where spare seed comes back readily.</p>
+    <h4>The estate</h4>
+    <p><b>Improvements</b> are permanent and are what coins are ultimately for — they change how the whole farm runs rather than one plant. <b>Milestones</b> are the long record; they are awarded once and never taken back, even if you sell the specimen that earned one.</p>
+    <h4>The exchange</h4>
+    <p>Specimens trade between gardeners in <b>coins only</b>. Listing puts that seed in escrow — out of your vault until it sells or you cancel. A fee is destroyed on every sale, so the exchange moves specimens rather than wealth.</p>
     <h4>Where $SEED comes from</h4>
     <p>Only commissions pay $SEED. Selling produce pays coins. Standing with the guild opens more commission slots, so the token supply is gated by reputation rather than by farm size.</p>
   </div>`;
+
+  const again = el('button', 'btn btn--ghost btn--wide', 'Show the feature hints again');
+  again.onclick = () => {
+    resetPrimers();
+    toast('Hints reset. They will appear again as you open each panel.');
+  };
+  body.appendChild(again);
 }
 
 /* ---------------- plant flow ---------------- */

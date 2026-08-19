@@ -349,3 +349,53 @@ sides derive the phase from the wall clock instead.
 
 **This is a new balance surface** and, like the estate upgrades, it is
 unsimulated. Worth a pass before launch.
+
+
+---
+
+## 8. Guidance: the tutorial only covered half the game
+
+The guided tutorial is the prototype's thirteen-step script. It teaches the
+opening loop — plant, read the genes, harvest, sell, cross, name, take a
+commission — and then stops.
+
+Everything added since had **no explanation anywhere**:
+
+| feature | explained before |
+|---|---|
+| Exchange | no |
+| Estate improvements | no |
+| Milestones | no |
+| Punnett square | no |
+| Blight that destroys a planting | no |
+| Species behaving differently | no |
+| Moonflower and the day cycle | no |
+| Sow-every-bed | no |
+
+A player reaching any of those was on their own.
+
+**Extending the script was the wrong fix.** Nobody reads a twenty-three step
+tutorial, and most of those steps would have fired long before the feature was
+reachable — the exchange does not open until level 3, the cold frame until 5.
+
+Instead each feature carries a **primer**: a short explainer that appears once,
+at the top of the panel it belongs to, the first time it is genuinely relevant.
+Dismissing it is permanent and survives a reload, so a player who already
+understands a feature never sees its card again. `Show the feature hints again`
+in the help panel resets them all.
+
+Three things do not fit that pattern and are handled separately:
+
+- **Unlock announcements.** Levelling into the exchange, the cold frame, or
+  moonflower now says so, rather than letting a new dock button appear
+  unexplained. Returning players who levelled past an unlock in an earlier
+  session get it on their next load.
+- **Severe blight** has no panel to live in, so its primer fires as a follow-up
+  message the first time a planting is actually destroyed — at the moment it
+  means something, and only then.
+- **The help panel is the fallback reference** and now documents all of it:
+  blight, species dispositions, the estate, the exchange, alongside the original
+  genetics sections.
+
+Verified in a browser: every panel shows its explainer on first open, dismissal
+sticks across a reload, and the help panel carries eight sections.
