@@ -32,6 +32,10 @@ model Player {
   produce     Produce[]
   ledger      LedgerEntry[]
   withdrawals WithdrawalRequest[]
+  listings    Listing[]           @relation("seller")
+  purchases   Listing[]           @relation("buyer")
+  upgrades    PlayerUpgrade[]
+  milestones  PlayerMilestone[]
 
   @@index([seedBalance])
 }
@@ -57,8 +61,9 @@ model Strain {
   pressed    Boolean  @default(false)
   createdAt  DateTime @default(now())
 
-  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  beds   Bed[]
+  player   Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  beds     Bed[]
+  listings Listing[]
 
   @@index([playerId])
   @@index([playerId, species])
@@ -164,4 +169,78 @@ model AuthNonce {
   usedAt    DateTime?
 
   @@index([expiresAt])
+}
+
+
+// ---------------------------------------------------------------------------
+// Marketplace
+//
+// Denominated in coins, never $SEED. $SEED emission is throttled by
+// reputation on purpose; letting players trade for it would route around that
+// gate and turn every commission into a tradeable faucet.
+//
+// A listing holds its strain in escrow: `escrowQty` leaves the seller's stack
+// the moment they list, so the same seed cannot be planted, bred, or sold
+// twice while it is on the market.
+// ---------------------------------------------------------------------------
+model Listing {
+  id         String    @id @default(cuid())
+  sellerId   String
+  strainId   String
+  // Snapshot of the specimen at listing time, so the browse page does not need
+  // to join every strain, and so a delisted item still renders in history.
+  species    String
+  accession  String
+  name       String
+  score      Int
+  tier       String
+  color      String[]
+  generation Int
+  // Held out of the seller's vault for as long as the listing is open.
+  escrowQty  Int       @default(1)
+  price      Int
+  // open | sold | cancelled
+  status     String    @default("open")
+  buyerId    String?
+  soldAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  seller Player  @relation("seller", fields: [sellerId], references: [id], onDelete: Cascade)
+  buyer  Player? @relation("buyer", fields: [buyerId], references: [id], onDelete: SetNull)
+  strain Strain  @relation(fields: [strainId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([status, species, score])
+  @@index([sellerId, status])
+  @@index([buyerId])
+}
+
+// Permanent, purchasable improvements to the estate. These are the mid-game
+// coin sink. They change throughput — never the rarity curve.
+model PlayerUpgrade {
+  id        String   @id @default(cuid())
+  playerId  String
+  key       String
+  level     Int      @default(1)
+  boughtAt  DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, key])
+}
+
+// Awarded once and kept, so the record survives selling the specimen that
+// earned it.
+model PlayerMilestone {
+  id         String   @id @default(cuid())
+  playerId   String
+  key        String
+  achievedAt DateTime @default(now())
+  // What earned it — accession, count, whatever the milestone cares about.
+  detail     Json?
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, key])
+  @@index([playerId])
 }

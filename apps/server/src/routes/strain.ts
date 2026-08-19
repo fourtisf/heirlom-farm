@@ -13,6 +13,7 @@ import { badRequest, conflict, notFound } from '../lib/errors.js';
 import { isClean, isWellFormedName } from '../lib/profanity.js';
 import { getState } from '../lib/player.js';
 import { strainView } from '../lib/serialize.js';
+import { awardMilestones } from '../lib/milestones.js';
 
 const nameBody = z.object({
   strainId: z.string().min(1).max(64),
@@ -51,7 +52,9 @@ export async function strainRoutes(app: FastifyInstance) {
       return tx.strain.findUniqueOrThrow({ where: { id: row.id } });
     });
 
-    return { strain: strainView(strain), state: await getState(playerId) };
+    const earned = await awardMilestones(playerId);
+
+    return { strain: strainView(strain), earned, state: await getState(playerId) };
   });
 
   /** A single specimen. Private for now — no public herbarium page yet. */

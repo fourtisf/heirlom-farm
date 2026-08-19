@@ -24,4 +24,7 @@ export {
 export type { CommissionReq, CommissionSpec } from './commission.js';
 /* `forecast` is deterministic — it shows the allele range a cross could produce,
    which the player can already derive from the two parent cards they own. */
-export { forecast } from './breed.js';
+export { forecast, colorPunnett } from './breed.js';
+export type { ColorPunnett, PunnettCell } from './breed.js';
+export * from './estate.js';
+export * from './milestones.js';

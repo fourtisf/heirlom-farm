@@ -143,3 +143,71 @@ function expressPair(a: number, b: number): number {
   const lo = Math.min(a, b);
   return clamp(Math.round(hi * 0.68 + lo * 0.32), ALLELE_MIN, ALLELE_MAX);
 }
+
+
+/* ---------------------------------------------------------------------------
+   Teaching the carrier idea
+
+   The strategic core of HEIRLOOM is that the beautiful morphs are recessive, so
+   the plainest plant in your vault may be the most valuable thing you own. The
+   prototype never said this anywhere — a player had to infer it from twenty
+   disappointing crosses.
+
+   This is a plain Punnett square over the colour locus. It is deterministic and
+   derived entirely from two parent cards the player already holds, so it
+   reveals nothing a careful player could not work out with a pencil.
+   --------------------------------------------------------------------------- */
+
+export interface PunnettCell {
+  /** The allele contributed by each parent. */
+  from: [ColorKey, ColorKey];
+  /** What that pairing would look like. */
+  shows: ColorKey;
+  /** True when the pairing hides something rarer than it displays. */
+  carries: boolean;
+}
+
+export interface ColorPunnett {
+  cells: PunnettCell[];
+  /** Probability of each visible colour, keyed by morph. Sums to 1. */
+  outcomes: Array<{ color: ColorKey; chance: number }>;
+  /** Probability the offspring hides an allele rarer than the one it shows. */
+  carrierChance: number;
+  /** The rarest allele either parent can pass on at all. */
+  bestHidden: ColorKey;
+}
+
+/**
+ * Ignores mutation on purpose: this answers "what does the inheritance alone
+ * give me", which is the thing worth teaching. The colour ladder can still
+ * surprise a player upward, and that surprise should stay a surprise.
+ */
+export function colorPunnett(pa: StrainLike, pb: StrainLike): ColorPunnett {
+  const cells: PunnettCell[] = [];
+
+  for (const a of pa.color) {
+    for (const b of pb.color) {
+      const shows = COLORS[a].rank <= COLORS[b].rank ? a : b;
+      const hidden = shows === a ? b : a;
+      cells.push({ from: [a, b], shows, carries: COLORS[hidden].rank > COLORS[shows].rank });
+    }
+  }
+
+  const tally = new Map<ColorKey, number>();
+  for (const cell of cells) tally.set(cell.shows, (tally.get(cell.shows) ?? 0) + 1);
+
+  const outcomes = [...tally.entries()]
+    .map(([color, n]) => ({ color, chance: n / cells.length }))
+    .sort((x, y) => COLORS[x.color].rank - COLORS[y.color].rank);
+
+  const bestHidden = [...pa.color, ...pb.color].reduce((best, c) =>
+    COLORS[c].rank > COLORS[best].rank ? c : best,
+  );
+
+  return {
+    cells,
+    outcomes,
+    carrierChance: cells.filter((c) => c.carries).length / cells.length,
+    bestHidden,
+  };
+}

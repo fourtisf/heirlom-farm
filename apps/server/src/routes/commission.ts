@@ -15,6 +15,7 @@ import { prisma } from '../lib/db.js';
 import { badRequest, conflict, notFound } from '../lib/errors.js';
 import { recordLedger } from '../lib/ledger.js';
 import { getState } from '../lib/player.js';
+import { awardMilestones } from '../lib/milestones.js';
 import { awardXp } from '../lib/xp.js';
 
 const fulfilBody = z.object({
@@ -106,7 +107,9 @@ export async function commissionRoutes(app: FastifyInstance) {
       };
     });
 
-    return { ...result, state: await getState(playerId) };
+    const earned = await awardMilestones(playerId);
+
+    return { ...result, earned, state: await getState(playerId) };
   });
 
   app.post('/api/commission/decline', { onRequest: [app.authenticate] }, async (req) => {

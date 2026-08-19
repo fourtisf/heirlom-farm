@@ -22,6 +22,8 @@ import {
 
 export interface StateSnapshot {
   player: PlayerView;
+  upgrades: Record<string, number>;
+  milestones: string[];
   beds: BedView[];
   vault: StrainView[];
   herbarium: StrainView[];
@@ -150,7 +152,7 @@ export async function topUpCommissions(playerId: string): Promise<void> {
 export async function getState(playerId: string): Promise<StateSnapshot> {
   await topUpCommissions(playerId);
 
-  const [player, beds, strains, produce, commissions] = await Promise.all([
+  const [player, beds, strains, produce, commissions, upgrades, milestones] = await Promise.all([
     prisma.player.findUniqueOrThrow({ where: { id: playerId } }),
     prisma.bed.findMany({ where: { playerId }, orderBy: { index: 'asc' } }),
     prisma.strain.findMany({ where: { playerId }, orderBy: { createdAt: 'desc' } }),
@@ -159,6 +161,8 @@ export async function getState(playerId: string): Promise<StateSnapshot> {
       where: { playerId, status: 'open' },
       orderBy: { createdAt: 'asc' },
     }),
+    prisma.playerUpgrade.findMany({ where: { playerId } }),
+    prisma.playerMilestone.findMany({ where: { playerId }, select: { key: true } }),
   ]);
 
   const now = new Date();
@@ -166,6 +170,8 @@ export async function getState(playerId: string): Promise<StateSnapshot> {
 
   return {
     player: playerView(player),
+    upgrades: Object.fromEntries(upgrades.map((u) => [u.key, u.level])),
+    milestones: milestones.map((m) => m.key),
     beds: beds.map((b) => bedView(b, capacity, now)),
     /* The vault is what you hold; the herbarium is what you have placed on
        record. A strain can be in both — naming a line files it without taking

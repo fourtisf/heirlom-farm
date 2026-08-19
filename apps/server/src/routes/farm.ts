@@ -8,7 +8,16 @@
 
 import {
   SPECIES,
+  UPGRADES,
+  UPGRADE_ORDER,
   blightChance,
+  blightChanceMultiplier,
+  growTimeMultiplier,
+  saleMultiplier,
+  seedCopyBonus,
+  severeBlightChance,
+  severeBlightMultiplier,
+  upgradeCost,
   blightedYield,
   expressColor,
   growSeconds,
@@ -26,7 +35,7 @@ import {
   type SpeciesKey,
 } from '@heirloom/genetics';
 import { cryptoRng, nurseryStock } from '@heirloom/genetics/server';
-import { MUTAGEN_COST } from '@heirloom/genetics';
+import { MUTAGEN_COST, type UpgradeKey } from '@heirloom/genetics';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../lib/db.js';
@@ -36,6 +45,8 @@ import { createStrain, getState } from '../lib/player.js';
 import { requirePlayer } from '../lib/auth.js';
 import { awardXp } from '../lib/xp.js';
 import { strainView } from '../lib/serialize.js';
+import { upgradeLevels } from '../lib/upgrades.js';
+import { awardMilestones } from '../lib/milestones.js';
 
 const plantBody = z.object({
   bedIndex: z.number().int().min(0).max(14),
@@ -89,13 +100,16 @@ export async function farmRoutes(app: FastifyInstance) {
       if (taken.count !== 1) throw conflict('no_seed', 'No seed of that strain left.');
 
       const shaped = shape(strain);
+      const levels = await upgradeLevels(playerId, tx);
+
       const now = new Date();
-      const ripeAt = new Date(now.getTime() + growSeconds(shaped) * 1000);
+      const seconds = Math.max(1, Math.round(growSeconds(shaped) * growTimeMultiplier(levels)));
+      const ripeAt = new Date(now.getTime() + seconds * 1000);
 
       /* Blight is rolled once, here, and hidden from the client until the bed
          reaches 55% growth. Rolling at plant time means the outcome cannot be
          influenced by when the player chooses to harvest. */
-      const blighted = cryptoRng.chance(blightChance(shaped));
+      const blighted = cryptoRng.chance(blightChance(shaped) * blightChanceMultiplier(levels));
 
       await tx.bed.update({
         where: { playerId_index: { playerId, index: bedIndex } },
@@ -121,17 +135,36 @@ export async function farmRoutes(app: FastifyInstance) {
 
       const strain = await tx.strain.findUniqueOrThrow({ where: { id: bed.strainId } });
       const shaped = shape(strain);
+      const levels = await upgradeLevels(playerId, tx);
+      const pheno = phenotype(shaped);
 
       // Should already be rolled at plant time; this is the belt-and-braces path.
-      const blighted = bed.blightRolled ? bed.blighted : cryptoRng.chance(blightChance(shaped));
+      const blighted = bed.blightRolled
+        ? bed.blighted
+        : cryptoRng.chance(blightChance(shaped) * blightChanceMultiplier(levels));
+
+      /* A share of blighted plantings are lost outright — no produce, no seed
+         copy. This is the only way to actually lose a line, and it is what
+         gives Hardiness a job: a tough plant does not merely catch blight less
+         often, it survives the blight it catches. The roll happens here rather
+         than at plant time because it is a consequence of the blight, not a
+         second independent fate. */
+      const severe =
+        blighted &&
+        cryptoRng.chance(severeBlightChance(pheno) * severeBlightMultiplier(levels));
 
       const full = yieldCount(shaped);
-      const units = blighted ? blightedYield(full) : full;
+      const units = severe ? 0 : blighted ? blightedYield(full) : full;
       const value = unitValue(shaped);
       const color = expressColor(shaped.color);
 
-      // Blighted beds return exactly one seed copy; healthy ones may return two.
-      const copies = blighted ? 1 : 1 + (cryptoRng.chance(seedCopyChance(shaped)) ? 1 : 0);
+      /* A lost planting returns nothing at all — that seed is gone. Blighted but
+         surviving beds return exactly one copy; healthy ones may return two. */
+      const copies = severe
+        ? 0
+        : blighted
+          ? 1
+          : 1 + (cryptoRng.chance(seedCopyChance(shaped) + seedCopyBonus(levels)) ? 1 : 0);
 
       // Free the bed before anything else can claim it.
       const freed = await tx.bed.updateMany({
@@ -146,10 +179,13 @@ export async function farmRoutes(app: FastifyInstance) {
       });
       if (freed.count !== 1) throw conflict('already_harvested', 'That bed was already harvested.');
 
-      await addProduce(tx, playerId, strain.species, color, units, value);
-      await tx.strain.update({ where: { id: strain.id }, data: { qty: { increment: copies } } });
+      if (units > 0) await addProduce(tx, playerId, strain.species, color, units, value);
+      if (copies > 0) {
+        await tx.strain.update({ where: { id: strain.id }, data: { qty: { increment: copies } } });
+      }
 
-      const xp = xpForHarvest(strainScore(shaped));
+      // A lost planting still teaches something, but it does not pay.
+      const xp = severe ? 1 : xpForHarvest(strainScore(shaped));
       const levelResult = await awardXp(tx, playerId, xp);
 
       await recordLedger(tx, {
@@ -163,15 +199,29 @@ export async function farmRoutes(app: FastifyInstance) {
           units,
           unitValue: value,
           blighted,
+          severe,
           seedCopies: copies,
           xp,
         },
       });
 
-      return { units, value, color, blighted, copies, xp, levelledUp: levelResult.levelledUp };
+      return {
+        units,
+        value,
+        color,
+        blighted,
+        severe,
+        copies,
+        xp,
+        levelledUp: levelResult.levelledUp,
+        lostLine: severe && strain.qty === 0,
+        strainName: strain.name,
+      };
     });
 
-    return { ...result, state: await getState(playerId) };
+    const earned = await awardMilestones(playerId);
+
+    return { ...result, earned, state: await getState(playerId) };
   });
 
   app.post('/api/sell', { onRequest: [app.authenticate] }, async (req) => {
@@ -193,8 +243,13 @@ export async function farmRoutes(app: FastifyInstance) {
       const qty = body.qty ?? stack.qty;
       if (qty > stack.qty) throw badRequest('too_many', 'You do not hold that many.');
 
-      // Sold at the value frozen when it was harvested, never a fresh one.
-      const coins = BigInt(stack.unitValue) * BigInt(qty);
+      /* Sold at the value frozen when it was harvested, never a fresh one. The
+         glasshouse premium is applied at the till rather than baked into the
+         stored value, so selling an old stack after buying one is not a way to
+         retroactively reprice it. */
+      const levels = await upgradeLevels(playerId, tx);
+      const unit = Math.round(stack.unitValue * saleMultiplier(levels));
+      const coins = BigInt(unit) * BigInt(qty);
 
       const sold = await tx.produce.updateMany({
         where: { id: stack.id, qty: { gte: qty } },
@@ -214,10 +269,10 @@ export async function farmRoutes(app: FastifyInstance) {
         playerId,
         kind: 'sale',
         coins,
-        meta: { species: body.species, color: body.color, qty, unitValue: stack.unitValue, xp },
+        meta: { species: body.species, color: body.color, qty, unitValue: unit, xp },
       });
 
-      return { coins: Number(coins), qty, unitValue: stack.unitValue, xp };
+      return { coins: Number(coins), qty, unitValue: unit, xp };
     });
 
     return { ...result, state: await getState(playerId) };

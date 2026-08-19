@@ -26,6 +26,7 @@ import { recordLedger } from '../lib/ledger.js';
 import { createStrain, getState } from '../lib/player.js';
 import { rateLimit, withLock } from '../lib/redis.js';
 import { strainView } from '../lib/serialize.js';
+import { awardMilestones } from '../lib/milestones.js';
 import { awardXp } from '../lib/xp.js';
 
 /**
@@ -143,6 +144,10 @@ export async function breedRoutes(app: FastifyInstance) {
       }),
     );
 
-    return { child: strainView(child), state: await getState(playerId) };
+    /* Awarded after the transaction commits, so a milestone is never granted
+       for a cross that rolled back. */
+    const earned = await awardMilestones(playerId);
+
+    return { child: strainView(child), earned, state: await getState(playerId) };
   });
 }
