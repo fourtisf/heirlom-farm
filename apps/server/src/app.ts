@@ -6,6 +6,7 @@ import type Redis from 'ioredis';
 import { ZodError } from 'zod';
 import { loadEnv, isProduction, type Env } from './env.js';
 import { ApiError } from './lib/errors.js';
+import { prisma } from './lib/db.js';
 import { getRedis } from './lib/redis.js';
 import { requirePlayer } from './lib/auth.js';
 import { getState } from './lib/player.js';
@@ -91,7 +92,17 @@ export async function buildApp(overrides: Partial<Env> = {}): Promise<FastifyIns
     return reply.code(500).send({ error: 'internal', message: 'Something went wrong.' });
   });
 
-  app.get('/health', async () => ({ ok: true, time: new Date().toISOString() }));
+  /* Deliberately exempt from the rate limiter, which is Redis-backed: a Redis
+     outage must not take the health check down with it, or every load-balancer
+     probe fails at the moment the service most needs to stay routable. It
+     reports dependency status instead of hiding it. */
+  app.get('/health', { config: { rateLimit: false } }, async () => {
+    const [db, redis] = await Promise.all([
+      prisma.$queryRaw`SELECT 1`.then(() => true).catch(() => false),
+      app.redis.ping().then(() => true).catch(() => false),
+    ]);
+    return { ok: db, db, redis, time: new Date().toISOString() };
+  });
 
   app.get('/api/state', { onRequest: [app.authenticate] }, async (req) => {
     const { sub: playerId } = requirePlayer(req);

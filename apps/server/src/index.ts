@@ -1,3 +1,6 @@
+/* Must be first: it populates process.env before Prisma is constructed. */
+import './load-env.js';
+
 import { buildApp } from './app.js';
 import { prisma } from './lib/db.js';
 import { closeRedis } from './lib/redis.js';
