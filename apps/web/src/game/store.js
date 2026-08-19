@@ -115,6 +115,15 @@ export const G = {
   herbarium: [],
   produce: {},
   commissions: [],
+  upgrades: {},
+  milestones: [],
+
+  /* Exchange state, fetched on demand rather than with every snapshot — the
+     board is other players' data and does not belong in the render cache. */
+  market: { listings: [], cursor: null, filters: { sort: 'new' }, loading: false },
+  myListings: [],
+  upgradeDefs: [],
+  milestoneDefs: [],
 
   /* purely local view state */
   camera: { x: 0, y: 0, z: 1, tx: 0, ty: 0, tz: 1 },
@@ -135,6 +144,33 @@ export const G = {
   busy: false,
   error: null,
 };
+
+const TUTORIAL_KEY = 'heirloom.tutorial.done';
+
+/**
+ * Whether this browser has already been walked through the tutorial.
+ *
+ * Kept in localStorage rather than on the player row: it is a property of "has
+ * this person seen the explanation", not of the farm, and it is not worth a
+ * round trip or a migration. The ? menu can always replay it.
+ */
+export function tutorialDone() {
+  try {
+    return window.localStorage.getItem(TUTORIAL_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function setTutorialDone(done) {
+  G.tutorial.done = done;
+  try {
+    if (done) window.localStorage.setItem(TUTORIAL_KEY, '1');
+    else window.localStorage.removeItem(TUTORIAL_KEY);
+  } catch {
+    /* private browsing; the tutorial simply replays */
+  }
+}
 
 /** Fifteen fixed bed slots; the server decides which are unlocked. */
 export function initPlots(positions) {
@@ -181,6 +217,8 @@ export function hydrate(snapshot) {
   G.vault = snapshot.vault;
   G.herbarium = snapshot.herbarium;
   G.commissions = snapshot.commissions;
+  G.upgrades = snapshot.upgrades ?? {};
+  G.milestones = snapshot.milestones ?? [];
 
   G.produce = {};
   for (const stack of snapshot.produce) {

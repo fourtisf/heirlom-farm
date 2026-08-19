@@ -93,13 +93,35 @@ exactly that: five concurrent calls produce one child.
 **Every** coin and $SEED movement writes a `LedgerEntry`. No exceptions. When someone claims they
 were robbed, the ledger is the answer.
 
+## The exchange
+
+Players trade specimens for **coins, never $SEED** — token emission is throttled by reputation, and
+letting it trade would route around that gate.
+
+A listing escrows its seed immediately, so it cannot be planted, bred, or sold while on the board.
+The 6% fee is **burned rather than paid to anyone**, which is what makes trading a coin sink instead
+of a coin shuffle — and is also the anti-wash-trading measure that actually works: a pair churning a
+specimen between them is strictly poorer after every round trip. Self-trades are blocked and selling
+is gated at level 3.
+
+## Stakes, sinks, and goals
+
+| | what it does |
+|---|---|
+| **Severe blight** | A share of blighted plantings are lost outright — no produce, no seed copy — with the odds gated by Hardiness. The only way to permanently lose a line. |
+| **Estate upgrades** | Four permanent improvements (cold frame, irrigation, seed library, glasshouse). The mid-game coin sink. They move throughput, never the rarity curve. |
+| **Milestones** | Seventeen long goals, evaluated server-side and awarded once. They survive selling the specimen that earned them. |
+| **Punnett square** | The bench explains carrier logic — that a plain-looking plant may be the most valuable thing you own — which the game previously never said anywhere. |
+
+Pressed specimens get a public page at `/herbarium/HB-xxxx` with a share button. Pressing is the
+opt-in act: unpressed specimens 404, and the page carries nothing about the owner beyond their
+chosen gardener name.
+
 ## What is not built
 
 - **No chain.** `$SEED` is an off-chain ledger balance. Withdrawal is a request queue with a
   minimum, a cooldown, and a review step — no contract code until ALFA picks Robinhood Chain vs
   Solana. See `docs/DECISIONS.md`.
-- **No player-to-player trading.** The schema supports it; escrow and anti-wash-trading need their
-  own spec.
-- **No public herbarium page.** Specimens are private. The specimen plate is already built to be
-  screenshotted if that changes.
+- **No price history on the exchange.** Sellers get an advisory quote from score and generation;
+  nothing records what things actually sold for.
 - **No blight cure item.** Blight is rolled once per planting, as in the prototype.

@@ -78,6 +78,14 @@ export default function GameSurface() {
           <svg viewBox="0 0 24 24"><path d="M3 8h18l-1.5 9.5a2 2 0 0 1-2 1.5H6.5a2 2 0 0 1-2-1.5Z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>
           <span>Market</span>
         </button>
+        <button className="dock__btn" data-panel="exchange">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18M7 6V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/><path d="M8 11v6M12 11v6M16 11v6"/></svg>
+          <span>Exchange</span>
+        </button>
+        <button className="dock__btn" data-panel="estate">
+          <svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V9l7-5 7 5v12"/><path d="M10 21v-6h4v6"/></svg>
+          <span>Estate</span>
+        </button>
         <button className="dock__btn" data-panel="commission" id="dockCommission">
           <svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4Z"/><path d="M9 8h6M9 12h4"/></svg>
           <span>Commissions</span>
@@ -133,6 +141,7 @@ export default function GameSurface() {
           </div>
           <div className="plate__actions">
             <button className="btn" id="plateClose">Close</button>
+            <button className="btn btn--ghost" id="plateShare" style={{ display: 'none' }}>Share</button>
             <button className="btn btn--brass" id="plateSave">Press into herbarium</button>
           </div>
         </div>

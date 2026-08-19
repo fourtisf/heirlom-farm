@@ -571,3 +571,185 @@ input{font-family:inherit}
 @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 .title__sheet{animation-name:riseX}
 @keyframes riseX{from{opacity:0;transform:translateX(-50%) translateY(18px)}to{opacity:1;transform:translateX(-50%)}}
+
+/* ============================================================
+   Punnett square — the carrier lesson
+   ============================================================ */
+.punnett{
+  margin:12px 0 4px;padding:13px 14px 14px;border:1px solid var(--rule);border-radius:14px;
+  background:linear-gradient(180deg,rgba(62,107,68,.13),rgba(20,14,8,.28));
+}
+.punnett__t{
+  font-family:var(--f-mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--brass);margin-bottom:10px;
+}
+.pn__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.pn__cell{
+  padding:8px 6px;border-radius:10px;text-align:center;
+  background:rgba(12,9,5,.42);border:1px solid var(--rule);
+}
+.pn__cell--carrier{border-color:rgba(201,162,39,.5);background:rgba(201,162,39,.09)}
+.pn__cell i{display:block;width:100%;height:5px;border-radius:3px;margin-bottom:6px}
+.pn__cell b{display:block;font-size:11.5px;font-weight:700;color:var(--bone)}
+.pn__cell em{display:block;font-style:normal;font-size:9px;color:var(--bone-dim);margin-top:2px;line-height:1.3}
+.pn__cell--carrier em{color:var(--brass-lite)}
+
+.pn__odds{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
+.pn__odd{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--bone-dim)}
+.pn__odd i{width:9px;height:9px;border-radius:50%}
+.pn__odd b{color:var(--bone);font-weight:700}
+
+.pn__lesson{
+  margin-top:11px;padding-top:10px;border-top:1px solid var(--rule);
+  font-size:12px;line-height:1.55;color:var(--bone-dim);
+}
+.pn__lesson em{font-style:italic;color:var(--parchment)}
+
+/* ============================================================
+   Tabs, rows, filters — exchange and estate
+   ============================================================ */
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{
+  flex:1;padding:8px 10px;border-radius:10px;border:1px solid var(--rule);
+  font-size:12px;font-weight:600;color:var(--bone-dim);background:rgba(12,9,5,.3);
+}
+.tab:hover{color:var(--bone)}
+.tab.is-on{color:#2A2010;background:linear-gradient(180deg,#F0D477,var(--brass));border-color:transparent}
+
+.filters{display:flex;gap:8px;margin-bottom:12px}
+.filters select{
+  flex:1;padding:8px 10px;border-radius:10px;border:1px solid var(--rule);
+  background:rgba(12,9,5,.5);color:var(--bone);font-size:12px;
+}
+
+.note{
+  padding:10px 12px;border-radius:12px;margin-bottom:14px;
+  background:rgba(201,162,39,.09);border:1px solid rgba(201,162,39,.28);
+  font-size:11.8px;line-height:1.55;color:var(--bone-dim);
+}
+.note b{color:var(--brass-lite)}
+
+.rows{display:flex;flex-direction:column;gap:8px}
+.row{
+  display:flex;align-items:center;gap:12px;padding:11px 13px;
+  border:1px solid var(--rule);border-radius:12px;background:rgba(12,9,5,.32);
+}
+.row>div:first-child{flex:1;min-width:0}
+.row b{display:block;font-size:13px;color:var(--bone);font-weight:700}
+.row span{display:block;font-size:11.3px;color:var(--bone-dim);line-height:1.45;margin-top:2px}
+.row__right{flex:0 0 auto;text-align:right}
+.row__right b{font-family:var(--f-mono);color:var(--brass-lite)}
+.row--upgrade.is-locked{opacity:.5}
+.upgrade__effect{
+  display:block;font-style:normal;font-size:10.5px;margin-top:5px;
+  font-family:var(--f-mono);color:var(--leaf);
+}
+.pip{display:inline-block;width:6px;height:6px;border-radius:50%;margin-left:3px;background:var(--rule)}
+.pip--on{background:var(--brass)}
+.row--milestone.is-done b{color:var(--leaf)}
+.row--milestone.is-done{border-color:rgba(127,176,105,.36);background:rgba(62,107,68,.14)}
+
+.mstat{display:flex;align-items:baseline;gap:8px;margin-bottom:14px}
+.mstat b{font-family:var(--f-display);font-size:30px;color:var(--brass-lite);line-height:1}
+.mstat span{font-size:12px;color:var(--bone-dim)}
+
+/* listings */
+.card--listing .listing__foot{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-top:10px;padding-top:10px;border-top:1px solid var(--rule);
+}
+.listing__price{font-family:var(--f-mono);font-size:14px;font-weight:600;color:var(--brass-lite)}
+.listing__mine{font-size:11px;color:var(--bone-dim);font-style:italic}
+
+/* ============================================================
+   Public specimen page
+   ============================================================ */
+.publicplate{
+  min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;padding:28px 16px 40px;
+  background:radial-gradient(120% 90% at 50% 0%,#25321F 0%,#141C13 55%,#0B110C 100%);
+}
+.publicplate .plate{position:relative;margin:0}
+.publicplate__cta{
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--brass);text-decoration:none;padding:9px 16px;border-radius:10px;
+  border:1px solid rgba(201,162,39,.35);
+}
+.publicplate__cta:hover{color:var(--brass-lite);border-color:var(--brass)}
+
+/* ============================================================
+   Sign-in
+   ============================================================ */
+.signin{
+  min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:26px;padding:32px 20px;text-align:center;
+  background:radial-gradient(120% 90% at 50% 0%,#25321F 0%,#141C13 55%,#0B110C 100%);
+}
+.signin__mark i{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:.42em;text-transform:uppercase;
+  color:var(--brass);font-style:normal;
+}
+.signin__mark h1{
+  font-family:var(--f-display);font-size:clamp(38px,9vw,64px);font-weight:600;
+  letter-spacing:.14em;color:var(--parchment);margin:8px 0 0;
+}
+.signin__rule{width:80px;height:1px;background:var(--brass);margin:16px auto}
+.signin__mark p{font-size:13.5px;color:var(--bone-dim);font-style:italic}
+.signin__sheet{
+  max-width:430px;padding:22px;border-radius:18px;
+  background:linear-gradient(180deg,#2C2016,#1D150D);border:1px solid var(--rule);
+}
+.signin__sheet p{font-size:13px;line-height:1.65;color:var(--bone-dim);margin:0 0 18px}
+.signin__error{margin-top:12px;font-size:12px;color:#E0836F}
+
+.bootfail{
+  position:fixed;inset:auto 16px 96px;z-index:80;padding:14px 16px;border-radius:12px;
+  background:rgba(122,46,59,.92);border:1px solid rgba(224,131,111,.4);
+}
+.bootfail b{display:block;color:var(--parchment);font-size:13px}
+.bootfail span{display:block;margin-top:4px;font-size:11.5px;color:rgba(240,230,206,.8)}
+
+/* ============================================================
+   Small screens
+   ============================================================ */
+@media (max-width:860px){
+  /* Seven destinations no longer fit across a phone; let the dock scroll
+     rather than crushing every label into two characters. */
+  .dock{overflow-x:auto;justify-content:flex-start;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .dock::-webkit-scrollbar{display:none}
+  .dock__btn{flex:0 0 auto;min-width:68px}
+  .pn__grid{grid-template-columns:repeat(2,1fr)}
+  .filters{flex-direction:column}
+  .row{flex-wrap:wrap}
+  .row__right{text-align:left}
+}
+@media (max-width:640px){
+  .punnett{padding:11px}
+  .pn__cell b{font-size:11px}
+  .publicplate{padding:16px 12px 28px}
+}
+
+/* ============================================================
+   Small-screen corrections found by testing at 390px
+   ============================================================ */
+@media (max-width:640px){
+  /* The HUD is a single row of fixed-width parts, so at phone widths the XP
+     readout and the day phase were being clipped off the right edge. Let the
+     level block shrink and drop the phase label, which is flavour rather than
+     information. */
+  .hud{gap:8px;padding:8px 8px}
+  .brandmark{padding-right:9px}
+  .brandmark b{font-size:15px;letter-spacing:.1em}
+  .lvl{min-width:0;flex:1}
+  .xp{width:auto;flex:1;min-width:44px}
+  .xp__meta #hudPhase{display:none}
+  .purse{gap:6px}
+  .coinbox{padding:4px 7px;font-size:11.5px}
+  .iconbtn{width:28px;height:28px;flex:0 0 auto}
+
+  /* The specimen plate ribbon sits over the accession line on a narrow plate. */
+  .plate__eyebrow{padding-right:74px}
+}
+
+/* The public plate is not inside a modal, so its ribbon needs the same room. */
+.publicplate .plate__eyebrow{padding-right:78px}

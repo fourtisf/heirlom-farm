@@ -113,6 +113,8 @@ export interface CommissionView {
 }
 
 export interface StateSnapshot {
+  upgrades: Record<string, number>;
+  milestones: string[];
   player: {
     id: string;
     wallet: string;
@@ -209,3 +211,123 @@ export const fulfilCommission = (commissionId: string, strainId: string) =>
 
 export const declineCommission = (commissionId: string) =>
   post<StateSnapshot>('/api/commission/decline', { commissionId });
+
+/* ---------------- the exchange ---------------- */
+
+export interface ListingView {
+  id: string;
+  accession: string;
+  name: string;
+  species: string;
+  score: number;
+  tier: string;
+  color: string[];
+  generation: number;
+  price: number;
+  genes: Record<'Y' | 'V' | 'H' | 'E', [number, number]>;
+  createdAt: string;
+  mine: boolean;
+}
+
+export interface BrowseQuery {
+  species?: string;
+  minScore?: number;
+  maxPrice?: number;
+  sort?: 'new' | 'price' | 'score';
+  cursor?: string;
+}
+
+export const browseMarket = (q: BrowseQuery = {}) => {
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(q)) if (v !== undefined && v !== '') params.set(k, String(v));
+  const qs = params.toString();
+  return call<{ listings: ListingView[]; nextCursor: string | null }>(
+    `/api/market${qs ? `?${qs}` : ''}`,
+  );
+};
+
+export interface MyListing {
+  id: string;
+  accession: string;
+  name: string;
+  species: string;
+  score: number;
+  tier: string;
+  price: number;
+  net: number;
+  status: string;
+  createdAt: string;
+  soldAt: string | null;
+}
+
+export const myListings = () => call<{ listings: MyListing[] }>('/api/market/mine');
+
+export const quoteStrain = (strainId: string) =>
+  call<{ suggested: number; fee: number; net: number; score: number }>(
+    `/api/market/quote/${strainId}`,
+  );
+
+export const listStrain = (strainId: string, price: number) =>
+  post<StateSnapshot>('/api/market/list', { strainId, price });
+
+export const cancelListing = (listingId: string) =>
+  post<StateSnapshot>('/api/market/cancel', { listingId });
+
+export const buyListing = (listingId: string) =>
+  post<{ bought: { accession: string; name: string; price: number }; state: StateSnapshot }>(
+    '/api/market/buy',
+    { listingId },
+  );
+
+/* ---------------- estate and goals ---------------- */
+
+export interface UpgradeView {
+  key: string;
+  name: string;
+  blurb: string;
+  effect: string;
+  owned: number;
+  maxLevel: number;
+  unlockLevel: number;
+  locked: boolean;
+  maxed: boolean;
+  nextCost: number | null;
+}
+
+export const fetchUpgrades = () => call<{ upgrades: UpgradeView[] }>('/api/upgrades');
+
+export const buyUpgrade = (key: string) => post<StateSnapshot>('/api/upgrades/buy', { key });
+
+export interface MilestoneView {
+  key: string;
+  name: string;
+  blurb: string;
+  achieved: boolean;
+  achievedAt: string | null;
+}
+
+export const fetchMilestones = () =>
+  call<{ milestones: MilestoneView[]; total: number; earned: number }>('/api/milestones');
+
+/** Public — no session needed, and none is sent. */
+export async function fetchSpecimen(accession: string) {
+  const res = await fetch(`${API_URL}/api/herbarium/${encodeURIComponent(accession)}`);
+  const text = await res.text();
+  const body = text ? JSON.parse(text) : {};
+  if (!res.ok) throw new ApiError(res.status, body.error ?? 'error', body.message ?? 'Not found.');
+  return body as {
+    accession: string;
+    name: string;
+    species: string;
+    genes: Record<'Y' | 'V' | 'H' | 'E', [number, number]>;
+    color: [string, string];
+    generation: number;
+    phenotype: { Y: number; V: number; H: number; E: number; color: string };
+    score: number;
+    tier: string;
+    traits: string[];
+    mutations: Array<{ locus: string; from: string | number; to: string | number }>;
+    pressedOn: string;
+    gardener: string;
+  };
+}

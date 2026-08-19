@@ -19,6 +19,9 @@ import {
   SPECIES_ORDER,
   TIERS,
   TRAITS,
+  MARKET_FEE_RATE,
+  colorPunnett,
+  expressColor,
   expressLocus,
   matches,
   repSlots,
@@ -31,6 +34,7 @@ import {
   fmtTime,
   plotUnlocked,
   serverNow,
+  setTutorialDone,
 } from './store.js';
 import { drawPlant, iso } from './art.js';
 import { Audio_ } from './audio.js';
@@ -154,6 +158,8 @@ const PANEL_TITLES = {
   codex: ['Herbarium', 'Specimens you have named and pressed. This is the record that outlives the farm.'],
   market: ['Market cart', 'Sell the harvest, restock nursery seed, buy mutagen.'],
   commission: ['Commission board', 'Collectors want specific genetics. Meet the brief, earn $SEED.'],
+  exchange: ['Exchange', 'Buy and sell specimens with other gardeners. Coins only — $SEED never trades.'],
+  estate: ['The estate', 'Permanent improvements, and the long record of what you have bred.'],
   help: ['How breeding works', 'Four quantitative genes, one colour gene, and a mutation rate you can raise.'],
 };
 
@@ -165,6 +171,15 @@ function openPanel(kind) {
   $('#panelTitle').textContent = PANEL_TITLES[kind][0];
   $('#panelSub').textContent = PANEL_TITLES[kind][1];
   renderPanel();
+  /* These three read data that does not ride along with the state snapshot. */
+  if (kind === 'exchange') {
+    if ((G.market.tab || 'browse') === 'browse') actions.loadMarket(true);
+    else actions.loadMyListings();
+  }
+  if (kind === 'estate') {
+    if ((G.estateTab || 'upgrades') === 'upgrades') actions.loadUpgrades();
+    else actions.loadMilestones();
+  }
   document.querySelectorAll('.dock__btn').forEach(b => b.classList.toggle('is-active', b.dataset.panel === kind));
 }
 function closePanel() {
@@ -176,7 +191,16 @@ function renderPanel() {
   if (!G.panel) return;
   const body = $('#panelBody');
   body.innerHTML = '';
-  ({ vault: panelVault, bench: panelBench, codex: panelCodex, market: panelMarket, commission: panelCommission, help: panelHelp }[G.panel])(body);
+  ({
+    vault: panelVault,
+    bench: panelBench,
+    codex: panelCodex,
+    market: panelMarket,
+    commission: panelCommission,
+    exchange: panelExchange,
+    estate: panelEstate,
+    help: panelHelp,
+  }[G.panel])(body);
 }
 
 /* ---------------- vault ---------------- */
@@ -258,6 +282,7 @@ function panelBench(body) {
       <div class="forecast__row">${rows}</div>
       <div class="forecast__c">Colour alleles in play: ${cols}</div>`;
     body.appendChild(rangeBox);
+    body.appendChild(punnettBox(sel[0], sel[1]));
   }
 
   const mutRow = el('div', 'mutagen');
@@ -286,6 +311,81 @@ function panelBench(body) {
     }));
   }
   body.appendChild(grid);
+}
+
+
+/**
+ * The colour Punnett square.
+ *
+ * This is the one piece of teaching the prototype was missing. The whole
+ * strategy of HEIRLOOM is that the beautiful morphs are recessive — so the
+ * plainest plant in your vault may be the most valuable thing you own — and
+ * nothing in the game ever said so. A player had to infer it from twenty
+ * disappointing crosses, and most would quit first.
+ *
+ * Everything shown is derived from two parent cards the player already holds,
+ * so it reveals nothing they could not work out with a pencil. Mutation is
+ * deliberately excluded: the ladder can still surprise you upward, and that
+ * surprise should stay a surprise.
+ */
+function punnettBox(a, b) {
+  const p = colorPunnett(a, b);
+  const box = el('div', 'punnett');
+
+  const cells = p.cells.map((c) => {
+    const shown = COLORS[c.shows];
+    const hidden = COLORS[c.from[0]].rank > COLORS[c.from[1]].rank ? c.from[0] : c.from[1];
+    return `<div class="pn__cell${c.carries ? ' pn__cell--carrier' : ''}"
+        title="${COLORS[c.from[0]].name} + ${COLORS[c.from[1]].name}${c.carries ? ` — shows ${shown.name}, hides ${COLORS[hidden].name}` : ''}">
+      <i style="background:${shown.hex}"></i>
+      <b>${shown.name}</b>
+      ${c.carries ? `<em>carries ${COLORS[hidden].name}</em>` : '<em>true</em>'}
+    </div>`;
+  }).join('');
+
+  const odds = p.outcomes
+    .map((o) => `<div class="pn__odd">
+        <i style="background:${COLORS[o.color].hex}"></i>
+        <b>${Math.round(o.chance * 100)}%</b>
+        <span>${COLORS[o.color].name}</span>
+      </div>`)
+    .join('');
+
+  const carrierPct = Math.round(p.carrierChance * 100);
+  const best = COLORS[p.bestHidden];
+  const showsBest = p.outcomes.some((o) => o.color === p.bestHidden);
+
+  /* The sentence that matters. A cross with a 0% chance of showing the rare
+     morph can still be the most valuable cross available, and this is where we
+     say so out loud. */
+  const bestOdds = p.outcomes.find((o) => o.color === p.bestHidden);
+  const bestPct = Math.round((bestOdds?.chance ?? 0) * 100);
+
+  let lesson;
+  if (p.bestHidden === 'crimson') {
+    lesson = 'Neither parent carries anything rarer than Crimson. Nothing hidden here to find.';
+  } else if (showsBest && carrierPct > 0) {
+    /* The payoff cross. Both parents carry the same recessive, so it can finally
+       express — and this is the moment the whole game is built around, so say
+       the number plainly rather than burying it in the odds row. */
+    lesson = `<em>${bestPct}% of offspring will show ${best.name} outright.</em> ` +
+      `Another ${carrierPct}% will look plainer but still carry something rarer — keep those too, ` +
+      'they are how the next one appears.';
+  } else if (!showsBest && carrierPct > 0) {
+    lesson = `No offspring will <em>show</em> ${best.name} — but ${carrierPct}% will carry it hidden. ` +
+      'Keep those and cross them together: two carriers are how a recessive morph finally appears.';
+  } else if (showsBest) {
+    lesson = `Every offspring shows ${best.name}. This line is fixed.`;
+  } else {
+    lesson = 'Every offspring shows exactly what it carries. Nothing is hidden in this cross.';
+  }
+
+  box.innerHTML = `
+    <div class="punnett__t">Colour inheritance</div>
+    <div class="pn__grid">${cells}</div>
+    <div class="pn__odds">${odds}</div>
+    <div class="pn__lesson">${lesson}</div>`;
+  return box;
 }
 
 /* ---------------- herbarium ---------------- */
@@ -411,6 +511,244 @@ function panelCommission(body) {
   }
 }
 
+
+/* ---------------- exchange ---------------- */
+
+/**
+ * The board where specimens actually change hands.
+ *
+ * Coins only, and the panel says so: $SEED emission is throttled by reputation
+ * on purpose, and letting it trade here would route around that gate.
+ */
+function panelExchange(body) {
+  const tabs = el('div', 'tabs');
+  const showing = G.market.tab || 'browse';
+  for (const [key, label] of [['browse', 'Browse'], ['selling', 'Your listings']]) {
+    const b = el('button', 'tab' + (showing === key ? ' is-on' : ''), label);
+    b.onclick = () => {
+      G.market.tab = key;
+      renderPanel();
+      if (key === 'browse') actions.loadMarket(true);
+      else actions.loadMyListings();
+    };
+    tabs.appendChild(b);
+  }
+  body.appendChild(tabs);
+
+  if (showing === 'selling') return exchangeSelling(body);
+  return exchangeBrowse(body);
+}
+
+function exchangeBrowse(body) {
+  const bar = el('div', 'filters');
+  const f = G.market.filters;
+  bar.innerHTML = `
+    <select id="mkSpecies">
+      <option value="">All species</option>
+      ${SPECIES_ORDER.map(k => `<option value="${k}"${f.species === k ? ' selected' : ''}>${SPECIES[k].name}</option>`).join('')}
+    </select>
+    <select id="mkSort">
+      <option value="new"${f.sort === 'new' ? ' selected' : ''}>Newest</option>
+      <option value="price"${f.sort === 'price' ? ' selected' : ''}>Cheapest</option>
+      <option value="score"${f.sort === 'score' ? ' selected' : ''}>Best</option>
+    </select>`;
+  body.appendChild(bar);
+  bar.querySelector('#mkSpecies').onchange = e => { f.species = e.target.value || undefined; actions.loadMarket(true); };
+  bar.querySelector('#mkSort').onchange = e => { f.sort = e.target.value; actions.loadMarket(true); };
+
+  if (G.market.loading && !G.market.listings.length) {
+    body.appendChild(el('div', 'empty', '<b>Reading the board…</b>'));
+    return;
+  }
+  if (!G.market.listings.length) {
+    body.appendChild(el('div', 'empty', '<b>Nothing on the board.</b><span>No gardener is selling a specimen matching that. Try a wider filter, or list something yourself.</span>'));
+    return;
+  }
+
+  const grid = el('div', 'grid');
+  for (const l of G.market.listings) {
+    grid.appendChild(listingCard(l));
+  }
+  body.appendChild(grid);
+
+  if (G.market.cursor) {
+    const more = el('button', 'btn btn--ghost btn--wide', 'Show more');
+    more.onclick = () => actions.loadMarket(false);
+    body.appendChild(more);
+  }
+}
+
+/** A listing renders as a strain card would, plus a price and the genotype. */
+function listingCard(l) {
+  const t = TIERS.find(x => x.key === l.tier) ?? TIERS[0];
+  const shown = COLORS[expressColor(l.color)];
+  const card = el('div', 'card card--strain card--listing');
+  card.style.setProperty('--tier', t.hex);
+
+  const affordable = G.coins >= l.price;
+  card.innerHTML = `
+    <div class="card__top">
+      <div class="card__id">
+        <span class="tierdot" style="background:${t.hex}"></span>
+        <div>
+          <div class="card__name">${esc(l.name)}</div>
+          <div class="card__sub">${SPECIES[l.species].name} · <span class="tier">${t.name}</span> · Gen ${l.generation} · ${esc(l.accession)}</div>
+        </div>
+      </div>
+      <div class="card__score" title="Breeding score">${l.score}</div>
+    </div>
+    <div class="genes genes--compact">
+      ${LOCI.map(loc => `<div class="gene">
+        <span class="gene__k">${loc.k}</span>
+        <span class="gene__pair">${alleleChip(l.genes[loc.k][0])}${alleleChip(l.genes[loc.k][1])}</span>
+      </div>`).join('')}
+      <div class="gene gene--color">
+        <span class="gene__k">C</span>
+        <span class="gene__color" style="background:${shown.hex}"></span>
+        <span class="gene__v gene__v--wide">${shown.name}</span>
+        <span class="gene__pair"><i class="al al--c" style="background:${COLORS[l.color[0]].hex}"></i><i class="al al--c" style="background:${COLORS[l.color[1]].hex}"></i></span>
+      </div>
+    </div>
+    <div class="listing__foot">
+      <div class="listing__price">◆ ${fmtNum(l.price)}</div>
+    </div>`;
+
+  const foot = card.querySelector('.listing__foot');
+  if (l.mine) {
+    foot.appendChild(el('span', 'listing__mine', 'Yours'));
+  } else {
+    const b = el('button', 'btn btn--brass', affordable ? 'Buy' : 'Not enough coins');
+    b.disabled = !affordable;
+    b.onclick = () => actions.buyListing(l);
+    foot.appendChild(b);
+  }
+  return card;
+}
+
+function exchangeSelling(body) {
+  const note = el('div', 'note');
+  note.innerHTML = `Listing puts the seed in escrow — it leaves your vault immediately and cannot be planted or crossed until the listing is cancelled or sold. A <b>${Math.round(MARKET_FEE_RATE * 100)}%</b> fee is taken from the sale and destroyed.`;
+  body.appendChild(note);
+
+  const head = el('div', 'sectionhead', 'List a specimen');
+  body.appendChild(head);
+
+  if (!G.vault.length) {
+    body.appendChild(el('div', 'empty', '<b>Nothing to sell.</b>'));
+  } else {
+    const grid = el('div', 'grid grid--tight');
+    for (const strain of sortedVault()) {
+      grid.appendChild(strainCard(strain, {
+        actions: [{ label: 'List for sale', style: 'btn--brass', fn: () => actions.openListDialog(strain) }],
+      }));
+    }
+    body.appendChild(grid);
+  }
+
+  body.appendChild(el('div', 'sectionhead', 'On the board'));
+  if (!G.myListings.length) {
+    body.appendChild(el('div', 'empty', '<b>You are not selling anything.</b>'));
+    return;
+  }
+  const rows = el('div', 'rows');
+  for (const l of G.myListings) {
+    const row = el('div', 'row');
+    row.innerHTML = `
+      <div>
+        <b>${esc(l.name)}</b>
+        <span>${SPECIES[l.species].name} · score ${l.score} · ${esc(l.accession)}</span>
+      </div>
+      <div class="row__right">
+        <b>◆ ${fmtNum(l.price)}</b>
+        <span>${l.status === 'open' ? `you receive ${fmtNum(l.net)}` : l.status}</span>
+      </div>`;
+    if (l.status === 'open') {
+      const b = el('button', 'btn btn--ghost', 'Cancel');
+      b.onclick = () => actions.cancelListing(l);
+      row.appendChild(b);
+    }
+    rows.appendChild(row);
+  }
+  body.appendChild(rows);
+}
+
+/* ---------------- estate: upgrades and milestones ---------------- */
+
+function panelEstate(body) {
+  const tabs = el('div', 'tabs');
+  const showing = G.estateTab || 'upgrades';
+  for (const [key, label] of [['upgrades', 'Improvements'], ['milestones', 'Record']]) {
+    const b = el('button', 'tab' + (showing === key ? ' is-on' : ''), label);
+    b.onclick = () => {
+      G.estateTab = key;
+      renderPanel();
+      if (key === 'upgrades') actions.loadUpgrades();
+      else actions.loadMilestones();
+    };
+    tabs.appendChild(b);
+  }
+  body.appendChild(tabs);
+
+  if (showing === 'milestones') return estateMilestones(body);
+  return estateUpgrades(body);
+}
+
+function estateUpgrades(body) {
+  if (!G.upgradeDefs.length) {
+    body.appendChild(el('div', 'empty', '<b>Reading the ledger…</b>'));
+    return;
+  }
+  const rows = el('div', 'rows');
+  for (const u of G.upgradeDefs) {
+    const row = el('div', 'row row--upgrade' + (u.locked ? ' is-locked' : ''));
+    const pips = Array.from({ length: u.maxLevel }, (_, i) =>
+      `<i class="pip${i < u.owned ? ' pip--on' : ''}"></i>`).join('');
+    row.innerHTML = `
+      <div>
+        <b>${u.name} ${pips}</b>
+        <span>${u.blurb}</span>
+        <em class="upgrade__effect">${u.effect}</em>
+      </div>`;
+    const right = el('div', 'row__right');
+    if (u.locked) {
+      right.innerHTML = `<span>Level ${u.unlockLevel}</span>`;
+    } else if (u.maxed) {
+      right.innerHTML = '<span>Complete</span>';
+    } else {
+      const b = el('button', 'btn btn--brass', `◆ ${fmtNum(u.nextCost)}`);
+      b.disabled = G.coins < u.nextCost;
+      b.onclick = () => actions.buyUpgrade(u);
+      right.appendChild(b);
+    }
+    row.appendChild(right);
+    rows.appendChild(row);
+  }
+  body.appendChild(rows);
+}
+
+function estateMilestones(body) {
+  if (!G.milestoneDefs.length) {
+    body.appendChild(el('div', 'empty', '<b>Reading the record…</b>'));
+    return;
+  }
+  const done = G.milestoneDefs.filter(m => m.achieved).length;
+  const head = el('div', 'mstat');
+  head.innerHTML = `<b>${done}</b><span>of ${G.milestoneDefs.length} recorded</span>`;
+  body.appendChild(head);
+
+  const rows = el('div', 'rows');
+  for (const m of G.milestoneDefs) {
+    const row = el('div', 'row row--milestone' + (m.achieved ? ' is-done' : ''));
+    row.innerHTML = `
+      <div>
+        <b>${m.achieved ? '✓ ' : ''}${esc(m.name)}</b>
+        <span>${esc(m.blurb)}</span>
+      </div>`;
+    rows.appendChild(row);
+  }
+  body.appendChild(rows);
+}
+
 /* ---------------- help ---------------- */
 function panelHelp(body) {
   const replay = el('button', 'btn btn--brass btn--wide', 'Replay the guided tutorial');
@@ -518,6 +856,13 @@ function showPlate(strain, opts = {}) {
     $('#plateInput').value = strain.name;
     $('#plateInput').oninput = e => { $('#plateName').textContent = e.target.value || strain.name; };
   } else nameWrap.style.display = 'none';
+
+  /* Only a pressed specimen has a public page to point at. */
+  const share = $('#plateShare');
+  if (share) {
+    share.style.display = strain.pressed ? 'inline-flex' : 'none';
+    share.onclick = () => actions.shareSpecimen(strain);
+  }
 
   $('#plateSave').textContent = opts.mode === 'new' ? 'Name it and keep' : 'Press into herbarium';
   $('#plateSave').onclick = () => {
@@ -740,7 +1085,7 @@ function startCoach(fromScratch = true) {
   Coach.steps = buildCoachSteps();
   if (fromScratch) Coach.i = 0;
   Coach.on = true;
-  G.tutorial.done = false;
+  setTutorialDone(false);
   document.getElementById('coach').classList.add('is-on');
   enterCoachStep();
   if (!Coach.raf) Coach.raf = requestAnimationFrame(coachTick);
@@ -748,7 +1093,7 @@ function startCoach(fromScratch = true) {
 
 function endCoach(completed) {
   Coach.on = false;
-  G.tutorial.done = true;
+  setTutorialDone(true);
   G.coachTarget = null;
   document.getElementById('coach').classList.remove('is-on');
   if (Coach.raf) { cancelAnimationFrame(Coach.raf); Coach.raf = 0; }

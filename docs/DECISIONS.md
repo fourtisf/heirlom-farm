@@ -14,7 +14,7 @@ they can be reversed knowingly rather than rediscovered.
 | Timers — prototype speed or real idle? | **Keep prototype speed** (16–58s) | No scheduler needed. `GROW_TIME_SCALE` in `constants.ts` is the single knob that moves the whole economy onto idle timers without touching a formula. |
 | Chain for $SEED | **Ledger only, no chain** | `seedBalance` is an off-chain `Decimal`. Withdrawal is a request queue. No contract code exists. |
 | Do commissions expire? | **No** | They sit until filled or declined, as in the prototype. `status` already carries an `expired` value if that changes. |
-| Herbarium visibility | **Private** | `GET /api/strain/:id` is owner-only. No public accession page. |
+| Herbarium visibility | **Private**, later reversed — see §5.5 | Pressed specimens now have a public page; unpressed ones stay private. |
 
 **Still open — needs ALFA:** which chain, when the ledger is ready to settle. Nothing in the build
 depends on the answer, which was the point of building the ledger first.
@@ -115,3 +115,114 @@ model with ALFA — the copy is only meaningful relative to an assumed strategy.
   while proving nothing.
 - **`next build` and `next dev` share `.next`.** Running one after the other without cleaning
   produces `Cannot find module './522.js'`.
+
+
+---
+
+## 5. The second pass — what the game was missing
+
+Asked to assess the finished build, I said the game had four holes. All four are
+now filled. One rule held throughout, and there is a test asserting it:
+**`breed()` and every constant the rarity curve depends on are untouched.**
+Everything below changes throughput, stakes or goals — never how many crosses it
+takes to reach Ivory.
+
+### 5.1 The exchange
+
+The pitch is that genetics are the product, but a product needs a market. Before
+this, a Legendary Ivory could only fill your own commissions; nobody else could
+want it, so "the only thing of value" was never tested by anyone.
+
+Design calls made here:
+
+- **Coins, never $SEED.** $SEED emission is throttled by reputation on purpose.
+  Letting it trade would route around that gate and turn every commission into a
+  tradeable faucet.
+- **Escrow on listing.** The seed leaves the seller's stack immediately, so it
+  cannot be planted, bred, or sold while it sits on the board. Cancelling
+  returns it; there is a test that three concurrent cancels return exactly one.
+- **The 6% fee is burned, not paid.** This is what makes trading a coin sink
+  rather than a coin shuffle, and it is the anti-wash-trading measure that
+  actually works: a pair churning a specimen between them is strictly poorer
+  after every round trip, and a test measures exactly that. Self-trades are
+  blocked outright and selling is gated at level 3, so a throwaway alt cannot be
+  spun up to funnel coins.
+- **The buyer receives a copy, not the row.** The seller's herbarium record and
+  the specimen's parentage links stay intact; the accession is preserved with a
+  suffix so a traded plant keeps the identity printed on its plate.
+
+### 5.2 Stakes
+
+Breeding had no downside — a bad cross cost sixteen seconds — and blight cost
+45% of one harvest, which is a rounding error once a few beds are running.
+Hardiness therefore did almost nothing, and nothing in the game could take a
+line away from you.
+
+A share of blighted plantings are now **lost outright**: no produce, no seed
+copy. The odds are gated by Hardiness (43% of blight cases at H1, 8% at H6), so
+a tough plant does not merely catch blight less often, it survives the blight it
+catches. The roll happens at harvest as a consequence of the blight, not as a
+second independent fate.
+
+This is the only mechanic in the game that can permanently destroy a line, and
+it is deliberately reachable: plant your last seed of a fragile strain and you
+can lose it.
+
+### 5.3 Coin sinks
+
+Coins bought seed and mutagen and nothing else, so the mid-game economy went
+flat. Four permanent estate upgrades now give it somewhere to go — cold frame,
+irrigation, seed library, glasshouse — each capped at two or three levels and
+priced quadratically.
+
+They move grow time, blight odds, seed-copy chance and sale price. They are
+applied server-side from the stored rows, so a client claiming a glasshouse gets
+nothing. **This is a new balance surface** and worth a look before launch: it
+changes crosses-per-hour, though not crosses-to-Ivory.
+
+### 5.4 Long goals
+
+Seventeen milestones, evaluated server-side against stored genes and awarded
+once. They survive selling the specimen that earned them, because the record is
+of what you bred rather than what you currently hold.
+
+Carrier genotypes deliberately do not count: expressing Ivory is the
+achievement, holding one hidden is not.
+
+### 5.5 Teaching the carrier idea, and going public
+
+Two smaller gaps, both now closed:
+
+- **The bench shows a colour Punnett square.** The strategic core of the game is
+  that a plain-looking plant may be the most valuable thing you own, and nothing
+  ever said so. It reads out the odds and then says the thing plainly — for two
+  carriers crossed, "25% of offspring will show Ivory outright. Another 50% will
+  look plainer but still carry something rarer." It excludes mutation on
+  purpose: the ladder can still surprise a player upward, and that surprise
+  should stay a surprise.
+- **Pressed specimens have a public page** at `/herbarium/HB-xxxx`, with a share
+  button on the plate. This reverses the earlier "herbarium private" call on
+  Michael's instruction. Pressing is the opt-in: only a named specimen is
+  published, unpressed ones 404, and the page carries nothing about the owner
+  beyond the gardener name they chose. There is a test asserting the wallet and
+  player id never appear in the response.
+
+### 5.6 Mobile
+
+The panels already collapsed to a bottom sheet, but the dock now carries seven
+destinations and the HUD clipped its XP readout at 390px. The dock scrolls
+horizontally rather than crushing its labels, and the HUD drops the day-phase
+label — flavour rather than information — to make room.
+
+Also fixed while there: the tutorial replayed on every reload, because
+`tutorial.done` was client-only state in a prototype that had no persistence at
+all. It is now remembered in localStorage, and the ? menu still replays it.
+
+### 5.7 Still open
+
+- **Chain for $SEED.** Unchanged, and still nothing depends on it.
+- **The exchange has no price history.** Sellers get an advisory quote derived
+  from score and generation; there is no record of what things actually sold
+  for. That is the next thing worth building if trading takes off.
+- **The upgrade curve is unsimulated.** The rarity curve is guarded by a test;
+  the throughput curve is not. Worth a balance pass before launch.

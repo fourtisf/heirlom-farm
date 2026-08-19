@@ -11,7 +11,7 @@
  */
 
 import * as api from './api';
-import { G, hydrate } from './store.js';
+import { G, hydrate, setTutorialDone, tutorialDone } from './store.js';
 import { Audio_ } from './audio.js';
 import { hooks, mountRenderer } from './world.js';
 import { actions, startPolling } from './actions.js';
@@ -65,6 +65,9 @@ export async function bootGame(canvas) {
     banner.classList.add('is-on');
     setTimeout(() => banner.classList.remove('is-on'), 2400);
   };
+
+  // A returning player should not be walked through the tutorial again.
+  G.tutorial.done = tutorialDone();
 
   const stopRenderer = mountRenderer(canvas);
 
@@ -120,7 +123,7 @@ function bindChrome() {
     if (!G.tutorial.done) setTimeout(() => startCoach(true), 700);
   };
   $('#skipTut').onclick = () => {
-    G.tutorial.done = true;
+    setTutorialDone(true);
     title.classList.add('is-gone');
     setTimeout(() => {
       title.style.display = 'none';

@@ -11,7 +11,7 @@
  * the outcome is not ours to predict.
  */
 
-import { COLORS, PLOT_UNLOCK, SPECIES, SPECIES_ORDER } from '@heirloom/genetics';
+import { COLORS, MILESTONES, PLOT_UNLOCK, SPECIES, SPECIES_ORDER } from '@heirloom/genetics';
 import * as api from './api';
 import { G, hydrate, plotCapacity } from './store.js';
 import { Audio_ } from './audio.js';
@@ -35,6 +35,15 @@ export const ui = {
 
 /** Serialises requests: the server rejects a double-submit, we avoid sending one. */
 let inFlight = null;
+
+function announceMilestones(keys) {
+  if (!keys?.length) return;
+  for (const key of keys) {
+    const def = MILESTONES.find((m) => m.key === key);
+    if (def) ui.toast(`Recorded: ${def.name}. ${def.blurb}`, 'good');
+  }
+  Audio_.rare();
+}
 
 function refresh(snapshot) {
   const beforeLevel = G.level;
@@ -96,9 +105,16 @@ export async function harvest(pl) {
     setTimeout(() => floatText(pl.gx, pl.gy, `+${res.copies} seed`, '#E8DCC0', 13), 180);
     burst(pl.gx, pl.gy, hex, 16);
     Audio_.harvest();
-    if (res.blighted) {
+    if (res.severe) {
+      ui.toast(
+        `${res.strainName ?? 'That planting'} was lost to blight. No crop, and no seed returned.`,
+        'warn',
+      );
+      Audio_.err();
+    } else if (res.blighted) {
       ui.toast(`${strain?.name ?? 'That bed'} came up blighted — a reduced crop.`, 'warn');
     }
+    announceMilestones(res.earned);
     G.stats.harvests++;
     refresh(res.state);
   });
@@ -172,6 +188,7 @@ export async function doBreed() {
     Audio_.breed();
     if (child.tier === 'legendary' || child.tier === 'prized') Audio_.rare();
     ui.showPlate(child, { mode: 'new' });
+    announceMilestones(res.earned);
   });
 }
 
@@ -184,6 +201,7 @@ export async function pressSpecimen(strain, name) {
     ui.toast(`${res.strain.name} pressed into the herbarium.`, 'good');
     ui.closePlate();
     refresh(res.state);
+    announceMilestones(res.earned);
   });
 }
 
@@ -201,6 +219,7 @@ export async function fulfilCommission(c, strain) {
     );
     G.stats.commissions++;
     refresh(res.state);
+    announceMilestones(res.earned);
   });
 }
 
@@ -210,6 +229,150 @@ export async function declineCommission(c) {
     Audio_.ui();
     refresh(state);
   });
+}
+
+/* ---------------- the exchange ---------------- */
+
+/**
+ * The board is other players' data, so it is fetched on demand rather than
+ * riding along with every state snapshot.
+ */
+export async function loadMarket(reset = true) {
+  G.market.loading = true;
+  if (reset) {
+    G.market.listings = [];
+    G.market.cursor = null;
+  }
+  ui.renderPanel();
+  try {
+    const res = await api.browseMarket({
+      ...G.market.filters,
+      ...(reset ? {} : { cursor: G.market.cursor ?? undefined }),
+    });
+    G.market.listings = reset ? res.listings : G.market.listings.concat(res.listings);
+    G.market.cursor = res.nextCursor;
+  } catch (err) {
+    ui.toast(err?.message ?? 'Could not read the board.', 'warn');
+  } finally {
+    G.market.loading = false;
+    ui.renderPanel();
+  }
+}
+
+export async function loadMyListings() {
+  try {
+    G.myListings = (await api.myListings()).listings;
+    ui.renderPanel();
+  } catch {
+    /* the panel will show what it has */
+  }
+}
+
+export async function buyListing(listing) {
+  await run(async () => {
+    const res = await api.buyListing(listing.id);
+    Audio_.coin();
+    ui.toast(`${res.bought.name} is yours for ${res.bought.price} coins.`, 'good');
+    refresh(res.state);
+    await loadMarket(true);
+  });
+}
+
+export async function cancelListing(listing) {
+  await run(async () => {
+    const state = await api.cancelListing(listing.id);
+    Audio_.ui();
+    ui.toast(`${listing.name} withdrawn from the board.`);
+    refresh(state);
+    await loadMyListings();
+  });
+}
+
+/**
+ * Asks for a price, seeded with the server's advisory quote. The quote is
+ * guidance only — nothing enforces it, and a seller is free to ignore it.
+ */
+export async function openListDialog(strain) {
+  let quote;
+  try {
+    quote = await api.quoteStrain(strain.id);
+  } catch (err) {
+    ui.toast(err?.message ?? 'Could not price that.', 'warn');
+    return;
+  }
+
+  const raw = window.prompt(
+    `List ${strain.name} (score ${quote.score}) for how many coins?\n\n` +
+      `Suggested: ${quote.suggested}. A ${Math.round((quote.fee / quote.suggested) * 100)}% fee is ` +
+      `destroyed on sale, so at that price you would receive ${quote.net}.`,
+    String(quote.suggested),
+  );
+  if (raw === null) return;
+
+  const price = Math.floor(Number(raw));
+  if (!Number.isFinite(price) || price <= 0) {
+    ui.toast('That is not a price.', 'warn');
+    return;
+  }
+
+  await run(async () => {
+    const state = await api.listStrain(strain.id, price);
+    Audio_.coin();
+    ui.toast(`${strain.name} listed for ${price} coins. The seed is held in escrow.`, 'good');
+    refresh(state);
+    await loadMyListings();
+  });
+}
+
+/* ---------------- estate ---------------- */
+
+export async function loadUpgrades() {
+  try {
+    G.upgradeDefs = (await api.fetchUpgrades()).upgrades;
+    ui.renderPanel();
+  } catch {
+    /* panel shows a loading state */
+  }
+}
+
+export async function loadMilestones() {
+  try {
+    G.milestoneDefs = (await api.fetchMilestones()).milestones;
+    ui.renderPanel();
+  } catch {
+    /* panel shows a loading state */
+  }
+}
+
+export async function buyUpgrade(upgrade) {
+  await run(async () => {
+    const state = await api.buyUpgrade(upgrade.key);
+    Audio_.coin();
+    ui.toast(`${upgrade.name} built.`, 'good');
+    refresh(state);
+    await loadUpgrades();
+  });
+}
+
+/* ---------------- sharing ---------------- */
+
+/**
+ * A pressed specimen has a public page. Copying the link is the whole feature —
+ * the plate was always built to be screenshotted, it just had nowhere to point.
+ */
+export async function shareSpecimen(strain) {
+  const url = `${window.location.origin}/herbarium/${encodeURIComponent(strain.accession)}`;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: `${strain.name} — HEIRLOOM`, url });
+      return;
+    }
+    await navigator.clipboard.writeText(url);
+    ui.toast('Link copied.', 'good');
+  } catch {
+    // Clipboard can be refused; showing the URL still lets them copy it.
+    ui.toast(url);
+  }
 }
 
 /* ---------------- progression feedback ---------------- */
@@ -260,6 +423,15 @@ export function startPolling(intervalMs = 20_000) {
 }
 
 export const actions = {
+  loadMarket,
+  loadMyListings,
+  buyListing,
+  cancelListing,
+  openListDialog,
+  loadUpgrades,
+  loadMilestones,
+  buyUpgrade,
+  shareSpecimen,
   plantStrain,
   harvest,
   harvestAll,
