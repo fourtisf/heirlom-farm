@@ -106,6 +106,7 @@ function bindChrome() {
     if (e.target.id === 'plate') closePlate();
   };
   $('#harvestAll').onclick = () => void actions.harvestAll();
+  $('#plantAll').onclick = () => void actions.plantAll();
   $('#btnHelp').onclick = () => openPanel('help');
   $('#btnMute').onclick = (e) => {
     Audio_.on = !Audio_.on;

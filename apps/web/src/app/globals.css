@@ -760,3 +760,20 @@ input{font-family:inherit}
   font-family:var(--f-mono);font-size:10px;line-height:1.45;color:var(--leaf);
 }
 .stack.is-locked .stack__trait{color:var(--bone-dim);opacity:.7}
+
+/* The two quick actions sit together above the dock. */
+.quickbar{
+  position:fixed;left:50%;transform:translateX(-50%);z-index:22;
+  bottom:calc(104px + var(--safe-b));
+  display:flex;gap:8px;align-items:center;
+}
+.quickbar .harvestall{position:static;transform:none;bottom:auto;left:auto}
+.harvestall--plant{
+  background:linear-gradient(180deg,rgba(62,107,68,.92),rgba(38,72,44,.92));
+  border-color:rgba(127,176,105,.42);
+}
+.harvestall--plant:hover{background:linear-gradient(180deg,rgba(78,128,84,.95),rgba(48,86,54,.95))}
+@media (max-width:640px){
+  .quickbar{flex-direction:column;gap:6px;width:calc(100% - 28px)}
+  .quickbar .harvestall{width:100%;justify-content:center}
+}

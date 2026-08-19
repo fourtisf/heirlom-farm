@@ -113,8 +113,10 @@ model with ALFA — the copy is only meaningful relative to an assumed strategy.
   load-balancer probe would fail at the moment the service most needs to stay routable.
 - **Server tests need a real Postgres and Redis.** They test transactional races; a fake would pass
   while proving nothing.
-- **`next build` and `next dev` share `.next`.** Running one after the other without cleaning
-  produces `Cannot find module './522.js'`.
+- **`next dev` and `next build` write to separate directories** (`.next-dev` and `.next`). They
+  shared one by default, and running a build beside a live dev server left it serving production
+  chunks — the debug bridge would vanish, then it would fail outright with a confusing
+  `Cannot find module './522.js'`. It caught me twice before I stopped documenting it and fixed it.
 
 
 ---
@@ -226,3 +228,124 @@ all. It is now remembered in localStorage, and the ? menu still replays it.
   for. That is the next thing worth building if trading takes off.
 - **The upgrade curve is unsimulated.** The rarity curve is guarded by a test;
   the throughput curve is not. Worth a balance pass before launch.
+
+
+---
+
+## 6. The playtest, and a bug it found
+
+I played the opening two minutes and measured it rather than guessing. The first
+run:
+
+```
+session          120s
+waiting          114s  (95%)
+acting             6s  (5%)
+crosses            0        <- the only interesting decision in the game
+blocked          ["no seed to plant"]
+best score         0 for the first 58 seconds (the vault was empty)
+```
+
+Two separate causes, both now fixed.
+
+### 6.1 The opening kit could not reach the game
+
+A new player got **one** strain with two seeds, and four open beds. They plant
+two, the vault is empty, and they cannot cross anything either — a cross needs
+two *distinct* parents. So the core of the game was unreachable for the opening
+minutes, and the tutorial's breeding step had nothing to work with.
+
+New players now get two separate nursery lines of two seeds each: four beds
+filled, and the bench works from the first minute. Both are still ordinary
+nursery stock, rolled separately so they differ.
+
+### 6.2 Crossing was charging for parents it should not have
+
+**This was my bug, and a consequential one.** `POST /api/breed` decremented `qty`
+on both parents, so every cross cost two seeds. The prototype's `doBreed()` never
+did that — it spends mutagen and nothing else — and handoff §5 says to validate
+`qty >= 1`, which is a requirement to *hold* the seed, not a price. I read it as a
+cost.
+
+The effect was severe and invisible:
+
+- With four opening seeds and four beds, a player who planted their beds could
+  never breed at all. The greedy strategy starved the bench completely, which is
+  exactly what the playtest bot did and why it recorded zero crosses.
+- Two crosses would empty a starting vault.
+- **It quietly invalidated the balance pass.** The ~200-crosses figure assumes a
+  player keeps crossing their best pair from a standing pool. That is impossible
+  if each cross consumes both parents, so the shipped game was far harsher than
+  anything that was ever simulated — and the balance guard did not catch it,
+  because the simulation breeds from a pool without modelling seed supply.
+
+Crossing is now free. It is limited by the rate limiter and by mutagen, as the
+prototype intended. There is a test asserting both parents keep their seed, and
+another asserting a new player holds two distinct lines.
+
+### 6.3 What the fixes actually changed
+
+Same playtest, same bot, after both:
+
+| | before | after |
+|---|---|---|
+| crosses in two minutes | 0 | 1 |
+| blocked moments | `["no seed to plant"]` | *none* |
+| milestones earned | 0 | 1 |
+
+A separate check of the opening minute confirms a new player now holds two
+distinct lines, can cross before doing anything else, and keeps both parents'
+seed afterwards.
+
+**Waiting is still ~95% of a two-minute session**, and that is honest: it is a
+consequence of 16–58 second timers, which is a decision already taken. What
+changed is that the wait is now *usable* — the bench works from the first minute
+and crossing is free, so there is something to do with the time. If the dead time
+is still felt in real play, the lever is `GROW_TIME_SCALE`, not another feature.
+
+**Also still open for the balance pass:** the guard's simulation does not model
+seed supply or bed pressure, so it measures the genetics rather than the whole
+game. A player who plants every seed still has nothing to cross that turn. That
+tension is probably good, but it is untested.
+
+---
+
+## 7. Species identity
+
+The prototype gave every species a note describing how it behaves, then gave all
+five identical maths — only `grow` and `price` differed:
+
+| species | note | mechanic before |
+|---|---|---|
+| tomato | "Reliable." | baseline |
+| corn | "Recessive alleles hide well in this line." | **none** |
+| chili | "Small yield, high essence." | **none** |
+| pumpkin | "Yield gene expresses dramatically." | **none** |
+| moonflower | "Blooms after dusk." | cosmetic only |
+
+So "which species do I grow" had one answer: the most expensive one you could
+afford, because a bigger base price beat everything else. The notes were promises
+the game did not keep.
+
+They are now true:
+
+- **corn** returns spare seed far more often, and is hardier. A line hides an
+  allele by surviving long enough to pass it on, so this is what "hides well"
+  actually means in play — a corn carrier is hard to lose by accident.
+- **chili** weighs Essence nearly double, and yields little.
+- **pumpkin** steepens the yield curve in both directions: a Y6 pumpkin is an
+  estate, a Y2 pumpkin is barely worth the bed.
+- **moonflower** grows fast if planted after dusk and sulks if planted at noon.
+  This is the first thing in the game to give the day cycle a gameplay effect.
+
+**Breeding is untouched.** The modifiers reach expression and economy only, and
+there is a test that runs the same seeded cross under all five species and
+asserts the children come out byte-identical.
+
+Implementing the moonflower rule exposed a bug in the making: the client's day
+cycle was a free-running animation counter, which was fine while it was purely
+cosmetic but would now disagree with the server about whether it is night. Both
+sides derive the phase from the wall clock instead.
+
+**This is a new balance surface** and, like the estate upgrades, it is
+unsimulated. Worth a pass before launch.

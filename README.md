@@ -54,9 +54,6 @@ npm run dev:web                                # http://localhost:3000
 `JWT_SECRET` must be at least 32 characters, and the server refuses to boot without it. A server
 that starts without one is a server handing out forgeable sessions.
 
-> Run `next build` and `next dev` from separate checkouts or clean `.next` between them — they share
-> that directory and a stale cache produces a confusing `Cannot find module './522.js'`.
-
 ## Tests
 
 ```bash

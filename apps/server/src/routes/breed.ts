@@ -78,14 +78,23 @@ export async function breedRoutes(app: FastifyInstance) {
           throw badRequest('cross_species', `Cannot cross ${pa.species} with ${pb.species}.`);
         }
 
-        // Conditional decrements. Two concurrent crosses cannot both consume
-        // the same last seed, lock or no lock.
-        for (const parent of [pa, pb]) {
-          const taken = await tx.strain.updateMany({
-            where: { id: parent.id, playerId, qty: { gte: 1 } },
-            data: { qty: { decrement: 1 } },
-          });
-          if (taken.count !== 1) throw conflict('no_seed', 'No seed left of one of those parents.');
+        /* Both parents must be held, but a cross does not consume them.
+         *
+         * This was a bug: an earlier version decremented both parents, reading
+         * the handoff's "qty >= 1" as a cost rather than a requirement. The
+         * prototype never charged for a cross, and the difference is not
+         * cosmetic — with four opening seeds and four beds, a player who plants
+         * their beds could never breed at all, and two crosses would wipe a
+         * vault. A playtest of the opening two minutes recorded zero crosses
+         * because of it.
+         *
+         * It also quietly invalidated the balance pass: the ~200-crosses figure
+         * assumes you can keep crossing your best pair, which is impossible if
+         * each cross eats both of them.
+         *
+         * Breeding is limited by the rate limiter and by mutagen, not by seed. */
+        if (pa.qty < 1 || pb.qty < 1) {
+          throw conflict('no_seed', 'You need to be holding seed of both parents.');
         }
 
         if (body.useMutagen) {

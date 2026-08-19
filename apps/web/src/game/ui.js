@@ -89,6 +89,12 @@ function updateHUD() {
   const ripe = G.plots.filter(p => p.state === 'ripe').length;
   $('#harvestAll').style.display = ripe ? 'flex' : 'none';
   $('#harvestAllN').textContent = ripe;
+
+  /* Only offer to sow when there is both a bed to fill and seed to fill it. */
+  const fallow = G.plots.filter(p => plotUnlocked(p.i) && p.state === 'empty').length;
+  const haveSeed = G.vault.some(s => s.qty >= 1);
+  $('#plantAll').style.display = fallow && haveSeed ? 'flex' : 'none';
+  $('#plantAllN').textContent = fallow;
 }
 
 /* ---------------- gene widgets ---------------- */
@@ -1000,7 +1006,7 @@ function buildCoachSteps() {
     {
       id: 'welcome',
       title: 'Welcome to the Vale estate',
-      body: 'You have four cleared beds, one line of seed, and a reputation to build. The whole game is one question: can you make the plant better than the one you were given?',
+      body: 'You have four cleared beds, two lines of seed, and a reputation to build. The whole game is one question: can you make the plant better than the ones you were given?',
       target: () => { const r = worldRect(5.5, 5.6, 330 * G.camera.z, 220 * G.camera.z); r.world = null; return r; },
       cta: 'Show me',
       manual: true,
@@ -1053,13 +1059,18 @@ function buildCoachSteps() {
       hint: () => (G.panel === 'market' ? '' : 'Tap Market in the bar below.'),
     },
     {
+      /* This step used to say "buy a second line, you cannot cross a plant with
+         itself" — a new player was given one strain and had to shop before they
+         could reach the game at all. They now start with two, so the step
+         teaches what the nursery is *for* instead of clearing an obstacle. */
       id: 'buy',
-      title: 'Buy a second line',
-      body: 'You cannot cross a plant with itself. Buy one more tomato from the nursery so you have two distinct parents to work with.',
+      title: 'The nursery is a floor, not a ladder',
+      body: 'Shop stock is deliberately poor — alleles of 1 to 3, and only Crimson or Amber. You can always buy your way back from a disaster, but you can never buy your way up. Everything above this line has to be bred.',
       target: () => (G.panel === 'market'
         ? domRect('#panelBody', 6, 16)
         : domRect('.dock__btn[data-panel="market"]', 6, 16)),
-      advance: () => G.vault.length >= 2,
+      cta: 'Understood',
+      manual: true,
       hint: () => (G.panel === 'market' ? 'Nursery seed is further down the panel.' : 'Reopen the market cart.'),
     },
     {
@@ -1073,14 +1084,14 @@ function buildCoachSteps() {
     {
       id: 'parents',
       title: 'Choose two parents',
-      body: 'Tap two seeds below to load them into the slots. Look at the allele pairs on each card — <b>a weak plant can still carry a strong recessive</b>, and that hidden allele is worth more than the plant you can see.',
+      body: 'You were given two lines — tap both to load them into the slots. Look at the allele pairs on each card: <b>a weak plant can still carry a strong recessive</b>, and that hidden allele is worth more than the plant you can see.',
       target: () => domRect('#panelBody', 6, 16),
       advance: () => (G.selection || []).length === 2,
     },
     {
       id: 'cross',
       title: 'Make the cross',
-      body: 'The offspring takes <b>one allele at random from each parent</b> at every locus. The forecast above shows the range you might get, before mutation has its say.',
+      body: 'The offspring takes <b>one allele at random from each parent</b> at every locus. A cross costs you nothing — both parents keep their seed — so cross often and keep whatever surprises you.',
       target: () => domRect('#panelBody .btn--brass', 8, 14) || domRect('#panelBody', 6, 16),
       advance: () => G.stats.bred > 0,
     },

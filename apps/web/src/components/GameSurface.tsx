@@ -58,7 +58,10 @@ export default function GameSurface() {
         <button className="iconbtn" id="btnMute" title="Sound on">♪</button>
       </div>
 
-      <button className="harvestall" id="harvestAll">Harvest all ripe beds <b id="harvestAllN">0</b></button>
+      <div className="quickbar">
+        <button className="harvestall" id="harvestAll">Harvest all ripe beds <b id="harvestAllN">0</b></button>
+        <button className="harvestall harvestall--plant" id="plantAll">Sow every empty bed <b id="plantAllN">0</b></button>
+      </div>
 
       {/* dock */}
       <nav className="dock">

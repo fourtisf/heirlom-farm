@@ -538,3 +538,56 @@ describe('withdrawals', () => {
     expect(res.json().error).toBe('insufficient');
   });
 });
+
+describe('a cross does not consume its parents', () => {
+  it('leaves the seed of both parents untouched', async () => {
+    const me = await signIn(app);
+    const state = await app.inject({ method: 'GET', url: '/api/state', headers: me.auth });
+    const [a, b] = state.json().vault;
+    expect(b, 'a new player should hold two distinct lines').toBeDefined();
+
+    const before = await prisma.strain.findMany({ where: { id: { in: [a.id, b.id] } } });
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/breed',
+      headers: me.auth,
+      payload: { parentAId: a.id, parentBId: b.id, useMutagen: false },
+    });
+    expect(res.statusCode).toBe(200);
+
+    const after = await prisma.strain.findMany({ where: { id: { in: [a.id, b.id] } } });
+    for (const row of after) {
+      const was = before.find((x) => x.id === row.id)!;
+      expect(row.qty, `${row.name} lost seed to a cross`).toBe(was.qty);
+    }
+  });
+
+  it('still refuses a parent the player holds none of', async () => {
+    const me = await signIn(app);
+    const state = await app.inject({ method: 'GET', url: '/api/state', headers: me.auth });
+    const [a, b] = state.json().vault;
+    await prisma.strain.update({ where: { id: a.id }, data: { qty: 0 } });
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/breed',
+      headers: me.auth,
+      payload: { parentAId: a.id, parentBId: b.id, useMutagen: false },
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json().error).toBe('no_seed');
+  });
+
+  it('gives a new player two distinct lines, so the bench works immediately', async () => {
+    const me = await signIn(app);
+    const state = await app.inject({ method: 'GET', url: '/api/state', headers: me.auth });
+    const vault = state.json().vault;
+
+    expect(vault.length).toBe(2);
+    expect(vault[0].id).not.toBe(vault[1].id);
+    // Four seeds for the four beds a level-1 player has open.
+    expect(vault.reduce((n: number, s: { qty: number }) => n + s.qty, 0)).toBe(4);
+    expect(state.json().player.plotCapacity).toBe(4);
+  });
+});

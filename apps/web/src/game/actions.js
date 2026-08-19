@@ -132,6 +132,51 @@ export async function harvestAll() {
   }
 }
 
+/**
+ * Sows every empty bed with the best seed on hand.
+ *
+ * A two-minute playtest logged thirty-six separate plant actions, nearly all of
+ * them the same decision — "put my best seed in the next hole". This does that
+ * in one press. Planting a *particular* strain in a *particular* bed is still
+ * there for when it matters; this is for when it does not.
+ *
+ * Sequential rather than parallel: the beds share one seed supply, and firing
+ * them at once would race each other through it.
+ */
+export async function plantAll() {
+  const open = G.plots.filter((p) => p.i < G.plotCapacity && p.state === 'empty');
+  if (!open.length) return;
+
+  let sown = 0;
+  for (const bed of open) {
+    const seed = G.vault.filter((s) => s.qty >= 1).sort((a, b) => b.score - a.score)[0];
+    if (!seed) {
+      if (sown === 0) {
+        Audio_.err();
+        ui.toast('No seed left. A harvest returns seed, or buy nursery stock at the cart.', 'warn');
+      }
+      break;
+    }
+    try {
+      const state = await api.plant(bed.i, seed.id);
+      Audio_.plant();
+      burst(bed.gx, bed.gy, withAlpha('#7FB069', 0.9), 6);
+      hydrate(state);
+      sown++;
+    } catch (err) {
+      ui.toast(err?.message ?? 'That bed refused the seed.', 'warn');
+      break;
+    }
+  }
+
+  if (sown) {
+    ui.toast(`Sowed ${sown} bed${sown > 1 ? 's' : ''}.`, 'good');
+    ui.updateHUD();
+    ui.updateTutorial();
+    if (G.panel) ui.renderPanel();
+  }
+}
+
 /* ---------------- market ---------------- */
 
 export async function sellStack(st) {
@@ -423,6 +468,7 @@ export function startPolling(intervalMs = 20_000) {
 }
 
 export const actions = {
+  plantAll,
   loadMarket,
   loadMyListings,
   buyListing,
