@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="HEIRLOOM — H monogram">
+  <!-- 04 MONOGRAM. A slab H whose crossbar is the ground, with a seedling
+       rising out of it. The letterform carries the name at banner size; the
+       sprout keeps it from being just a letter at avatar size. -->
+  <rect width="512" height="512" fill="#241B12"/>
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#C9A227" stroke-width="6" opacity=".4"/>
+  <g fill="#C9A227">
+    <rect x="148" y="132" width="48" height="248" rx="7"/>
+    <rect x="316" y="132" width="48" height="248" rx="7"/>
+    <rect x="124" y="132" width="96" height="22" rx="7"/>
+    <rect x="124" y="358" width="96" height="22" rx="7"/>
+    <rect x="292" y="132" width="96" height="22" rx="7"/>
+    <rect x="292" y="358" width="96" height="22" rx="7"/>
+    <rect x="196" y="300" width="120" height="26" rx="6"/>
+  </g>
+  <!-- the seedling stands in the counter, rooted on the crossbar -->
+  <path d="M256 300 V212" stroke="#F0E6CE" stroke-width="15" stroke-linecap="round"/>
+  <path d="M254 246 C214 246 190 222 186 186 C228 182 252 208 254 244Z" fill="#3E6B44"/>
+  <path d="M258 226 C298 224 324 198 328 162 C286 160 260 188 258 224Z" fill="#7FB069"/>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="HEIRLOOM — herbarium tag">
+  <!-- 06 HERBARIUM TAG. The accession label the game already prints on every
+       pressed specimen. Richest of the six and the only one with implied text,
+       so it belongs on a header or an OG card rather than a 24px avatar. -->
+  <rect width="512" height="512" fill="#241B12"/>
+  <g transform="rotate(-8 256 256)">
+    <path d="M256 92 L392 122 V400 A18 18 0 0 1 374 418 H138 A18 18 0 0 1 120 400 V122Z" fill="#E8DCC0"/>
+    <path d="M256 92 L392 122 V400 A18 18 0 0 1 374 418 H138 A18 18 0 0 1 120 400 V122Z" fill="none" stroke="#C9A227" stroke-width="7"/>
+    <circle cx="256" cy="146" r="15" fill="#241B12"/>
+    <path d="M256 262 V342" stroke="#3E6B44" stroke-width="13" stroke-linecap="round"/>
+    <path d="M254 300 C218 300 196 280 192 248 C230 244 252 268 254 298Z" fill="#3E6B44"/>
+    <path d="M258 282 C294 280 318 258 322 226 C284 224 260 248 258 280Z" fill="#7FB069"/>
+    <g fill="#241B12" opacity=".55">
+      <rect x="166" y="368" width="82" height="11" rx="5"/>
+      <rect x="258" y="368" width="52" height="11" rx="5"/>
+    </g>
+  </g>
+</svg>
