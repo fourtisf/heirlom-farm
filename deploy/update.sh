@@ -20,7 +20,7 @@ npm run build -w @heirlom/server
 # NEXT_PUBLIC_* are inlined at build time, so they are exported here rather than
 # left to PM2, where they would have no effect whatsoever.
 echo "==> building web"
-export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-https://heirlom.fun}"
+export NEXT_PUBLIC_API_URL=""   # same origin behind nginx
 export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-https://heirlom.fun}"
 npm run build -w @heirlom/web
 

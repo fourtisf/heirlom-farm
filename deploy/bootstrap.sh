@@ -141,7 +141,8 @@ npm run build -w @heirlom/server
 
 # NEXT_PUBLIC_* are inlined at BUILD time. Exported here because setting them in
 # PM2 would have no effect at all — the value is already in the bundle.
-export NEXT_PUBLIC_API_URL="https://${DOMAIN}"
+# Same origin behind nginx: relative, so it works on http and https alike.
+export NEXT_PUBLIC_API_URL=""
 export NEXT_PUBLIC_SITE_URL="https://${DOMAIN}"
 npm run build -w @heirlom/web
 ok "built for https://${DOMAIN}"

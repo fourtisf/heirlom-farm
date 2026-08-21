@@ -9,6 +9,16 @@
  * timestamp, never an outcome.
  */
 
+/**
+ * Empty in production, on purpose. Nginx serves /api from the same origin as
+ * the page, so a relative URL is correct on http and on https alike — which
+ * means adding TLS later needs no rebuild, and there is no cross-origin request
+ * and so no CORS preflight in the login path.
+ *
+ * In development the two run on different ports and it must be absolute, hence
+ * the localhost fallback when the variable is unset. An empty string is a value
+ * here, not a missing one, so `??` keeps it.
+ */
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
 const TOKEN_KEY = 'heirlom.session';
