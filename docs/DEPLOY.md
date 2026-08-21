@@ -25,6 +25,24 @@ previews on X come up blank, this is why.
 
 ---
 
+## The short way
+
+Steps 1 to 7 below, in one command:
+
+```bash
+cd /var/www/heirlom && sudo ./deploy/bootstrap.sh
+```
+
+It is safe to re-run — every step checks before it acts, and an existing
+`apps/server/.env` is never overwritten. It stops before certbot and before
+`ufw`, and prints both: the first so you enter your own email, the second
+because enabling a firewall unattended over SSH is how people lock themselves
+out of their own box.
+
+The manual walkthrough follows, for when something needs unpicking.
+
+---
+
 ## 1. Prerequisites on the VPS
 
 ```bash
