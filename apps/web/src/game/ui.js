@@ -1060,6 +1060,26 @@ function plotRect(i) {
   r.world = { gx: pl.gx, gy: pl.gy };   // the screen hole is lifted; the ring is not
   return r;
 }
+const pickerOpen = () => document.getElementById('picker')?.classList.contains('is-open');
+
+/**
+ * The rect of a named card inside the seed picker.
+ *
+ * `domRect` takes a CSS selector, and there is no selector for "the card whose
+ * name is Vale Row" — so this scans. Falls back to the first card, because a
+ * step that points at nothing is worse than one that points at the wrong seed.
+ */
+function seedCardRect(name) {
+  const cards = [...document.querySelectorAll('#pickerList .card--strain')];
+  const hit =
+    cards.find((c) => c.querySelector('.card__name')?.textContent.trim().startsWith(name)) ??
+    cards[0];
+  if (!hit) return null;
+  const r = hit.getBoundingClientRect();
+  if (!r.width) return null;
+  return { x: r.left - 8, y: r.top - 8, w: r.width + 16, h: r.height + 16, round: 16 };
+}
+
 function firstPlantedPlot() {
   return G.plots.find(p => p.state !== 'empty') || G.plots[0];
 }
@@ -1079,8 +1099,14 @@ function buildCoachSteps() {
       id: 'plant',
       title: 'Plant your first seed',
       body: 'Tap the highlighted bed, then choose <b>Vale Row</b>. It is ordinary nursery stock — that is deliberate. Ordinary is where every line starts.',
-      target: () => plotRect(0),
+      /* Two phases in one step. Tapping the bed opens the seed picker over the
+         farm, and the spotlight used to stay on the bed underneath it — so the
+         instruction said "choose Vale Row" while highlighting a blank patch of
+         modal. Follow the player into the picker instead. Every other step that
+         opens a panel already does this; this one was the exception. */
+      target: () => (pickerOpen() ? seedCardRect('Vale Row') ?? plotRect(0) : plotRect(0)),
       advance: () => G.plots.some(p => p.state !== 'empty'),
+      hint: () => (pickerOpen() ? 'Tap Vale Row to sow it.' : 'Tap the highlighted bed.'),
     },
     {
       id: 'read',
