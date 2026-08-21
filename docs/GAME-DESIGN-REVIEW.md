@@ -11,6 +11,41 @@ Below, in the order I would build them.
 
 ---
 
+## Revised after launch, and after actually playing it
+
+This document was written by reading the code. Since then the game has shipped to heirlom.fun, and
+a script has played it through its own API — around 130 crosses, to level 15, all five species.
+Three things that changed the diagnosis:
+
+**The tutorial never worked.** Neither of the coach's buttons had a click handler, anywhere. "Show
+me" and "Got it" did nothing, so the script sat on step 1 of 13 permanently and the other twelve
+steps were unreachable by anyone, ever. Every criticism below about players not understanding the
+game was made against a teaching layer that was not running at all. Fixed now — but it means the
+onboarding has never actually been tested on a human.
+
+**The near-miss problem is worse than estimated.** 130 crosses, always pairing the two
+highest-scoring parents — which is exactly what a new player does — and the colour locus never got
+past **Amber**, rung two of five. Not once did the game indicate progress toward the thing it is
+named after. §1.2 is not a polish item; it is the difference between a chase and a wall.
+
+**Ranking two plants by hidden carrier value is the actual game, and the interface never says so.**
+The simulated breeder that *does* reach Ivory sorts parents by what they carry, not by what they
+show. A player following the visible score is playing a different, unwinnable game.
+
+Post-launch, two items outrank everything in the tiers below:
+
+- **The render crash in §5 is now hitting real players.** Sowing the last seed of a line drops it
+  from the vault snapshot, `drawPlant` reads `phenotype` off null, and the throw kills the rest of
+  the frame — the market cart, the breeding bench and the commission post all vanish. The trigger is
+  the *"Sow every empty bed"* button the tutorial itself points at, and a new player holds exactly
+  enough seed to hit it on the first press. Confirmed in the production build.
+- **The site is asking for a wallet signature over plain HTTP.** TLS is one certbot command away and
+  has not been run. For a game whose first screen requests a signature, a browser saying "Not
+  secure" is not a cosmetic problem — it is the single loudest signal a crypto-literate visitor can
+  be given that this is not safe.
+
+---
+
 ## The one-line diagnosis
 
 **HEIRLOM makes the player do the work of a breeder without giving them the feelings of one.**
@@ -190,8 +225,29 @@ The game has no reason to be opened tomorrow that it did not have today.
 
 ---
 
+## Tier 6 — the gap that only appeared once it shipped
+
+**There is no way to see what players do.** The game is live and there is no analytics, no funnel, no
+client error reporting. Nobody knows how many wallets have signed in, how many reached a first
+cross, or where the drop-off is. The ledger records every coin movement, which is a solid base, but
+nothing records the thing that matters most right now: how far a new player gets before leaving.
+
+The render crash above would have surfaced within a day of launch with even a bare
+`POST /api/client-error`. Being blind is affordable while nobody is playing; it stops being
+affordable the moment the first post goes out on X.
+
+---
+
 ## If only three things get built
 
-1. **The reveal animation** (1.1) — the largest fun-per-line change available.
-2. **The objective chip** (2.1) — the largest ease-of-play change available.
-3. **Guest play** (2.6) — without it, nobody reaches either of the other two.
+Revised for a game that is now live:
+
+1. **Fix the render crash** (§5) — it is breaking real sessions today, and the tutorial walks players
+   straight into it.
+2. **Run certbot** — one command. A wallet prompt on an unencrypted page costs more trust than any
+   feature below can earn back.
+3. **The reveal, and the near-miss badge** (1.1, 1.2) — the largest fun-per-line change available,
+   and the playthrough turned the near-miss from a hunch into a measurement.
+
+Then **guest play** (2.6), because now that the link is being shared, the wallet gate is the first
+thing a visitor meets and most of them will not pass it.
