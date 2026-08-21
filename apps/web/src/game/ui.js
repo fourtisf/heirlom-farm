@@ -910,8 +910,12 @@ function showPlate(strain, opts = {}) {
   const t = tierOf(strain), sp = SPECIES[strain.species];
   const tr = traitsOf(strain);
   const cc = k => COLORS[k].name.slice(0, 2);
-  const notation = LOCI.map(l => `${l.k}${strain.genes[l.k][0]}/${strain.genes[l.k][1]}`).join('  ') +
-    `  C${cc(strain.color[0])}/${cc(strain.color[1])}`;
+  /* One span per locus so the reveal can bring them in one at a time. Colour
+     is last and carries its own index, because colour is the thing the player
+     is actually waiting on. */
+  const notation =
+    LOCI.map((l, i) => `<span class="pn" style="--i:${i}">${l.k}${strain.genes[l.k][0]}/${strain.genes[l.k][1]}</span>`).join('') +
+    `<span class="pn pn--c" style="--i:${LOCI.length + 1}">C${cc(strain.color[0])}/${cc(strain.color[1])}</span>`;
   const d = new Date(strain.createdAt);
   const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
@@ -922,7 +926,7 @@ function showPlate(strain, opts = {}) {
   $('#plateLatin').textContent = sp.latin;
   $('#plateName').textContent = strain.name;
   $('#plateAcc').textContent = strain.accession;
-  $('#plateNotation').textContent = notation;
+  $('#plateNotation').innerHTML = notation;
   $('#plateDate').textContent = dateStr;
   $('#plateBy').textContent = G.gardener;
   $('#plateGen').textContent = 'Generation ' + strain.generation;
@@ -934,8 +938,22 @@ function showPlate(strain, opts = {}) {
   $('#plateTraits').innerHTML = tr.length
     ? tr.map(x => `<span class="ptrait" title="${x.desc}">${x.name}</span>`).join('')
     : '<span class="ptrait ptrait--none">No distinguishing traits</span>';
+  /* What the plant is hiding, said out loud.
+     The whole strategy is that the beautiful morphs are recessive, so a plain
+     crimson plant carrying Ivory is the most valuable thing a player can own —
+     and the interface has never once said so. It was drawn as an unlabelled
+     swatch and left for the player to infer over twenty disappointing crosses. */
+  const shown = strain.phenotype.color;
+  const hidden = strain.color[0] === shown ? strain.color[1] : strain.color[0];
+  const carries = COLORS[hidden].rank > COLORS[shown].rank;
+  $('#plateCarry').innerHTML = carries
+    ? `<i style="background:${COLORS[hidden].hex}"></i> Carries <b>${COLORS[hidden].name}</b>` +
+      `<em>recessive — it will not show until paired</em>`
+    : '';
+  $('#plateCarry').style.display = carries ? 'flex' : 'none';
+
   $('#plateMut').innerHTML = strain.mutations && strain.mutations.length
-    ? `<b>Mutations recorded:</b> ` + strain.mutations.map(mu => `${mu.locus} ${mu.from}→${mu.to}`).join(', ')
+    ? strain.mutations.map(mu => `<span class="pmut">${mu.locus} ${mu.from} → <b>${mu.to}</b></span>`).join('')
     : '';
 
   // name field only for a fresh cross
@@ -961,11 +979,15 @@ function showPlate(strain, opts = {}) {
   $('#plateClose').textContent = opts.mode === 'new' ? 'Keep in vault' : 'Close';
 
   m.classList.add('is-open');
-  m.querySelector('.plate').classList.remove('is-drawn');
+  const plate = m.querySelector('.plate');
+  /* Only a fresh cross gets the staged reveal. Reopening a specimen you already
+     own should not make you sit through it again. */
+  plate.classList.toggle('is-reveal', opts.mode === 'new');
+  plate.classList.remove('is-drawn');
   drawPlateArt(strain);
   requestAnimationFrame(() => {
     drawPlateArt(strain);
-    m.querySelector('.plate').classList.add('is-drawn');
+    plate.classList.add('is-drawn');
   });
 }
 function closePlate() { $('#plate').classList.remove('is-open'); G.plate = null; }

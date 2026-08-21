@@ -143,6 +143,8 @@ export interface StateSnapshot {
   beds: BedView[];
   vault: StrainView[];
   herbarium: StrainView[];
+  /** Strains standing in a bed, including any sown down to their last seed. */
+  planted: StrainView[];
   produce: Array<{ species: string; color: string; qty: number; unitValue: number }>;
   commissions: CommissionView[];
   serverTime: string;

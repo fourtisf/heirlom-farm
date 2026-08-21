@@ -129,6 +129,7 @@ export default function GameSurface() {
           <div className="plate__gen" id="plateGen">Generation 0</div>
           <div className="plate__rule"></div>
           <div className="plate__notation" id="plateNotation">Y11 V11 H11 E11 CC</div>
+          <div className="plate__carry" id="plateCarry"></div>
           <div className="plate__traits" id="plateTraits"></div>
           <div className="plate__meta">
             <div><span>Collected</span><b id="plateDate">—</b></div>

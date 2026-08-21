@@ -230,7 +230,14 @@ export function hydrate(snapshot) {
     };
   }
 
-  const byId = new Map(snapshot.vault.concat(snapshot.herbarium).map((s) => [s.id, s]));
+  /* Beds resolve against planted strains as well as the vault. A line sown to
+     its last seed has qty 0 and leaves the vault, and without this the bed it
+     is standing in cannot name what is growing there. */
+  const byId = new Map(
+    snapshot.vault
+      .concat(snapshot.herbarium, snapshot.planted ?? [])
+      .map((s) => [s.id, s]),
+  );
   for (const bed of snapshot.beds) {
     const plot = G.plots[bed.index];
     if (!plot) continue;

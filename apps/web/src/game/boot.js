@@ -38,7 +38,34 @@ import {
  * Mounts the game into an already-rendered DOM. Returns a teardown so React can
  * unmount cleanly — in development it mounts every component twice.
  */
+/**
+ * Reports a browser crash to the server so it is not lost to a console nobody
+ * is watching. Fire and forget: a failure to report an error must never become
+ * a second error.
+ */
+function reportClientErrors() {
+  const seen = new Set();
+  const send = (message, stack, where) => {
+    if (!message || seen.has(message)) return;   // one report per distinct fault
+    seen.add(message);
+    void fetch(`${api.API_URL}/api/client-error`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ message: String(message).slice(0, 500), stack, where }),
+      keepalive: true,
+    }).catch(() => {});
+  };
+  window.addEventListener('error', (e) =>
+    send(e.message, e.error?.stack?.slice(0, 2000), `${e.filename}:${e.lineno}`),
+  );
+  window.addEventListener('unhandledrejection', (e) =>
+    send(e.reason?.message ?? String(e.reason), e.reason?.stack?.slice(0, 2000), 'promise'),
+  );
+}
+
 export async function bootGame(canvas) {
+  reportClientErrors();
+
   /* The renderer reports events; the UI decides what they mean. */
   hooks.onPlotClick = onPlotClick;
   hooks.onStructureClick = onStructureClick;

@@ -224,7 +224,12 @@ function render(t, dt) {
     });
   }
   for (const pl of G.plots) {
-    if (pl.state === 'empty' || !plotUnlocked(pl.i)) continue;
+    /* `!pl.strain` is belt and braces. The snapshot now carries planted
+       strains so this should not happen — but drawing runs inside a y-sorted
+       loop, and a throw here does not just lose one plant, it silently drops
+       every entity queued behind it: the market cart, the bench and the
+       commission post all disappear from the farm. */
+    if (pl.state === 'empty' || !plotUnlocked(pl.i) || !pl.strain) continue;
     const prog = plotProgress(pl);
     const p = iso(pl.gx, pl.gy);
     ents.push({

@@ -3,7 +3,7 @@ import jwt from '@fastify/jwt';
 import rateLimitPlugin from '@fastify/rate-limit';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import type Redis from 'ioredis';
-import { ZodError } from 'zod';
+import { ZodError, z } from 'zod';
 import { loadEnv, isProduction, type Env } from './env.js';
 import { ApiError } from './lib/errors.js';
 import { prisma } from './lib/db.js';
@@ -98,6 +98,39 @@ export async function buildApp(overrides: Partial<Env> = {}): Promise<FastifyIns
      outage must not take the health check down with it, or every load-balancer
      probe fails at the moment the service most needs to stay routable. It
      reports dependency status instead of hiding it. */
+  /**
+   * Where client-side crashes go.
+   *
+   * The render bug that wiped the market cart, the bench and the commission
+   * post off the farm sat in production unnoticed, because a thrown exception
+   * in a browser reaches nobody. It would have surfaced on day one with this.
+   *
+   * Deliberately tiny: no session required, since the errors worth hearing
+   * about are often the ones that stop a player signing in. Everything is
+   * length-capped and rate limited so it cannot become a write amplifier.
+   */
+  app.post(
+    '/api/client-error',
+    { config: { rateLimit: { max: 20, timeWindow: '1 minute' } } },
+    async (req, reply) => {
+      const body = z
+        .object({
+          message: z.string().max(500),
+          stack: z.string().max(2000).optional(),
+          where: z.string().max(120).optional(),
+        })
+        .safeParse(req.body);
+      if (!body.success) return reply.code(204).send();
+
+      const user = req.user as { sub?: string } | undefined;
+      req.log.error(
+        { client: true, playerId: user?.sub ?? null, ...body.data, ua: req.headers['user-agent'] },
+        'client error',
+      );
+      return reply.code(204).send();
+    },
+  );
+
   app.get('/health', { config: { rateLimit: false } }, async () => {
     const [db, redis] = await Promise.all([
       prisma.$queryRaw`SELECT 1`.then(() => true).catch(() => false),

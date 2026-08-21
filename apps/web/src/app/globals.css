@@ -382,6 +382,10 @@ input{font-family:inherit}
 .plate__eyebrow{
   font-family:var(--f-mono);font-size:8.5px;letter-spacing:.3em;text-transform:uppercase;
   color:rgba(70,55,32,.68);text-align:center;
+  /* The tier ribbon is pinned to the top-right and was clipping the accession
+     code — on the one artefact in the game built to be screenshotted. Keep the
+     text clear of it. */
+  padding-right:96px;padding-left:96px;
 }
 .plate__species{
   font-family:var(--f-display);font-weight:400;font-size:14px;letter-spacing:.06em;
@@ -396,6 +400,41 @@ input{font-family:inherit}
 }
 .plate__gen{text-align:center;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(70,55,32,.6);margin-top:3px}
 .plate__rule{height:1px;background:linear-gradient(90deg,transparent,rgba(120,98,58,.5),transparent);margin:11px 0}
+
+/* ---- specimen plate: the reveal, the carrier, the mutations ---- */
+
+/* The cross is the game, and it used to resolve in under 200ms — the server
+   has already committed the child, so staging it costs nothing and is the
+   whole moment. Loci land one at a time, colour last and slowest. */
+@keyframes pnIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.plate__notation .pn{display:inline-block;margin-right:11px}
+.plate__notation .pn--c{margin-right:0}
+.plate.is-reveal .plate__notation .pn{opacity:0;animation:pnIn .38s cubic-bezier(.2,.7,.3,1) forwards;
+  animation-delay:calc(var(--i) * .17s + .25s)}
+.plate.is-reveal .plate__carry,
+.plate.is-reveal .plate__mut{opacity:0;animation:pnIn .45s ease forwards;animation-delay:1.35s}
+
+/* A plain plant hiding something rarer is the most valuable thing a player can
+   own. It gets a line of its own rather than an unlabelled swatch. */
+.plate__carry{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  margin:10px 0 0;padding:9px 12px;border-radius:10px;
+  background:rgba(201,162,39,.10);border:1px solid rgba(201,162,39,.34);
+  font-size:13px;color:#2B2116;
+}
+.plate__carry i{width:14px;height:14px;border-radius:50%;flex:none;
+  box-shadow:0 0 0 1px rgba(43,33,22,.35)}
+.plate__carry b{font-weight:700}
+.plate__carry em{flex:1 0 100%;font-style:normal;font-size:11px;color:#6B5C43;letter-spacing:.01em}
+
+/* Mutations are the only signal that a cross moved anything at all. They were
+   a grey footnote; the data was reaching the client and nothing showed it. */
+.pmut{
+  display:inline-block;margin:4px 5px 0 0;padding:3px 8px;border-radius:100px;
+  background:rgba(125,91,166,.14);border:1px solid rgba(125,91,166,.4);
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:.02em;color:#4A3663;
+}
+.pmut b{font-weight:600;color:#2E1F45}
 .plate__notation{
   font-family:var(--f-mono);font-size:13px;letter-spacing:.09em;text-align:center;color:#3B2E18;
   background:rgba(255,252,242,.6);border:1px solid rgba(120,98,58,.3);border-radius:3px;padding:7px 4px;

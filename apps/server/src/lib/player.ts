@@ -27,6 +27,12 @@ export interface StateSnapshot {
   beds: BedView[];
   vault: StrainView[];
   herbarium: StrainView[];
+  /**
+   * Strains currently in a bed. A line sown down to its last seed has qty 0 and
+   * so leaves `vault` — but the bed still refers to it, and a client that
+   * cannot resolve that reference cannot draw the plant standing in it.
+   */
+  planted: StrainView[];
   produce: ProduceView[];
   commissions: CommissionView[];
   serverTime: string;
@@ -181,6 +187,7 @@ export async function getState(playerId: string): Promise<StateSnapshot> {
 
   const now = new Date();
   const capacity = plotCapacity(levelFor(player.xp));
+  const plantedIds = new Set(beds.map((b) => b.strainId).filter((id): id is string => !!id));
 
   return {
     player: playerView(player),
@@ -192,6 +199,10 @@ export async function getState(playerId: string): Promise<StateSnapshot> {
        it out of circulation, which is the whole point of naming it. */
     vault: strains.filter((s) => s.qty > 0).map(strainView),
     herbarium: strains.filter((s) => s.pressed).map(strainView),
+    /* Sent alongside rather than folded into the vault: the vault means "what
+       you can plant, cross or sell", and a strain with no seed left belongs in
+       none of those lists. The bed still needs to name it. */
+    planted: strains.filter((s) => plantedIds.has(s.id)).map(strainView),
     produce: produce.filter((p) => p.qty > 0).map(produceView),
     commissions: commissions.map(commissionView),
     serverTime: now.toISOString(),
