@@ -7,7 +7,14 @@ import { z } from 'zod';
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(4000),
-  HOST: z.string().default('0.0.0.0'),
+  /**
+   * Loopback by default. Nginx is the only thing that should reach this
+   * process, and binding every interface publishes the API on its raw port —
+   * unencrypted, and around the proxy that supplies X-Forwarded-For, so the
+   * rate limiter cannot tell one caller from another. Containers that need to
+   * be reachable from outside their network namespace can set 0.0.0.0.
+   */
+  HOST: z.string().default('127.0.0.1'),
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().default('redis://127.0.0.1:6379'),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),

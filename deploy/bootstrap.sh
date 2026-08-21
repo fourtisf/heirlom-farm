@@ -94,6 +94,7 @@ ok "role and database present"
 if [ "${NEW_ENV:-0}" = "1" ]; then
   cp apps/server/.env.example "$ENV_FILE"
   sed -i "s|^NODE_ENV=.*|NODE_ENV=production|" "$ENV_FILE"
+  sed -i "s|^HOST=.*|HOST=127.0.0.1|" "$ENV_FILE"
   sed -i "s|^DATABASE_URL=.*|DATABASE_URL=postgresql://heirlom:${DB_PASS}@127.0.0.1:${PG_PORT}/heirlom|" "$ENV_FILE"
   sed -i "s|^JWT_SECRET=.*|JWT_SECRET=${JWT}|" "$ENV_FILE"
   sed -i "s|^CORS_ORIGIN=.*|CORS_ORIGIN=https://${DOMAIN},https://www.${DOMAIN}|" "$ENV_FILE"
