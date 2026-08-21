@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="HEIRLOOM — colour ladder bloom">
+  <!-- 05 COLOUR LADDER. Five petals, one per morph, in rank order — the
+       rarity ladder drawn as a flower. Rotated about the frame centre so the
+       visual mass sits where the avatar crop expects it. -->
+  <rect width="512" height="512" fill="#241B12"/>
+  <g>
+    <path d="M256 256 C218 196 218 138 256 88 C294 138 294 196 256 256Z" fill="#F0E6CE"/>
+    <path d="M256 256 C218 196 218 138 256 88 C294 138 294 196 256 256Z" fill="#7D5BA6" transform="rotate(72 256 256)"/>
+    <path d="M256 256 C218 196 218 138 256 88 C294 138 294 196 256 256Z" fill="#4E9E7A" transform="rotate(144 256 256)"/>
+    <path d="M256 256 C218 196 218 138 256 88 C294 138 294 196 256 256Z" fill="#D99A2B" transform="rotate(216 256 256)"/>
+    <path d="M256 256 C218 196 218 138 256 88 C294 138 294 196 256 256Z" fill="#C0392B" transform="rotate(288 256 256)"/>
+  </g>
+  <circle cx="256" cy="256" r="42" fill="#241B12"/>
+  <circle cx="256" cy="256" r="24" fill="#C9A227"/>
+</svg>

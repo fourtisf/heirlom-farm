@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="HEIRLOOM — helix sprout">
+  <!-- 02 HELIX SPROUT. Two strands crossing on the centre line, rungs at the
+       widest point of each turn. The first version let the strands wander and
+       it read as an insect at 40px; this one is strictly symmetric about
+       x=256 and the crossings land exactly on it. -->
+  <rect width="512" height="512" fill="#241B12"/>
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#C9A227" stroke-width="7" opacity=".45"/>
+  <g fill="none" stroke-width="22" stroke-linecap="round">
+    <path d="M256 402 C340 362 340 302 256 262 C172 222 172 162 256 122" stroke="#7FB069"/>
+    <path d="M256 402 C172 362 172 302 256 262 C340 222 340 162 256 122" stroke="#3E6B44"/>
+  </g>
+  <g stroke="#C9A227" stroke-width="13" stroke-linecap="round">
+    <path d="M196 330 H316"/>
+    <path d="M196 190 H316"/>
+  </g>
+  <!-- a leaf pair at the crown, so it grows rather than merely twists -->
+  <path d="M252 128 C214 122 190 96 188 62 C226 60 250 88 252 126Z" fill="#7FB069"/>
+  <path d="M260 128 C298 122 322 96 324 62 C286 60 262 88 260 126Z" fill="#F0E6CE"/>
+  <circle cx="256" cy="402" r="20" fill="#C9A227"/>
+</svg>

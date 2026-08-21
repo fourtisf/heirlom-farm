@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="HEIRLOOM — Punnett square">
+  <!-- 03 PUNNETT. One in four cells is ivory. That is the game's whole thesis
+       — the beautiful morph is recessive — drawn as four rectangles. Nothing
+       here degrades below 16px, because there is nothing to degrade. -->
+  <rect width="512" height="512" fill="#241B12"/>
+  <g>
+    <rect x="94"  y="94"  width="152" height="152" rx="22" fill="#3B2A1B" stroke="#C9A227" stroke-width="5" opacity=".9"/>
+    <rect x="266" y="94"  width="152" height="152" rx="22" fill="#3B2A1B" stroke="#C9A227" stroke-width="5" opacity=".9"/>
+    <rect x="94"  y="266" width="152" height="152" rx="22" fill="#3B2A1B" stroke="#C9A227" stroke-width="5" opacity=".9"/>
+    <rect x="266" y="266" width="152" height="152" rx="22" fill="#F0E6CE"/>
+  </g>
+  <!-- the three plain cells carry a hidden allele; the fourth shows it -->
+  <g fill="#C9A227" opacity=".5">
+    <circle cx="170" cy="170" r="16"/>
+    <circle cx="342" cy="170" r="16"/>
+    <circle cx="170" cy="342" r="16"/>
+  </g>
+  <path d="M342 300 A42 42 0 0 1 342 384 A42 42 0 0 1 342 300Z" fill="#241B12"/>
+</svg>

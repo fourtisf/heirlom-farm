@@ -1,0 +1,465 @@
+<title>HEIRLOOM Avatar Marks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600;9..144,900&family=Karla:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --soil:#241B12; --soil-deep:#150E08; --loam:#3B2A1B; --loam-hi:#4A3626;
+  --parchment:#E8DCC0; --bone:#EFE7D6; --bone-dim:#B9AC94;
+  --brass:#C9A227; --brass-lite:#EBC85C; --leaf:#7FB069; --wine:#7A2E3B;
+  --rule:rgba(201,162,39,.24); --rule-soft:rgba(232,220,192,.10);
+  --f-display:"Fraunces",Georgia,"Times New Roman",serif;
+  --f-body:"Karla",system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--soil-deep); color:var(--bone);
+  font-family:var(--f-body); font-size:16px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:960px;margin:0 auto;padding:56px 24px 96px}
+
+/* ---- masthead ---- */
+.mast{border-bottom:1px solid var(--rule);padding-bottom:34px;margin-bottom:12px}
+.eyebrow{
+  font-family:var(--f-mono);font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--brass);margin:0 0 18px
+}
+.mast h1{
+  font-family:var(--f-display);font-weight:900;font-size:clamp(44px,8vw,78px);
+  line-height:.96;letter-spacing:-.015em;margin:0;text-wrap:balance;color:var(--bone)
+}
+.mast h1 em{font-style:normal;color:var(--brass)}
+.lede{max-width:62ch;margin:20px 0 0;color:var(--bone-dim);font-size:17px}
+.meta{
+  display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:26px;
+  font-family:var(--f-mono);font-size:12px;color:var(--bone-dim)
+}
+.meta b{color:var(--bone);font-weight:500}
+
+/* ---- criteria ---- */
+.criteria{
+  margin:38px 0 46px;padding:22px 24px;border:1px solid var(--rule-soft);
+  border-left:3px solid var(--brass);background:rgba(59,42,27,.34);border-radius:4px
+}
+.criteria p{margin:0;max-width:66ch;color:var(--bone-dim);font-size:15px}
+.criteria strong{color:var(--bone);font-weight:700}
+
+/* ---- specimen entries ---- */
+.sheet{display:flex;flex-direction:column;gap:0}
+.spec{
+  display:grid;grid-template-columns:200px minmax(0,1fr);gap:34px;
+  padding:34px 0;border-top:1px solid var(--rule-soft)
+}
+.spec:first-child{border-top:1px solid var(--rule)}
+.spec__mark{display:flex;flex-direction:column;align-items:center;gap:14px}
+.spec__file{
+  font-family:var(--f-mono);font-size:10.5px;color:var(--bone-dim);
+  letter-spacing:.02em;text-align:center;word-break:break-all
+}
+.chip{display:block;border-radius:50%;flex:none}
+.chip--hero{box-shadow:0 14px 34px rgba(8,5,2,.6);border:1px solid var(--rule-soft)}
+
+.spec__head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.spec__num{
+  font-family:var(--f-mono);font-size:12px;color:var(--brass);
+  letter-spacing:.14em;padding-top:4px
+}
+.spec__head h3{
+  font-family:var(--f-display);font-weight:600;font-size:27px;letter-spacing:-.01em;
+  margin:0;color:var(--bone)
+}
+.pill{
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  padding:4px 10px;border-radius:100px;border:1px solid currentColor;white-space:nowrap
+}
+.pill--ok{color:var(--leaf)}
+.pill--mid{color:var(--brass)}
+.pill--no{color:#C08A8A}
+.spec__note{margin:0 0 22px;max-width:64ch;color:var(--bone-dim);font-size:15.5px}
+.spec__note em{color:var(--bone);font-style:italic}
+
+.ladder{display:flex;flex-wrap:wrap;gap:12px}
+.ladder__set{
+  flex:1 1 240px;padding:16px 18px;border-radius:4px;
+  background:var(--soil);border:1px solid var(--rule-soft)
+}
+.ladder__set--light{background:var(--parchment);border-color:rgba(36,27,18,.16)}
+.ladder__lbl{
+  display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--bone-dim);margin-bottom:14px
+}
+.ladder__set--light .ladder__lbl{color:#7A6A50}
+.ladder__row{display:flex;align-items:center;gap:16px;min-height:72px}
+.scale{
+  margin-top:10px;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;
+  color:var(--bone-dim);opacity:.75
+}
+
+/* ---- verdict ---- */
+.verdict{margin-top:58px;border-top:1px solid var(--rule);padding-top:40px}
+.verdict h2{
+  font-family:var(--f-display);font-weight:900;font-size:34px;letter-spacing:-.015em;
+  margin:0 0 8px;color:var(--bone)
+}
+.picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;margin-top:26px}
+.pick{
+  padding:24px;border:1px solid var(--rule-soft);border-radius:4px;
+  background:rgba(59,42,27,.34);display:flex;gap:18px;align-items:flex-start
+}
+.pick--lead{border-color:var(--rule);background:rgba(201,162,39,.07)}
+.pick h4{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--brass);margin:0 0 8px
+}
+.pick p{margin:0;font-size:14.5px;color:var(--bone-dim)}
+.pick strong{color:var(--bone);font-family:var(--f-display);font-weight:600;font-size:17px;display:block;margin-bottom:6px}
+
+/* ---- timeline mock ---- */
+.tl{margin-top:44px}
+.tl__lbl{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--bone-dim);margin:0 0 14px
+}
+.tweet{
+  display:flex;gap:13px;padding:18px 20px;border:1px solid var(--rule-soft);
+  border-radius:4px;background:var(--soil);max-width:520px
+}
+.tweet__body{min-width:0}
+.tweet__name{font-size:15px;font-weight:700;color:var(--bone);line-height:1.3}
+.tweet__handle{font-size:14px;color:var(--bone-dim);font-weight:400}
+.tweet__text{margin:5px 0 0;font-size:14.5px;color:var(--bone);line-height:1.5}
+
+.foot{
+  margin-top:56px;padding-top:22px;border-top:1px solid var(--rule-soft);
+  font-family:var(--f-mono);font-size:11.5px;color:var(--bone-dim);line-height:1.9
+}
+@media (max-width:640px){
+  .wrap{padding:40px 18px 72px}
+  .spec{grid-template-columns:1fr;gap:24px}
+  .spec__mark{align-items:flex-start}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="m01" viewBox="0 0 512 512"><!-- 01 SEED AND RING. One shape, one ring, three colours. The veins are cut
+       heavy on purpose: at 24px a hairline vein disappears and the mark
+       collapses into a blank almond. -->
+  <rect width="512" height="512" fill="#241B12"/>
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#C9A227" stroke-width="8" opacity=".6"/>
+  <circle cx="256" cy="256" r="208" fill="none" stroke="#C9A227" stroke-width="3" opacity=".28"/>
+  <path d="M256 112 A176 176 0 0 1 256 400 A176 176 0 0 1 256 112Z" fill="#F0E6CE"/>
+  <g stroke="#241B12" stroke-linecap="round" fill="none">
+    <path d="M256 142 V372" stroke-width="14"/>
+    <path d="M256 226 L204 182 M256 226 L308 182 M256 296 L212 256 M256 296 L300 256" stroke-width="12" opacity=".62"/>
+  </g>
+  <circle cx="256" cy="344" r="26" fill="#C9A227"/></symbol>
+<symbol id="m02" viewBox="0 0 512 512"><!-- 02 HELIX SPROUT. Two strands crossing on the centre line, rungs at the
+       widest point of each turn. The first version let the strands wander and
+       it read as an insect at 40px; this one is strictly symmetric about
+       x=256 and the crossings land exactly on it. -->
+  <rect width="512" height="512" fill="#241B12"/>
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#C9A227" stroke-width="7" opacity=".45"/>
+  <g fill="none" stroke-width="22" stroke-linecap="round">
+    <path d="M256 402 C340 362 340 302 256 262 C172 222 172 162 256 122" stroke="#7FB069"/>
+    <path d="M256 402 C172 362 172 302 256 262 C340 222 340 162 256 122" stroke="#3E6B44"/>
+  </g>
+  <g stroke="#C9A227" stroke-width="13" stroke-linecap="round">
+    <path d="M196 330 H316"/>
+    <path d="M196 190 H316"/>
+  </g>
+  <!-- a leaf pair at the crown, so it grows rather than merely twists -->
+  <path d="M252 128 C214 122 190 96 188 62 C226 60 250 88 252 126Z" fill="#7FB069"/>
+  <path d="M260 128 C298 122 322 96 324 62 C286 60 262 88 260 126Z" fill="#F0E6CE"/>
+  <circle cx="256" cy="402" r="20" fill="#C9A227"/></symbol>
+<symbol id="m03" viewBox="0 0 512 512"><!-- 03 PUNNETT. One in four cells is ivory. That is the game's whole thesis
+       — the beautiful morph is recessive — drawn as four rectangles. Nothing
+       here degrades below 16px, because there is nothing to degrade. -->
+  <rect width="512" height="512" fill="#241B12"/>
+  <g>
+    <rect x="94"  y="94"  width="152" height="152" rx="22" fill="#3B2A1B" stroke="#C9A227" stroke-width="5" opacity=".9"/>
+    <rect x="266" y="94"  width="152" height="152" rx="22" fill="#3B2A1B" stroke="#C9A227" stroke-width="5" opacity=".9"/>
+    <rect x="94"  y="266" width="152" height="152" rx="22" fill="#3B2A1B" stroke="#C9A227" stroke-width="5" opacity=".9"/>
+    <rect x="266" y="266" width="152" height="152" rx="22" fill="#F0E6CE"/>
+  </g>
+  <!-- the three plain cells carry a hidden allele; the fourth shows it -->
+  <g fill="#C9A227" opacity=".5">
+    <circle cx="170" cy="170" r="16"/>
+    <circle cx="342" cy="170" r="16"/>
+    <circle cx="170" cy="342" r="16"/>
+  </g>
+  <path d="M342 300 A42 42 0 0 1 342 384 A42 42 0 0 1 342 300Z" fill="#241B12"/></symbol>
+<symbol id="m04" viewBox="0 0 512 512"><!-- 04 MONOGRAM. A slab H whose crossbar is the ground, with a seedling
+       rising out of it. The letterform carries the name at banner size; the
+       sprout keeps it from being just a letter at avatar size. -->
+  <rect width="512" height="512" fill="#241B12"/>
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#C9A227" stroke-width="6" opacity=".4"/>
+  <g fill="#C9A227">
+    <rect x="148" y="132" width="48" height="248" rx="7"/>
+    <rect x="316" y="132" width="48" height="248" rx="7"/>
+    <rect x="124" y="132" width="96" height="22" rx="7"/>
+    <rect x="124" y="358" width="96" height="22" rx="7"/>
+    <rect x="292" y="132" width="96" height="22" rx="7"/>
+    <rect x="292" y="358" width="96" height="22" rx="7"/>
+    <rect x="196" y="300" width="120" height="26" rx="6"/>
+  </g>
+  <!-- the seedling stands in the counter, rooted on the crossbar -->
+  <path d="M256 300 V212" stroke="#F0E6CE" stroke-width="15" stroke-linecap="round"/>
+  <path d="M254 246 C214 246 190 222 186 186 C228 182 252 208 254 244Z" fill="#3E6B44"/>
+  <path d="M258 226 C298 224 324 198 328 162 C286 160 260 188 258 224Z" fill="#7FB069"/></symbol>
+<symbol id="m05" viewBox="0 0 512 512"><!-- 05 COLOUR LADDER. Five petals, one per morph, in rank order — the
+       rarity ladder drawn as a flower. Rotated about the frame centre so the
+       visual mass sits where the avatar crop expects it. -->
+  <rect width="512" height="512" fill="#241B12"/>
+  <g>
+    <path d="M256 256 C218 196 218 138 256 88 C294 138 294 196 256 256Z" fill="#F0E6CE"/>
+    <path d="M256 256 C218 196 218 138 256 88 C294 138 294 196 256 256Z" fill="#7D5BA6" transform="rotate(72 256 256)"/>
+    <path d="M256 256 C218 196 218 138 256 88 C294 138 294 196 256 256Z" fill="#4E9E7A" transform="rotate(144 256 256)"/>
+    <path d="M256 256 C218 196 218 138 256 88 C294 138 294 196 256 256Z" fill="#D99A2B" transform="rotate(216 256 256)"/>
+    <path d="M256 256 C218 196 218 138 256 88 C294 138 294 196 256 256Z" fill="#C0392B" transform="rotate(288 256 256)"/>
+  </g>
+  <circle cx="256" cy="256" r="42" fill="#241B12"/>
+  <circle cx="256" cy="256" r="24" fill="#C9A227"/></symbol>
+<symbol id="m06" viewBox="0 0 512 512"><!-- 06 HERBARIUM TAG. The accession label the game already prints on every
+       pressed specimen. Richest of the six and the only one with implied text,
+       so it belongs on a header or an OG card rather than a 24px avatar. -->
+  <rect width="512" height="512" fill="#241B12"/>
+  <g transform="rotate(-8 256 256)">
+    <path d="M256 92 L392 122 V400 A18 18 0 0 1 374 418 H138 A18 18 0 0 1 120 400 V122Z" fill="#E8DCC0"/>
+    <path d="M256 92 L392 122 V400 A18 18 0 0 1 374 418 H138 A18 18 0 0 1 120 400 V122Z" fill="none" stroke="#C9A227" stroke-width="7"/>
+    <circle cx="256" cy="146" r="15" fill="#241B12"/>
+    <path d="M256 262 V342" stroke="#3E6B44" stroke-width="13" stroke-linecap="round"/>
+    <path d="M254 300 C218 300 196 280 192 248 C230 244 252 268 254 298Z" fill="#3E6B44"/>
+    <path d="M258 282 C294 280 318 258 322 226 C284 224 260 248 258 280Z" fill="#7FB069"/>
+    <g fill="#241B12" opacity=".55">
+      <rect x="166" y="368" width="82" height="11" rx="5"/>
+      <rect x="258" y="368" width="52" height="11" rx="5"/>
+    </g>
+  </g></symbol>
+</defs></svg>
+
+<div class="wrap">
+  <header class="mast">
+    <p class="eyebrow">Brand references &middot; profile marks</p>
+    <h1>Six marks for<br><em>HEIRLOOM</em></h1>
+    <p class="lede">Drawn against the game&rsquo;s own palette, sized for the one place they have to
+      work: a circular avatar in a timeline, at twenty&#8209;four pixels.</p>
+    <div class="meta">
+      <span><b>6</b> concepts</span>
+      <span><b>512&times;512</b> SVG, full bleed</span>
+      <span>palette from <b>globals.css</b></span>
+      <span>in <b>docs/brand/</b></span>
+    </div>
+  </header>
+
+  <div class="criteria">
+    <p>Every mark was rendered and checked at <strong>24&#8239;px</strong> before it was kept &mdash;
+      that is the size an avatar actually appears at beside a post, and it is the only size that
+      decides anything. Two of the first six failed that test and were redrawn. None of them
+      contains text: at avatar size a wordmark is illegible, and the handle already does that job
+      an inch to the right.</p>
+  </div>
+
+  <div class="sheet">
+    <article class="spec">
+      <div class="spec__mark">
+        <svg class="chip chip--hero" width="168" height="168" viewBox="0 0 512 512" aria-hidden="true"><use href="#m01"/></svg>
+        <code class="spec__file">01-seed-and-ring.svg</code>
+      </div>
+      <div class="spec__body">
+        <header class="spec__head">
+          <span class="spec__num">01</span>
+          <h3>Seed and ring</h3>
+          <span class="pill pill--ok">avatar-ready</span>
+        </header>
+        <p class="spec__note">One shape, one ring, three colours. The safest of the six and the most “heirloom” — also the least legible as a game. The veins are cut heavy on purpose: hairlines vanish at 24px and leave a blank almond.</p>
+        <div class="ladder">
+          <div class="ladder__set">
+            <span class="ladder__lbl">on soil</span>
+            <div class="ladder__row"><svg class="chip" width="72" height="72" viewBox="0 0 512 512" aria-hidden="true"><use href="#m01"/></svg><svg class="chip" width="48" height="48" viewBox="0 0 512 512" aria-hidden="true"><use href="#m01"/></svg><svg class="chip" width="32" height="32" viewBox="0 0 512 512" aria-hidden="true"><use href="#m01"/></svg><svg class="chip" width="24" height="24" viewBox="0 0 512 512" aria-hidden="true"><use href="#m01"/></svg></div>
+          </div>
+          <div class="ladder__set ladder__set--light">
+            <span class="ladder__lbl">on parchment</span>
+            <div class="ladder__row"><svg class="chip" width="72" height="72" viewBox="0 0 512 512" aria-hidden="true"><use href="#m01"/></svg><svg class="chip" width="48" height="48" viewBox="0 0 512 512" aria-hidden="true"><use href="#m01"/></svg><svg class="chip" width="32" height="32" viewBox="0 0 512 512" aria-hidden="true"><use href="#m01"/></svg><svg class="chip" width="24" height="24" viewBox="0 0 512 512" aria-hidden="true"><use href="#m01"/></svg></div>
+          </div>
+        </div>
+        <div class="scale">72 &middot; 48 &middot; 32 &middot; 24&nbsp;px</div>
+      </div>
+    </article>
+    <article class="spec">
+      <div class="spec__mark">
+        <svg class="chip chip--hero" width="168" height="168" viewBox="0 0 512 512" aria-hidden="true"><use href="#m02"/></svg>
+        <code class="spec__file">02-helix-sprout.svg</code>
+      </div>
+      <div class="spec__body">
+        <header class="spec__head">
+          <span class="spec__num">02</span>
+          <h3>Helix sprout</h3>
+          <span class="pill pill--ok">avatar-ready</span>
+        </header>
+        <p class="spec__note">The only mark that says <em>farm</em> and <em>genetics</em> in one silhouette. Strictly symmetric about the centre line, with the crossings landing on it — an earlier looser version read as an insect at 40px.</p>
+        <div class="ladder">
+          <div class="ladder__set">
+            <span class="ladder__lbl">on soil</span>
+            <div class="ladder__row"><svg class="chip" width="72" height="72" viewBox="0 0 512 512" aria-hidden="true"><use href="#m02"/></svg><svg class="chip" width="48" height="48" viewBox="0 0 512 512" aria-hidden="true"><use href="#m02"/></svg><svg class="chip" width="32" height="32" viewBox="0 0 512 512" aria-hidden="true"><use href="#m02"/></svg><svg class="chip" width="24" height="24" viewBox="0 0 512 512" aria-hidden="true"><use href="#m02"/></svg></div>
+          </div>
+          <div class="ladder__set ladder__set--light">
+            <span class="ladder__lbl">on parchment</span>
+            <div class="ladder__row"><svg class="chip" width="72" height="72" viewBox="0 0 512 512" aria-hidden="true"><use href="#m02"/></svg><svg class="chip" width="48" height="48" viewBox="0 0 512 512" aria-hidden="true"><use href="#m02"/></svg><svg class="chip" width="32" height="32" viewBox="0 0 512 512" aria-hidden="true"><use href="#m02"/></svg><svg class="chip" width="24" height="24" viewBox="0 0 512 512" aria-hidden="true"><use href="#m02"/></svg></div>
+          </div>
+        </div>
+        <div class="scale">72 &middot; 48 &middot; 32 &middot; 24&nbsp;px</div>
+      </div>
+    </article>
+    <article class="spec">
+      <div class="spec__mark">
+        <svg class="chip chip--hero" width="168" height="168" viewBox="0 0 512 512" aria-hidden="true"><use href="#m03"/></svg>
+        <code class="spec__file">03-punnett.svg</code>
+      </div>
+      <div class="spec__body">
+        <header class="spec__head">
+          <span class="spec__num">03</span>
+          <h3>Punnett</h3>
+          <span class="pill pill--ok">avatar-ready</span>
+        </header>
+        <p class="spec__note">One cell in four is ivory: the game’s whole thesis — the beautiful morph is recessive — drawn as four rectangles. Nothing here degrades below 16px, because there is nothing to degrade.</p>
+        <div class="ladder">
+          <div class="ladder__set">
+            <span class="ladder__lbl">on soil</span>
+            <div class="ladder__row"><svg class="chip" width="72" height="72" viewBox="0 0 512 512" aria-hidden="true"><use href="#m03"/></svg><svg class="chip" width="48" height="48" viewBox="0 0 512 512" aria-hidden="true"><use href="#m03"/></svg><svg class="chip" width="32" height="32" viewBox="0 0 512 512" aria-hidden="true"><use href="#m03"/></svg><svg class="chip" width="24" height="24" viewBox="0 0 512 512" aria-hidden="true"><use href="#m03"/></svg></div>
+          </div>
+          <div class="ladder__set ladder__set--light">
+            <span class="ladder__lbl">on parchment</span>
+            <div class="ladder__row"><svg class="chip" width="72" height="72" viewBox="0 0 512 512" aria-hidden="true"><use href="#m03"/></svg><svg class="chip" width="48" height="48" viewBox="0 0 512 512" aria-hidden="true"><use href="#m03"/></svg><svg class="chip" width="32" height="32" viewBox="0 0 512 512" aria-hidden="true"><use href="#m03"/></svg><svg class="chip" width="24" height="24" viewBox="0 0 512 512" aria-hidden="true"><use href="#m03"/></svg></div>
+          </div>
+        </div>
+        <div class="scale">72 &middot; 48 &middot; 32 &middot; 24&nbsp;px</div>
+      </div>
+    </article>
+    <article class="spec">
+      <div class="spec__mark">
+        <svg class="chip chip--hero" width="168" height="168" viewBox="0 0 512 512" aria-hidden="true"><use href="#m04"/></svg>
+        <code class="spec__file">04-monogram-h.svg</code>
+      </div>
+      <div class="spec__body">
+        <header class="spec__head">
+          <span class="spec__num">04</span>
+          <h3>Monogram H</h3>
+          <span class="pill pill--ok">avatar-ready</span>
+        </header>
+        <p class="spec__note">A slab H whose crossbar is the ground, with a seedling rising out of it. Carries the name unaided, which matters if the mark ever travels without the handle beside it.</p>
+        <div class="ladder">
+          <div class="ladder__set">
+            <span class="ladder__lbl">on soil</span>
+            <div class="ladder__row"><svg class="chip" width="72" height="72" viewBox="0 0 512 512" aria-hidden="true"><use href="#m04"/></svg><svg class="chip" width="48" height="48" viewBox="0 0 512 512" aria-hidden="true"><use href="#m04"/></svg><svg class="chip" width="32" height="32" viewBox="0 0 512 512" aria-hidden="true"><use href="#m04"/></svg><svg class="chip" width="24" height="24" viewBox="0 0 512 512" aria-hidden="true"><use href="#m04"/></svg></div>
+          </div>
+          <div class="ladder__set ladder__set--light">
+            <span class="ladder__lbl">on parchment</span>
+            <div class="ladder__row"><svg class="chip" width="72" height="72" viewBox="0 0 512 512" aria-hidden="true"><use href="#m04"/></svg><svg class="chip" width="48" height="48" viewBox="0 0 512 512" aria-hidden="true"><use href="#m04"/></svg><svg class="chip" width="32" height="32" viewBox="0 0 512 512" aria-hidden="true"><use href="#m04"/></svg><svg class="chip" width="24" height="24" viewBox="0 0 512 512" aria-hidden="true"><use href="#m04"/></svg></div>
+          </div>
+        </div>
+        <div class="scale">72 &middot; 48 &middot; 32 &middot; 24&nbsp;px</div>
+      </div>
+    </article>
+    <article class="spec">
+      <div class="spec__mark">
+        <svg class="chip chip--hero" width="168" height="168" viewBox="0 0 512 512" aria-hidden="true"><use href="#m05"/></svg>
+        <code class="spec__file">05-colour-ladder.svg</code>
+      </div>
+      <div class="spec__body">
+        <header class="spec__head">
+          <span class="spec__num">05</span>
+          <h3>Colour ladder</h3>
+          <span class="pill pill--mid">large formats</span>
+        </header>
+        <p class="spec__note">Five petals, one per morph, in rank order — crimson, amber, jade, violet, ivory. The rarity ladder as a flower. Survives the crop as a coloured asterisk; better spent on launch art.</p>
+        <div class="ladder">
+          <div class="ladder__set">
+            <span class="ladder__lbl">on soil</span>
+            <div class="ladder__row"><svg class="chip" width="72" height="72" viewBox="0 0 512 512" aria-hidden="true"><use href="#m05"/></svg><svg class="chip" width="48" height="48" viewBox="0 0 512 512" aria-hidden="true"><use href="#m05"/></svg><svg class="chip" width="32" height="32" viewBox="0 0 512 512" aria-hidden="true"><use href="#m05"/></svg><svg class="chip" width="24" height="24" viewBox="0 0 512 512" aria-hidden="true"><use href="#m05"/></svg></div>
+          </div>
+          <div class="ladder__set ladder__set--light">
+            <span class="ladder__lbl">on parchment</span>
+            <div class="ladder__row"><svg class="chip" width="72" height="72" viewBox="0 0 512 512" aria-hidden="true"><use href="#m05"/></svg><svg class="chip" width="48" height="48" viewBox="0 0 512 512" aria-hidden="true"><use href="#m05"/></svg><svg class="chip" width="32" height="32" viewBox="0 0 512 512" aria-hidden="true"><use href="#m05"/></svg><svg class="chip" width="24" height="24" viewBox="0 0 512 512" aria-hidden="true"><use href="#m05"/></svg></div>
+          </div>
+        </div>
+        <div class="scale">72 &middot; 48 &middot; 32 &middot; 24&nbsp;px</div>
+      </div>
+    </article>
+    <article class="spec">
+      <div class="spec__mark">
+        <svg class="chip chip--hero" width="168" height="168" viewBox="0 0 512 512" aria-hidden="true"><use href="#m06"/></svg>
+        <code class="spec__file">06-herbarium-tag.svg</code>
+      </div>
+      <div class="spec__body">
+        <header class="spec__head">
+          <span class="spec__num">06</span>
+          <h3>Herbarium tag</h3>
+          <span class="pill pill--no">header only</span>
+        </header>
+        <p class="spec__note">The accession label the game already prints on every pressed specimen. Richest of the six, and the only one with implied text — which is why it turns into a pale blob at avatar size.</p>
+        <div class="ladder">
+          <div class="ladder__set">
+            <span class="ladder__lbl">on soil</span>
+            <div class="ladder__row"><svg class="chip" width="72" height="72" viewBox="0 0 512 512" aria-hidden="true"><use href="#m06"/></svg><svg class="chip" width="48" height="48" viewBox="0 0 512 512" aria-hidden="true"><use href="#m06"/></svg><svg class="chip" width="32" height="32" viewBox="0 0 512 512" aria-hidden="true"><use href="#m06"/></svg><svg class="chip" width="24" height="24" viewBox="0 0 512 512" aria-hidden="true"><use href="#m06"/></svg></div>
+          </div>
+          <div class="ladder__set ladder__set--light">
+            <span class="ladder__lbl">on parchment</span>
+            <div class="ladder__row"><svg class="chip" width="72" height="72" viewBox="0 0 512 512" aria-hidden="true"><use href="#m06"/></svg><svg class="chip" width="48" height="48" viewBox="0 0 512 512" aria-hidden="true"><use href="#m06"/></svg><svg class="chip" width="32" height="32" viewBox="0 0 512 512" aria-hidden="true"><use href="#m06"/></svg><svg class="chip" width="24" height="24" viewBox="0 0 512 512" aria-hidden="true"><use href="#m06"/></svg></div>
+          </div>
+        </div>
+        <div class="scale">72 &middot; 48 &middot; 32 &middot; 24&nbsp;px</div>
+      </div>
+    </article>
+  </div>
+
+  <section class="verdict">
+    <h2>What I&rsquo;d ship</h2>
+    <p class="lede">Two answers, depending on whether you are optimising for the first glance or for
+      the next five years.</p>
+    <div class="picks">
+      <div class="pick pick--lead">
+        <svg class="chip" width="64" height="64" viewBox="0 0 512 512" aria-hidden="true"><use href="#m02"/></svg>
+        <div><strong>02 &middot; Helix sprout</strong>
+        <h4>the avatar</h4>
+        <p>A stranger decodes it without context, and it stops the account reading as a generic farm
+        game &mdash; which is the real positioning problem, since the genetics <em>are</em> the product.</p></div>
+      </div>
+      <div class="pick">
+        <svg class="chip" width="64" height="64" viewBox="0 0 512 512" aria-hidden="true"><use href="#m03"/></svg>
+        <div><strong>03 &middot; Punnett</strong>
+        <h4>the long game</h4>
+        <p>The sharper brand. Unmistakable at any size, carries the recessive&#8209;morph idea, and does
+        not compete with a thousand other leaf&#8209;in&#8209;a&#8209;circle avatars. Reads least like a game &mdash;
+        that is the trade.</p></div>
+      </div>
+      <div class="pick">
+        <svg class="chip" width="64" height="64" viewBox="0 0 512 512" aria-hidden="true"><use href="#m06"/></svg>
+        <div><strong>06 &middot; Herbarium tag</strong>
+        <h4>the header</h4>
+        <p>Too detailed for the circle, exactly right at banner width &mdash; and it is already the
+        object the game prints on every pressed specimen.</p></div>
+      </div>
+    </div>
+
+    <div class="tl">
+      <p class="tl__lbl">02 at timeline size</p>
+      <div class="tweet">
+        <svg class="chip" width="44" height="44" viewBox="0 0 512 512" aria-hidden="true"><use href="#m02"/></svg>
+        <div class="tweet__body">
+          <div class="tweet__name">HEIRLOOM <span class="tweet__handle">&middot; 2h</span></div>
+          <p class="tweet__text">Ninety-four crosses. Every one of them looked like nothing.
+            This morning both alleles landed ivory. <b>HB&#8209;4417</b>, and it is going in the book.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    Each file is full&#8209;bleed 512&times;512, so the circular crop takes nothing off the mark.<br>
+    Stroke weights are tuned for the small end &mdash; redraw rather than upscale above ~400&#8239;px.<br>
+    If one is adopted, redraw <b>apps/web/src/app/icon.svg</b> from it so the tab and the profile agree.
+  </footer>
+</div>
