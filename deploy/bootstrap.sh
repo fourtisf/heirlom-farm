@@ -27,8 +27,25 @@ ok()  { printf '    \033[32m✓\033[0m %s\n' "$*"; }
 # ---------------------------------------------------------------- packages ---
 say "System packages"
 export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
-apt-get install -y -qq curl git ca-certificates gnupg nginx postgresql redis-server >/dev/null
+
+# A single broken third-party repo must not end the deploy. Boxes collect these
+# — an expired ClickHouse or Docker key, a PPA for something long uninstalled —
+# and none of them are repos we need. Refresh what we can, name what failed,
+# and let the install below be the real test.
+if ! apt-get update -qq 2>/tmp/heirlom-apt.err; then
+  grep -oE "The repository '[^']+'" /tmp/heirlom-apt.err 2>/dev/null \
+    | sed "s/The repository /    could not refresh: /" | sort -u || true
+  echo "    carrying on — the Ubuntu indexes are the ones that matter"
+fi
+
+if ! apt-get install -y -qq curl git ca-certificates gnupg nginx postgresql redis-server >/dev/null; then
+  echo
+  echo "apt could not install the base packages."
+  echo "If the failure above names a third-party repo, disable it and re-run:"
+  echo "    ls /etc/apt/sources.list.d/"
+  echo "    mv /etc/apt/sources.list.d/<offender>.list{,.disabled}"
+  exit 1
+fi
 ok "nginx, postgresql, redis"
 
 if ! command -v node >/dev/null || [ "$(node -v | cut -c2- | cut -d. -f1)" -lt 20 ]; then
