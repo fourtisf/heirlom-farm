@@ -149,32 +149,55 @@ ok "built for https://${DOMAIN}"
 # --------------------------------------------------------------------- run ---
 say "Processes"
 mkdir -p logs apps/server/logs apps/web/logs
-if pm2 describe heirlom-server >/dev/null 2>&1; then
-  pm2 reload ecosystem.config.cjs --env production
+
+# Clear our own entries first, so a previous attempt's processes do not make
+# their own ports look occupied to the search below. Only ours — anything else
+# on this box is somebody's running site.
+pm2 delete heirlom-server heirlom-web >/dev/null 2>&1 || true
+
+# Actually try to connect rather than parsing `ss`, which is not guaranteed to
+# be installed — and a missing tool made the earlier version report every port
+# free, which is the one wrong answer that matters here.
+port_busy() { (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null && { exec 3<&- 3>&-; return 0; }; return 1; }
+pick_port() { local p="$1"; while port_busy "$p"; do p=$((p + 1)); done; echo "$p"; }
+
+API_PORT="$(pick_port 4000)"
+WEB_PORT="$(pick_port 3000)"
+export API_PORT WEB_PORT
+if [ "$API_PORT" != "4000" ] || [ "$WEB_PORT" != "3000" ]; then
+  ok "3000/4000 already taken on this box — using web ${WEB_PORT}, api ${API_PORT}"
 else
-  pm2 start ecosystem.config.cjs --env production
+  ok "web ${WEB_PORT}, api ${API_PORT}"
 fi
+
+pm2 start ecosystem.config.cjs --env production
 pm2 save >/dev/null
 pm2 startup systemd -u root --hp /root >/dev/null 2>&1 || true
 ok "pm2 up and set to survive reboot"
 
 say "Waiting for both apps to answer"
 for i in $(seq 1 30); do
-  api=$(curl -fsS localhost:4000/health 2>/dev/null || true)
-  web=$(curl -fsS -o /dev/null -w '%{http_code}' localhost:3000 2>/dev/null || true)
+  api=$(curl -fsS "localhost:${API_PORT}/health" 2>/dev/null || true)
+  web=$(curl -fsS -o /dev/null -w '%{http_code}' "localhost:${WEB_PORT}" 2>/dev/null || true)
   [ -n "$api" ] && [ "$web" = "200" ] && break
   sleep 2
 done
-[ -n "${api:-}" ] || { echo "API never answered. pm2 logs heirlom-server --lines 50"; exit 1; }
-[ "${web:-}" = "200" ] || { echo "Web never answered. pm2 logs heirlom-web --lines 50"; exit 1; }
+if [ -z "${api:-}" ] || [ "${web:-}" != "200" ]; then
+  echo
+  echo "One of the apps never answered. Last lines of its log:"
+  [ -z "${api:-}" ] && { echo "--- heirlom-server ---"; pm2 logs heirlom-server --lines 30 --nostream 2>/dev/null || true; }
+  [ "${web:-}" != "200" ] && { echo "--- heirlom-web ---"; pm2 logs heirlom-web --lines 30 --nostream 2>/dev/null || true; }
+  exit 1
+fi
 ok "api  $api"
 ok "web  HTTP $web"
 
 # ------------------------------------------------------------------- nginx ---
 say "Nginx"
-cp "deploy/nginx/${DOMAIN}.conf" "/etc/nginx/sites-available/${DOMAIN}"
+sed -e "s|127\\.0\\.0\\.1:3000|127.0.0.1:${WEB_PORT}|" \
+    -e "s|127\\.0\\.0\\.1:4000|127.0.0.1:${API_PORT}|" \
+    "deploy/nginx/${DOMAIN}.conf" > "/etc/nginx/sites-available/${DOMAIN}"
 ln -sf "/etc/nginx/sites-available/${DOMAIN}" "/etc/nginx/sites-enabled/${DOMAIN}"
-rm -f /etc/nginx/sites-enabled/default
 nginx -t
 systemctl reload nginx
 ok "serving ${DOMAIN} on :80"

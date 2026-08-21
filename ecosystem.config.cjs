@@ -9,6 +9,11 @@
  *   pm2 save
  */
 
+/* Ports come from the environment because this box may already be hosting
+   something else — the deploy picks free ones and passes them in. */
+const API_PORT = process.env.API_PORT || 4000;
+const WEB_PORT = process.env.WEB_PORT || 3000;
+
 module.exports = {
   apps: [
     {
@@ -23,7 +28,7 @@ module.exports = {
       max_memory_restart: '512M',
       env_production: {
         NODE_ENV: 'production',
-        PORT: 4000,
+        PORT: API_PORT,
       },
       error_file: './logs/server.err.log',
       out_file: './logs/server.out.log',
@@ -33,12 +38,13 @@ module.exports = {
       name: 'heirlom-web',
       cwd: './apps/web',
       script: 'node_modules/next/dist/bin/next',
-      args: 'start -p 3000',
+      args: `start -p ${WEB_PORT}`,
       instances: 1,
       exec_mode: 'fork',
       max_memory_restart: '512M',
       env_production: {
         NODE_ENV: 'production',
+        PORT: WEB_PORT,
       },
       error_file: './logs/web.err.log',
       out_file: './logs/web.out.log',
