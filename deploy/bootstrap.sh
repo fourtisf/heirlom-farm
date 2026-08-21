@@ -225,9 +225,30 @@ else
   ls -1 /etc/nginx/sites-enabled/ 2>/dev/null | sed 's/^/    sites-enabled: /'
   ls -1 /etc/nginx/conf.d/ 2>/dev/null | sed 's/^/    conf.d: /'
   echo
+  echo "Upstreams this site was rendered with:"
+  grep -n "upstream\|127.0.0.1:" "/etc/nginx/sites-available/${DOMAIN}" | sed 's/^/    /'
+  echo
+  echo "What is listening:"
+  for prt in 3000 3001 3002 3003 4000 4001 4002 4003; do
+    (exec 3<>"/dev/tcp/127.0.0.1/$prt") 2>/dev/null && { exec 3<&- 3>&-; echo "    $prt busy"; }
+  done
+  echo
   echo "The apps themselves are fine — web answered 200 on ${WEB_PORT} above."
   echo "This is nginx routing only. Send the block above and it can be pinned down."
   exit 1
+fi
+
+# On a box already serving other sites over TLS, a domain with no 443 block of
+# its own is not merely un-encrypted — it is served as somebody else. Browsers
+# now upgrade navigations to https on their own, nginx finds no server_name
+# match on 443, and falls through to whichever site holds the first one. The
+# visitor types this domain and is shown a different product entirely.
+if nginx -T 2>/dev/null | grep -q "listen 443" && \
+   ! nginx -T 2>/dev/null | awk '/listen .*443/,/}/' | grep -q "server_name.*${DOMAIN}"; then
+  echo
+  echo "  ⚠  Other sites on this box answer on 443; ${DOMAIN} does not."
+  echo "     A browser upgrading to https will be shown one of them instead of"
+  echo "     this game. Run certbot below before sharing the link."
 fi
 
 cat <<EOF
