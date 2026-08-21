@@ -196,10 +196,27 @@ ok "web  HTTP $web"
 
 # ------------------------------------------------------------------- nginx ---
 say "Nginx"
-sed -e "s|127\\.0\\.0\\.1:3000|127.0.0.1:${WEB_PORT}|" \
-    -e "s|127\\.0\\.0\\.1:4000|127.0.0.1:${API_PORT}|" \
-    "deploy/nginx/${DOMAIN}.conf" > "/etc/nginx/sites-available/${DOMAIN}"
-ln -sf "/etc/nginx/sites-available/${DOMAIN}" "/etc/nginx/sites-enabled/${DOMAIN}"
+SITE="/etc/nginx/sites-available/${DOMAIN}"
+
+if [ -f "$SITE" ] && grep -q "managed by Certbot" "$SITE"; then
+  # Certbot writes its TLS server block into this exact file. Re-rendering it
+  # from the repo would delete that block, and https for this domain would fall
+  # through to whichever other site holds the default 443 — which does not fail
+  # closed, it serves that site's certificate under this name and the browser
+  # reports ERR_CERT_COMMON_NAME_INVALID. A working certificate turns into a
+  # scary warning, on a redeploy that changed nothing about TLS.
+  #
+  # So once certbot owns the file, only the two upstream ports are updated, in
+  # place, anchored to the upstream lines so nothing else can be touched.
+  sed -i "/upstream heirlom_web/s|127\.0\.0\.1:[0-9]*|127.0.0.1:${WEB_PORT}|" "$SITE"
+  sed -i "/upstream heirlom_api/s|127\.0\.0\.1:[0-9]*|127.0.0.1:${API_PORT}|" "$SITE"
+  ok "certbot manages this file — kept its TLS, updated upstreams only"
+else
+  sed -e "s|127\\.0\\.0\\.1:3000|127.0.0.1:${WEB_PORT}|" \
+      -e "s|127\\.0\\.0\\.1:4000|127.0.0.1:${API_PORT}|" \
+      "deploy/nginx/${DOMAIN}.conf" > "$SITE"
+fi
+ln -sf "$SITE" "/etc/nginx/sites-enabled/${DOMAIN}"
 
 # Not every box includes sites-enabled. Panel-built stacks often use conf.d
 # only, and then the file above is written, symlinked, passes `nginx -t`, and is
