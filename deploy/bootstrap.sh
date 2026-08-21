@@ -198,12 +198,36 @@ sed -e "s|127\\.0\\.0\\.1:3000|127.0.0.1:${WEB_PORT}|" \
     -e "s|127\\.0\\.0\\.1:4000|127.0.0.1:${API_PORT}|" \
     "deploy/nginx/${DOMAIN}.conf" > "/etc/nginx/sites-available/${DOMAIN}"
 ln -sf "/etc/nginx/sites-available/${DOMAIN}" "/etc/nginx/sites-enabled/${DOMAIN}"
+
+# Not every box includes sites-enabled. Panel-built stacks often use conf.d
+# only, and then the file above is written, symlinked, passes `nginx -t`, and is
+# never loaded — the request falls through to whatever is default and 404s.
+if ! nginx -T 2>/dev/null | grep -q "server_name ${DOMAIN}"; then
+  ok "sites-enabled is not included — installing into conf.d instead"
+  cp "/etc/nginx/sites-available/${DOMAIN}" "/etc/nginx/conf.d/${DOMAIN}.conf"
+fi
+
 nginx -t
 systemctl reload nginx
-ok "serving ${DOMAIN} on :80"
 
-code=$(curl -fsS -o /dev/null -w '%{http_code}' -H "Host: ${DOMAIN}" http://127.0.0.1/ || true)
-ok "through nginx: HTTP ${code}"
+code=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: ${DOMAIN}" http://127.0.0.1/ || echo 000)
+if [ "$code" = "200" ]; then
+  ok "through nginx: HTTP 200"
+else
+  echo
+  echo "nginx answered HTTP ${code} for ${DOMAIN}, not 200."
+  echo
+  echo "Server blocks nginx has actually loaded:"
+  nginx -T 2>/dev/null | grep -nE "^\s*(server_name|listen)" | sed 's/^/    /'
+  echo
+  echo "Config directories:"
+  ls -1 /etc/nginx/sites-enabled/ 2>/dev/null | sed 's/^/    sites-enabled: /'
+  ls -1 /etc/nginx/conf.d/ 2>/dev/null | sed 's/^/    conf.d: /'
+  echo
+  echo "The apps themselves are fine — web answered 200 on ${WEB_PORT} above."
+  echo "This is nginx routing only. Send the block above and it can be pinned down."
+  exit 1
+fi
 
 cat <<EOF
 
