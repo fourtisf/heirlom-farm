@@ -74,6 +74,14 @@ else
   NEW_ENV=1
 fi
 
+# psql as the postgres user goes over the unix socket; Prisma goes over TCP.
+# Those are different doors, and on a box with more than one cluster they do not
+# lead to the same room — a second cluster lands on 5433 while 5432 stays taken.
+# Ask the running cluster which port it is actually on rather than assuming.
+PG_PORT="$(sudo -u postgres psql -tAc 'SHOW port' 2>/dev/null | tr -d '[:space:]')"
+PG_PORT="${PG_PORT:-5432}"
+ok "postgres cluster answers on port ${PG_PORT}"
+
 if sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='heirlom'" | grep -q 1; then
   sudo -u postgres psql -qc "ALTER USER heirlom WITH PASSWORD '${DB_PASS}';"
 else
@@ -86,12 +94,43 @@ ok "role and database present"
 if [ "${NEW_ENV:-0}" = "1" ]; then
   cp apps/server/.env.example "$ENV_FILE"
   sed -i "s|^NODE_ENV=.*|NODE_ENV=production|" "$ENV_FILE"
-  sed -i "s|^DATABASE_URL=.*|DATABASE_URL=postgresql://heirlom:${DB_PASS}@localhost:5432/heirlom|" "$ENV_FILE"
+  sed -i "s|^DATABASE_URL=.*|DATABASE_URL=postgresql://heirlom:${DB_PASS}@127.0.0.1:${PG_PORT}/heirlom|" "$ENV_FILE"
   sed -i "s|^JWT_SECRET=.*|JWT_SECRET=${JWT}|" "$ENV_FILE"
   sed -i "s|^CORS_ORIGIN=.*|CORS_ORIGIN=https://${DOMAIN},https://www.${DOMAIN}|" "$ENV_FILE"
   chmod 600 "$ENV_FILE"
   ok "created $ENV_FILE with a fresh DB password and JWT secret"
 fi
+
+# An existing .env may point at the wrong port if the cluster moved.
+if [ "${NEW_ENV:-0}" != "1" ]; then
+  sed -i "s|^DATABASE_URL=postgresql://heirlom:\([^@]*\)@[^/]*/heirlom|DATABASE_URL=postgresql://heirlom:\1@127.0.0.1:${PG_PORT}/heirlom|" "$ENV_FILE"
+fi
+
+# Prove TCP works before Prisma has to, so a failure names the cause instead of
+# arriving as a bare "Can't reach database server".
+if ! PGPASSWORD="$DB_PASS" psql -h 127.0.0.1 -p "$PG_PORT" -U heirlom -d heirlom -tAc 'SELECT 1' >/dev/null 2>&1; then
+  say "Postgres is not reachable over TCP — opening localhost"
+  PG_CONF="$(sudo -u postgres psql -tAc 'SHOW config_file' | tr -d '[:space:]')"
+  HBA="$(sudo -u postgres psql -tAc 'SHOW hba_file' | tr -d '[:space:]')"
+
+  grep -qE "^\s*listen_addresses\s*=\s*'.*localhost" "$PG_CONF" \
+    || { sed -i "s|^#*\s*listen_addresses.*|listen_addresses = 'localhost'|" "$PG_CONF"; ok "set listen_addresses = 'localhost'"; }
+  grep -qE "^host\s+heirlom\s+heirlom\s+127\.0\.0\.1/32" "$HBA" \
+    || { echo "host    heirlom    heirlom    127.0.0.1/32    scram-sha-256" >> "$HBA"; ok "allowed heirlom over 127.0.0.1 in pg_hba"; }
+
+  systemctl restart postgresql
+  sleep 3
+  PGPASSWORD="$DB_PASS" psql -h 127.0.0.1 -p "$PG_PORT" -U heirlom -d heirlom -tAc 'SELECT 1' >/dev/null 2>&1 || {
+    echo
+    echo "Still cannot reach Postgres over TCP at 127.0.0.1:${PG_PORT}."
+    echo "Show me the output of these three and I can pin it down:"
+    echo "    pg_lsclusters"
+    echo "    ss -ltnp | grep 543"
+    echo "    tail -20 ${HBA}"
+    exit 1
+  }
+fi
+ok "database reachable over TCP on ${PG_PORT}"
 
 # ------------------------------------------------------------------- build ---
 say "Install and build"
