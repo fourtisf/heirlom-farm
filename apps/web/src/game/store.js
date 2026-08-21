@@ -9,6 +9,8 @@
  * Read it as: the server owns the truth, `G` is a render cache.
  */
 
+import * as api from './api';
+
 /** Mirrors the design tokens in globals.css. */
 export const C = {
   soil: '#241B12',
@@ -148,11 +150,14 @@ export const G = {
 const TUTORIAL_KEY = 'heirlom.tutorial.done';
 
 /**
- * Whether this browser has already been walked through the tutorial.
+ * Whether this *player* has been walked through the tutorial.
  *
- * Kept in localStorage rather than on the player row: it is a property of "has
- * this person seen the explanation", not of the farm, and it is not worth a
- * round trip or a migration. The ? menu can always replay it.
+ * This used to live only in localStorage, which made it a property of the
+ * browser rather than the person: a new wallet opened in a browser that had
+ * already seen the tutorial got none at all, and the same wallet on a second
+ * device sat through it again. The player row is now the source of truth and
+ * arrives with the snapshot; localStorage is kept purely so the answer is
+ * available before the first fetch returns.
  */
 export function tutorialDone() {
   try {
@@ -164,6 +169,9 @@ export function tutorialDone() {
 
 export function setTutorialDone(done) {
   G.tutorial.done = done;
+  /* Fire and forget: the local value has already changed, and a failed write
+     only means the tutorial offers itself again on another device. */
+  void api.setTutorialDoneRemote(done).catch(() => {});
   try {
     if (done) window.localStorage.setItem(TUTORIAL_KEY, '1');
     else window.localStorage.removeItem(TUTORIAL_KEY);
@@ -211,6 +219,15 @@ export function hydrate(snapshot) {
   G.repSlots = p.repSlots;
   G.mutagen = p.mutagen;
   G.plotCapacity = p.plotCapacity;
+  if (typeof p.tutorialDone === 'boolean') {
+    G.tutorial.done = p.tutorialDone;
+    try {
+      if (p.tutorialDone) window.localStorage.setItem(TUTORIAL_KEY, '1');
+      else window.localStorage.removeItem(TUTORIAL_KEY);
+    } catch {
+      /* private browsing; the snapshot still decides */
+    }
+  }
 
   G.clockSkew = new Date(snapshot.serverTime).getTime() - Date.now();
 

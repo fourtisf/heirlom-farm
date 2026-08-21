@@ -21,6 +21,14 @@ const nameBody = z.object({
 });
 
 export async function strainRoutes(app: FastifyInstance) {
+  /* Tutorial completion belongs to the player, not the browser. */
+  app.post('/api/tutorial', { onRequest: [app.authenticate] }, async (req) => {
+    const { sub: playerId } = requirePlayer(req);
+    const { done } = z.object({ done: z.boolean() }).parse(req.body);
+    await prisma.player.update({ where: { id: playerId }, data: { tutorialDone: done } });
+    return { done };
+  });
+
   app.post('/api/strain/name', { onRequest: [app.authenticate] }, async (req) => {
     const { sub: playerId } = requirePlayer(req);
     const body = nameBody.parse(req.body);

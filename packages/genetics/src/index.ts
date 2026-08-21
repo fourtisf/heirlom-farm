@@ -29,3 +29,4 @@ export type { ColorPunnett, PunnettCell } from './breed.js';
 export * from './estate.js';
 export * from './species-traits.js';
 export * from './milestones.js';
+export * from './daily.js';

@@ -139,6 +139,7 @@ export interface StateSnapshot {
     repSlots: number;
     mutagen: number;
     plotCapacity: number;
+    tutorialDone: boolean;
   };
   beds: BedView[];
   vault: StrainView[];
@@ -195,6 +196,10 @@ export const buySeed = (species: string) =>
   post<{ strain: StrainView; state: StateSnapshot }>('/api/buy-seed', { species });
 
 export const buyMutagen = () => post<StateSnapshot>('/api/buy-mutagen');
+
+/** Tutorial completion lives on the player, so it follows them between devices. */
+export const setTutorialDoneRemote = (done: boolean) =>
+  post<{ done: boolean }>('/api/tutorial', { done });
 
 /**
  * The money endpoint. There is no preview and no retry: the response carries

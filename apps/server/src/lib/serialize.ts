@@ -179,6 +179,7 @@ export interface PlayerView {
   repSlots: number;
   mutagen: number;
   plotCapacity: number;
+  tutorialDone: boolean;
 }
 
 export function playerView(p: Player): PlayerView {
@@ -198,5 +199,6 @@ export function playerView(p: Player): PlayerView {
     repSlots: repSlots(p.rep),
     mutagen: p.mutagen,
     plotCapacity: plotCapacity(level),
+    tutorialDone: p.tutorialDone,
   };
 }

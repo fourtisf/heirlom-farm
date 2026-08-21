@@ -24,6 +24,11 @@ model Player {
   xp          Int      @default(0)
   rep         Int      @default(0)
   mutagen     Int      @default(1)
+  // Whether this *player* has been walked through the tutorial. It lived in
+  // localStorage, which made it a property of the browser: a new wallet opened
+  // in a browser that had already seen it got no tutorial at all, and the same
+  // wallet on a second device got it again.
+  tutorialDone Boolean @default(false)
   createdAt   DateTime @default(now())
 
   strains     Strain[]
