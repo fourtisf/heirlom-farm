@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — shared genetics types.
+ * HEIRLOM — shared genetics types.
  *
  * A strain is diploid at every locus: two alleles, always stored as a pair.
  * Nothing in this package mutates its inputs; every function is pure so the
@@ -39,7 +39,7 @@ export interface Species {
   note: string;
 }
 
-export type TierKey = 'common' | 'heirloom' | 'rare' | 'prized' | 'legendary';
+export type TierKey = 'common' | 'heirlom' | 'rare' | 'prized' | 'legendary';
 
 export interface TierDef {
   key: TierKey;

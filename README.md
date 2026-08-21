@@ -1,4 +1,4 @@
-# HEIRLOOM
+# HEIRLOM
 
 A browser farm game where **the crop is not the product — the genetics are**. Players cross plants,
 inherit alleles, chase recessive colour morphs, and fill collector commissions that specify exact
@@ -25,8 +25,8 @@ than by convention:
 
 | import | contains | safe in a browser |
 |---|---|---|
-| `@heirloom/genetics` | constants, expression, derived stats, progression maths, `matches`, `forecast` | yes — none of it rolls a die |
-| `@heirloom/genetics/server` | `breed`, `nurseryStock`, `generateCommission`, `cryptoRng` | **no** |
+| `@heirlom/genetics` | constants, expression, derived stats, progression maths, `matches`, `forecast` | yes — none of it rolls a die |
+| `@heirlom/genetics/server` | `breed`, `nurseryStock`, `generateCommission`, `cryptoRng` | **no** |
 
 Importing the server half from client code fails the web build. That is deliberate: it is how we
 found the boundary was worth enforcing in the first place.
@@ -39,11 +39,11 @@ You need PostgreSQL and Redis.
 npm install
 
 # genetics package must be built before the server or web app can resolve it
-npm run build -w @heirloom/genetics
+npm run build -w @heirlom/genetics
 
 # server
 cp apps/server/.env.example apps/server/.env   # then edit DATABASE_URL and JWT_SECRET
-npm run db:push -w @heirloom/server
+npm run db:push -w @heirlom/server
 npm run dev:server                             # http://localhost:4000
 
 # web

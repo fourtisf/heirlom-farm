@@ -6,7 +6,7 @@
  * bred, not of what you currently hold.
  */
 
-import { evaluateMilestones, type ColorPair, type Genes } from '@heirloom/genetics';
+import { evaluateMilestones, type ColorPair, type Genes } from '@heirlom/genetics';
 import { prisma } from './db.js';
 
 export async function awardMilestones(playerId: string): Promise<string[]> {

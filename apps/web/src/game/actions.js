@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — actions.
+ * HEIRLOM — actions.
  *
  * This replaces Part E of the prototype wholesale. Every function there was
  * local simulation: it rolled dice, moved coins, and mutated `G` directly. Here
@@ -11,7 +11,7 @@
  * the outcome is not ours to predict.
  */
 
-import { COLORS, MILESTONES, PLOT_UNLOCK, SPECIES, SPECIES_ORDER } from '@heirloom/genetics';
+import { COLORS, MILESTONES, PLOT_UNLOCK, SPECIES, SPECIES_ORDER } from '@heirlom/genetics';
 import * as api from './api';
 import { G, hydrate, plotCapacity } from './store.js';
 import { hasSeen, markSeen, primerById, unlocksFor } from './primers.js';
@@ -418,7 +418,7 @@ export async function shareSpecimen(strain) {
   const url = `${window.location.origin}/herbarium/${encodeURIComponent(strain.accession)}`;
   try {
     if (navigator.share) {
-      await navigator.share({ title: `${strain.name} — HEIRLOOM`, url });
+      await navigator.share({ title: `${strain.name} — HEIRLOM`, url });
       return;
     }
     await navigator.clipboard.writeText(url);

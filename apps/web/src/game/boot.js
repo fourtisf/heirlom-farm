@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — boot.
+ * HEIRLOM — boot.
  *
  * Wires the three layers together once the DOM is mounted: the renderer's
  * `hooks` get the UI's click handlers, the UI's `actions.ui` gets the DOM
@@ -144,7 +144,7 @@ function bindChrome() {
  * path in the browser that can.
  */
 function installDebugBridge() {
-  window.HEIRLOOM = {
+  window.HEIRLOM = {
     G,
     api,
     openPanel,

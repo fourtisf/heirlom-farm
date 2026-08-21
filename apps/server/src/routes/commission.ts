@@ -6,7 +6,7 @@
  * own. A whale with fifteen beds does not out-mint a patient breeder.
  */
 
-import { matches, repForCommission, type ColorPair, type CommissionReq, type Genes } from '@heirloom/genetics';
+import { matches, repForCommission, type ColorPair, type CommissionReq, type Genes } from '@heirlom/genetics';
 import { Prisma } from '@prisma/client';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';

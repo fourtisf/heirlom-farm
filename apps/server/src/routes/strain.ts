@@ -4,7 +4,7 @@
  * feel like a decision rather than a text field.
  */
 
-import { NAME_MAX_LENGTH } from '@heirloom/genetics';
+import { NAME_MAX_LENGTH } from '@heirlom/genetics';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { requirePlayer } from '../lib/auth.js';

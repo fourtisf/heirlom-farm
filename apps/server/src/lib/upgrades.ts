@@ -6,7 +6,7 @@
  * the rows in `PlayerUpgrade`.
  */
 
-import type { UpgradeKey, UpgradeLevels } from '@heirloom/genetics';
+import type { UpgradeKey, UpgradeLevels } from '@heirlom/genetics';
 import { prisma } from './db.js';
 import type { Tx } from './db.js';
 

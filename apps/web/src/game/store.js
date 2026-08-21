@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — client state.
+ * HEIRLOM — client state.
  *
  * This is the seam. The prototype kept a global `G` that the simulation wrote
  * to and the renderer read from; the renderer and art engine are ported almost
@@ -145,7 +145,7 @@ export const G = {
   error: null,
 };
 
-const TUTORIAL_KEY = 'heirloom.tutorial.done';
+const TUTORIAL_KEY = 'heirlom.tutorial.done';
 
 /**
  * Whether this browser has already been walked through the tutorial.

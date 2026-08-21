@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>HEIRLOOM — a breeding farm</title>
+<title>HEIRLOM — a breeding farm</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Karla:ital,wght@0,300..800;1,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   HEIRLOOM — design tokens
+   HEIRLOM — design tokens
    Palette taken from the subject's own world: conservatory brass,
    wet loam, herbarium paper, and the five colour morphs.
    ============================================================ */
@@ -588,7 +588,7 @@ input{font-family:inherit}
 
 <!-- HUD -->
 <div class="hud">
-  <div class="brandmark"><b>HEIRLOOM</b><i>Est. Vale</i></div>
+  <div class="brandmark"><b>HEIRLOM</b><i>Est. Vale</i></div>
   <div class="purse">
     <div class="coinbox coinbox--coin"><i>◆</i><span id="hudCoins">0</span></div>
     <div class="coinbox coinbox--seed"><i>✦</i><span id="hudSeed">0.00</span></div>
@@ -709,7 +709,7 @@ input{font-family:inherit}
 <div class="title" id="title">
   <div class="title__mark">
     <i>A breeding farm</i>
-    <h1>HEIRLOOM</h1>
+    <h1>HEIRLOM</h1>
     <div class="title__rule"></div>
     <div class="title__tag">Anyone can grow a crop. Few can fix a line.</div>
   </div>
@@ -727,7 +727,7 @@ input{font-family:inherit}
 
 <script>
 /* ============================================================
-   HEIRLOOM — Part A : core, genetics engine, state
+   HEIRLOM — Part A : core, genetics engine, state
    ============================================================ */
 'use strict';
 
@@ -839,7 +839,7 @@ const COLOR_KEYS = ['crimson', 'amber', 'jade', 'violet', 'ivory'];
 
 const TIERS = [
   { key: 'common',    name: 'Common',    min: 0,  hex: '#8A8577', ring: '#6E6A5E' },
-  { key: 'heirloom',  name: 'Heirloom',  min: 10, hex: '#7FB069', ring: '#4E7A44' },
+  { key: 'heirlom',  name: 'Heirlom',  min: 10, hex: '#7FB069', ring: '#4E7A44' },
   { key: 'rare',      name: 'Rare',      min: 15, hex: '#5FA8C7', ring: '#376E86' },
   { key: 'prized',    name: 'Prized',    min: 20, hex: '#C9A227', ring: '#8A6E14' },
   { key: 'legendary', name: 'Legendary', min: 25, hex: '#D06CA8', ring: '#8A3A68' },
@@ -1050,7 +1050,7 @@ function codexAdd(strain) {
 
 
 /* ============================================================
-   HEIRLOOM — Part B : procedural art engine
+   HEIRLOM — Part B : procedural art engine
    Every sprite is drawn from code. Plants are drawn from genes.
    ============================================================ */
 
@@ -1974,7 +1974,7 @@ function nightAmount() {
 
 
 /* ============================================================
-   HEIRLOOM — Part C : world layout, camera, renderer, input
+   HEIRLOM — Part C : world layout, camera, renderer, input
    ============================================================ */
 
 const WORLD_SEED = 20260818;
@@ -2380,7 +2380,7 @@ function loop(ts) {
 
 
 /* ============================================================
-   HEIRLOOM — Part D : interface
+   HEIRLOM — Part D : interface
    ============================================================ */
 
 const $ = s => document.querySelector(s);
@@ -2922,7 +2922,7 @@ function drawPlateArt(strain) {
 }
 
 /* ============================================================
-   HEIRLOOM — guided tutorial
+   HEIRLOM — guided tutorial
    A spotlight cuts a hole over whatever the player needs to touch, a card
    explains why, and the step clears itself when the player actually does it.
    Nothing is blocked: the overlay never swallows a click.
@@ -3203,7 +3203,7 @@ function updateTutorial() {
 
 
 /* ============================================================
-   HEIRLOOM — Part E : simulation, economy, boot
+   HEIRLOM — Part E : simulation, economy, boot
    ============================================================ */
 
 /* ---------------- planting & harvest ---------------- */
@@ -3477,7 +3477,7 @@ function boot() {
 
 /* Debug bridge. Top-level declarations in a classic script never land on
    window, so expose the pieces worth poking at from the console. */
-window.HEIRLOOM = {
+window.HEIRLOM = {
   startCoach, endCoach, nextCoachStep, Coach, buildCoachSteps, coachTick, updateTutorial,
   G, SPECIES, SPECIES_ORDER, LOCI, COLORS, COLOR_KEYS, TIERS, TRAITS,
   makeStrain, baseStrain, breed, phenotype, tierOf, traitsOf, strainScore,

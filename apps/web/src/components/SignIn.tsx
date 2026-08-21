@@ -60,7 +60,7 @@ export default function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
     <div className="signin">
       <div className="signin__mark">
         <i>A breeding farm</i>
-        <h1>HEIRLOOM</h1>
+        <h1>HEIRLOM</h1>
         <div className="signin__rule" />
         <p>Anyone can grow a crop. Few can fix a line.</p>
       </div>

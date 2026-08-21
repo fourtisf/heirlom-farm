@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — the exchange.
+ * HEIRLOM — the exchange.
  *
  * The premise of the game is that a rare strain is the only thing of value.
  * Value needs somebody willing to pay, which is what this is for.
@@ -29,7 +29,7 @@ import {
   tierOf,
   type ColorPair,
   type Genes,
-} from '@heirloom/genetics';
+} from '@heirlom/genetics';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { requirePlayer } from '../lib/auth.js';

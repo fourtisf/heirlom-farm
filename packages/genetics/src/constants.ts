@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — balance constants.
+ * HEIRLOM — balance constants.
  *
  * These numbers are simulation-tested. Changing any of them changes the rarity
  * curve, and the title-screen copy quotes it ("~200 crosses to first Ivory").
@@ -59,7 +59,7 @@ export const COLOR_KEYS: readonly ColorKey[] = ['crimson', 'amber', 'jade', 'vio
 
 export const TIERS: readonly TierDef[] = [
   { key: 'common', name: 'Common', min: 0, hex: '#8A8577', ring: '#6E6A5E' },
-  { key: 'heirloom', name: 'Heirloom', min: 10, hex: '#7FB069', ring: '#4E7A44' },
+  { key: 'heirlom', name: 'Heirlom', min: 10, hex: '#7FB069', ring: '#4E7A44' },
   { key: 'rare', name: 'Rare', min: 15, hex: '#5FA8C7', ring: '#376E86' },
   { key: 'prized', name: 'Prized', min: 20, hex: '#C9A227', ring: '#8A6E14' },
   { key: 'legendary', name: 'Legendary', min: 25, hex: '#D06CA8', ring: '#8A3A68' },

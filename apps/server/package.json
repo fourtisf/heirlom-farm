@@ -1,5 +1,5 @@
 {
-  "name": "@heirloom/server",
+  "name": "@heirlom/server",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -18,7 +18,7 @@
     "@fastify/cors": "10.0.1",
     "@fastify/jwt": "9.0.1",
     "@fastify/rate-limit": "10.2.1",
-    "@heirloom/genetics": "*",
+    "@heirlom/genetics": "*",
     "@prisma/client": "5.22.0",
     "fastify": "5.1.0",
     "ioredis": "5.4.1",

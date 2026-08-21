@@ -106,8 +106,8 @@ describe('score and tiers', () => {
   it('places every score in exactly one tier, in order', () => {
     const boundaries: Array<[number, string]> = [
       [9, 'common'],
-      [10, 'heirloom'],
-      [14, 'heirloom'],
+      [10, 'heirlom'],
+      [14, 'heirlom'],
       [15, 'rare'],
       [19, 'rare'],
       [20, 'prized'],

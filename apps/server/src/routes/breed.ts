@@ -14,8 +14,8 @@
  * "preview then confirm".
  */
 
-import { xpForBreed, type ColorPair, type Genes } from '@heirloom/genetics';
-import { CrossSpeciesError, breed, cryptoRng, autoName } from '@heirloom/genetics/server';
+import { xpForBreed, type ColorPair, type Genes } from '@heirlom/genetics';
+import { CrossSpeciesError, breed, cryptoRng, autoName } from '@heirlom/genetics/server';
 import { Prisma } from '@prisma/client';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';

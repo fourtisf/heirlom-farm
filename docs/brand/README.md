@@ -1,4 +1,4 @@
-# HEIRLOOM — brand assets
+# HEIRLOM — brand assets
 
 **The mark is 01, Seed and ring.** Chosen by ALFA from the six references below. Everything in this
 folder now descends from it.
@@ -7,12 +7,12 @@ folder now descends from it.
 
 | file | what it is |
 |---|---|
-| `heirloom-mark.svg` | the mark, 512×512, full bleed. Crops to a circular avatar with nothing lost. |
-| `heirloom-mark-flat.svg` | the same geometry without its soil disc, for placing over artwork or a light surface. |
-| `export/heirloom-avatar-400.png` | **X profile picture.** 400×400, the size X serves. |
-| `export/heirloom-avatar-1000.png` | same, for anywhere that wants more pixels. |
-| `export/heirloom-banner.png` | **X header.** 1500×500. |
-| `export/heirloom-banner@2x.png` | 3000×1000, for retina or print. |
+| `heirlom-mark.svg` | the mark, 512×512, full bleed. Crops to a circular avatar with nothing lost. |
+| `heirlom-mark-flat.svg` | the same geometry without its soil disc, for placing over artwork or a light surface. |
+| `export/heirlom-avatar-400.png` | **X profile picture.** 400×400, the size X serves. |
+| `export/heirlom-avatar-1000.png` | same, for anywhere that wants more pixels. |
+| `export/heirlom-banner.png` | **X header.** 1500×500. |
+| `export/heirlom-banner@2x.png` | 3000×1000, for retina or print. |
 | `export/opengraph-image.png` | 1200×630 link-preview card. |
 | `banner.src.html` / `opengraph.src.html` | the sources both PNGs are rendered from. Edit these, re-render, never touch the PNGs by hand. |
 

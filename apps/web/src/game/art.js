@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — procedural art engine.
+ * HEIRLOM — procedural art engine.
  *
  * Ported from the prototype almost verbatim: this is the game's visual
  * identity, and it draws every plant from its genes with no image assets at
@@ -11,7 +11,7 @@
  * number that decides what a plant is.
  */
 
-import { COLORS, SPECIES } from '@heirloom/genetics';
+import { COLORS, SPECIES } from '@heirlom/genetics';
 import { C, G, TAU, chance, clamp, fontBody, hashStr, lerp, mulberry, pick, rnd } from './store.js';
 
 /** Server-sent, never recomputed. */

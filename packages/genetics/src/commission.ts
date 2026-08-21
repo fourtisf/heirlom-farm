@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — collector commissions.
+ * HEIRLOM — collector commissions.
  *
  * `matches` is read-only and shipped to the client so it can grey out
  * non-qualifying strains. That is a UX affordance and nothing more: the server

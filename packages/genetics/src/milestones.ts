@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — milestones.
+ * HEIRLOM — milestones.
  *
  * The game had nothing to reach for after Ivory. These are the long goals: most
  * of them take many generations, and several cannot be bought, only bred.

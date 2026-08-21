@@ -34,9 +34,9 @@ import {
   type ColorPair,
   type Genes,
   type SpeciesKey,
-} from '@heirloom/genetics';
-import { cryptoRng, nurseryStock } from '@heirloom/genetics/server';
-import { MUTAGEN_COST, type UpgradeKey } from '@heirloom/genetics';
+} from '@heirlom/genetics';
+import { cryptoRng, nurseryStock } from '@heirlom/genetics/server';
+import { MUTAGEN_COST, type UpgradeKey } from '@heirlom/genetics';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../lib/db.js';

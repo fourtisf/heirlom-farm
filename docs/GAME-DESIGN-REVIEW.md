@@ -1,4 +1,4 @@
-# What HEIRLOOM is missing
+# What HEIRLOM is missing
 
 A review of the built game against one goal: **fun, and easy to pick up.**
 
@@ -13,7 +13,7 @@ Below, in the order I would build them.
 
 ## The one-line diagnosis
 
-**HEIRLOOM makes the player do the work of a breeder without giving them the feelings of one.**
+**HEIRLOM makes the player do the work of a breeder without giving them the feelings of one.**
 
 The crossing is the game. It is also, right now, a button that returns a card. There is no
 anticipation before the roll, no read on whether a failed cross got you closer, and no reason to

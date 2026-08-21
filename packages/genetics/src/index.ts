@@ -1,10 +1,10 @@
 /**
- * HEIRLOOM genetics — public (client-safe) surface.
+ * HEIRLOM genetics — public (client-safe) surface.
  *
  * Everything exported here is read-only: constants, expression, derived stats,
  * progression maths, and the display half of commissions. None of it rolls a
  * die. The parts that do — `breed`, `nurseryStock`, `generateCommission`, the
- * RNG itself — live behind `@heirloom/genetics/server` and must never be
+ * RNG itself — live behind `@heirlom/genetics/server` and must never be
  * imported from a browser bundle.
  */
 

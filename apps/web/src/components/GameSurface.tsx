@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * HEIRLOOM — the game surface.
+ * HEIRLOM — the game surface.
  *
  * The markup is the prototype's, converted to JSX and otherwise untouched. React
  * renders the chrome once and then stays out of the way: the canvas, the panels
@@ -42,7 +42,7 @@ export default function GameSurface() {
 
       {/* HUD */}
       <div className="hud">
-        <div className="brandmark"><b>HEIRLOOM</b><i>Est. Vale</i></div>
+        <div className="brandmark"><b>HEIRLOM</b><i>Est. Vale</i></div>
         <div className="purse">
           <div className="coinbox coinbox--coin"><i>◆</i><span id="hudCoins">0</span></div>
           <div className="coinbox coinbox--seed"><i>✦</i><span id="hudSeed">0.00</span></div>
@@ -175,7 +175,7 @@ export default function GameSurface() {
       <div className="title" id="title">
         <div className="title__mark">
           <i>A breeding farm</i>
-          <h1>HEIRLOOM</h1>
+          <h1>HEIRLOM</h1>
           <div className="title__rule"></div>
           <div className="title__tag">Anyone can grow a crop. Few can fix a line.</div>
         </div>

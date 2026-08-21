@@ -1,4 +1,4 @@
-// HEIRLOOM — data model.
+// HEIRLOM — data model.
 //
 // Two rules the schema exists to enforce:
 //   1. Every coin and $SEED movement writes a LedgerEntry. No exceptions.

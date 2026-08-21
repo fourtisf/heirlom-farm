@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   // The genetics package ships TypeScript-built ESM from the workspace.
-  transpilePackages: ['@heirloom/genetics'],
+  transpilePackages: ['@heirlom/genetics'],
 
   /* `next dev` and `next build` share `.next` by default, so running a build
      while a dev server is up leaves it serving production chunks — the debug

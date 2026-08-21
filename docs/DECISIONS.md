@@ -1,6 +1,6 @@
 # Decisions taken during the build
 
-Everything here is a call made while porting `HEIRLOOM.html` to the production stack. The handoff's
+Everything here is a call made while porting `HEIRLOM.html` to the production stack. The handoff's
 §10 listed five questions marked "do not guess"; four were answered by Michael before the build, and
 the fifth is still open. The rest are divergences from the prototype, each with the reasoning, so
 they can be reversed knowingly rather than rediscovered.
@@ -71,7 +71,7 @@ plate → picker → panel.
 
 ### 2.5 The debug bridge is read-only
 
-The prototype's `window.HEIRLOOM` exposed `makeStrain`, `breed`, and `vaultAdd` — the handoff opens
+The prototype's `window.HEIRLOM` exposed `makeStrain`, `breed`, and `vaultAdd` — the handoff opens
 by pointing out that this lets anyone mint 99 legendaries from the console. The bridge survives in
 development because it is genuinely useful, but it now exposes only state, the API client, and panel
 controls. There is no longer any browser code path that can create a strain, so there is nothing to

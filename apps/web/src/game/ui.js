@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — interface.
+ * HEIRLOM — interface.
  *
  * The markup and CSS are the prototype's, kept as-is. What changed is the data
  * source: every panel now reads the snapshot the server sent, and every button
@@ -29,7 +29,7 @@ import {
   expressLocus,
   matches,
   repSlots,
-} from '@heirloom/genetics';
+} from '@heirlom/genetics';
 import {
   C,
   G,
@@ -372,7 +372,7 @@ function panelBench(body) {
  * The colour Punnett square.
  *
  * This is the one piece of teaching the prototype was missing. The whole
- * strategy of HEIRLOOM is that the beautiful morphs are recessive — so the
+ * strategy of HEIRLOM is that the beautiful morphs are recessive — so the
  * plainest plant in your vault may be the most valuable thing you own — and
  * nothing in the game ever said so. A player had to infer it from twenty
  * disappointing crosses, and most would quit first.
@@ -1005,7 +1005,7 @@ function drawPlateArt(strain) {
 
 
 /* ============================================================
-   HEIRLOOM — guided tutorial
+   HEIRLOM — guided tutorial
    A spotlight cuts a hole over whatever the player needs to touch, a card
    explains why, and the step clears itself when the player actually does it.
    Nothing is blocked: the overlay never swallows a click.

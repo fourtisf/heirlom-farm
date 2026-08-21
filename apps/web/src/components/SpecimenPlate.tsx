@@ -8,7 +8,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { COLORS, LOCI, SPECIES, TIERS, TRAITS } from '@heirloom/genetics';
+import { COLORS, LOCI, SPECIES, TIERS, TRAITS } from '@heirlom/genetics';
 import type { PublicSpecimen } from '@/app/herbarium/[accession]/page';
 
 export default function SpecimenPlate({ specimen }: { specimen: PublicSpecimen }) {
@@ -141,7 +141,7 @@ export default function SpecimenPlate({ specimen }: { specimen: PublicSpecimen }
       </div>
 
       <a className="publicplate__cta" href="/">
-        HEIRLOOM — grow your own line
+        HEIRLOM — grow your own line
       </a>
     </main>
   );

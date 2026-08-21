@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — random sources.
+ * HEIRLOM — random sources.
  *
  * Every roll that touches the economy goes through `Rng`. Production passes
  * `cryptoRng` from `./crypto-rng.js`, which is backed by `crypto.randomInt`;

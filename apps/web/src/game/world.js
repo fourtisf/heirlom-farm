@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — world layout, camera, renderer, input.
+ * HEIRLOM — world layout, camera, renderer, input.
  *
  * Ported from the prototype with its structure intact; only the state reads
  * changed. The prototype's `G` was written by a local simulation, so this file
@@ -10,7 +10,7 @@
  * decides an outcome.
  */
 
-import { dayPhase } from '@heirloom/genetics';
+import { dayPhase } from '@heirlom/genetics';
 import {
   C,
   G,

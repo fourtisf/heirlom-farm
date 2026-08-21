@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — nursery stock and naming.
+ * HEIRLOM — nursery stock and naming.
  *
  * SERVER ONLY. Nursery seed is deliberately mediocre (alleles 1–3, crimson or
  * amber) so that breeding is the only route upward. If the shop could sell a

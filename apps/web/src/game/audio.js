@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — audio.
+ * HEIRLOM — audio.
  *
  * Every sound is synthesised through WebAudio. There are no audio assets and
  * there should not be: the whole game ships as procedural output.

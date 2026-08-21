@@ -16,7 +16,7 @@ import {
   type ColorPair,
   type Genes,
   type UpgradeKey,
-} from '@heirloom/genetics';
+} from '@heirlom/genetics';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { requirePlayer } from '../lib/auth.js';

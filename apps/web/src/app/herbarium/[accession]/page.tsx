@@ -50,14 +50,14 @@ export async function generateMetadata({
   params: { accession: string };
 }): Promise<Metadata> {
   const specimen = await load(params.accession);
-  if (!specimen) return { title: 'Unknown specimen — HEIRLOOM' };
+  if (!specimen) return { title: 'Unknown specimen — HEIRLOM' };
 
   const description =
     `${specimen.species} · generation ${specimen.generation} · breeding score ${specimen.score}. ` +
     `Pressed into the Vale herbarium by ${specimen.gardener}.`;
 
   return {
-    title: `${specimen.name} (${specimen.accession}) — HEIRLOOM`,
+    title: `${specimen.name} (${specimen.accession}) — HEIRLOM`,
     description,
     openGraph: { title: `${specimen.name} — ${specimen.accession}`, description },
     twitter: { card: 'summary_large_image', title: specimen.name, description },

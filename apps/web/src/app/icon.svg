@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <!-- The brand mark, redrawn for 16px rather than scaled down to it. The
-       double ring and the four veins of docs/brand/heirloom-mark.svg both
+       double ring and the four veins of docs/brand/heirlom-mark.svg both
        collapse into mud at this size, so the ring is single and the veins are
        gone; what survives is the silhouette, the midrib and the brass seed. -->
   <rect width="32" height="32" rx="7" fill="#241B12"/>

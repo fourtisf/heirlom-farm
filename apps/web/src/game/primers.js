@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — primers.
+ * HEIRLOM — primers.
  *
  * The guided tutorial is a thirteen-step script that teaches the opening loop
  * and then stops. Everything added since — the exchange, estate improvements,
@@ -17,10 +17,10 @@
  * player who does not gets the explanation exactly where they need it.
  */
 
-import { MARKET_MIN_LEVEL, SPECIES, UPGRADES } from '@heirloom/genetics';
+import { MARKET_MIN_LEVEL, SPECIES, UPGRADES } from '@heirlom/genetics';
 import { G } from './store.js';
 
-const SEEN_KEY = 'heirloom.primers.seen';
+const SEEN_KEY = 'heirlom.primers.seen';
 
 function seenSet() {
   try {

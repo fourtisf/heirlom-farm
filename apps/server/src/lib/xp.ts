@@ -1,4 +1,4 @@
-import { levelFor } from '@heirloom/genetics';
+import { levelFor } from '@heirlom/genetics';
 import type { Tx } from './db.js';
 
 export interface XpResult {

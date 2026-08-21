@@ -1,7 +1,7 @@
 /**
- * HEIRLOOM — breeding.
+ * HEIRLOM — breeding.
  *
- * SERVER ONLY. This module is reachable through `@heirloom/genetics/server` and
+ * SERVER ONLY. This module is reachable through `@heirlom/genetics/server` and
  * is deliberately absent from the package's default entry point, because a
  * client that can compute a cross is a client that can mint a Legendary. The
  * browser gets the deterministic allele *range* (see `forecast`) and nothing
@@ -148,7 +148,7 @@ function expressPair(a: number, b: number): number {
 /* ---------------------------------------------------------------------------
    Teaching the carrier idea
 
-   The strategic core of HEIRLOOM is that the beautiful morphs are recessive, so
+   The strategic core of HEIRLOM is that the beautiful morphs are recessive, so
    the plainest plant in your vault may be the most valuable thing you own. The
    prototype never said this anywhere — a player had to infer it from twenty
    disappointing crosses.

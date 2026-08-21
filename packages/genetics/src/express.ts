@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — expression and derived stats.
+ * HEIRLOM — expression and derived stats.
  *
  * Everything in this file is read-only and deterministic: given stored genes it
  * returns what the plant looks like and what it is worth. It rolls no dice, so

@@ -22,7 +22,7 @@ import {
   type ColorPair,
   type CommissionReq,
   type Genes,
-} from '@heirloom/genetics';
+} from '@heirlom/genetics';
 
 /** Coins stay under 2^53 by many orders of magnitude; a JS number is honest here. */
 const coinsToNumber = (v: bigint): number => Number(v);

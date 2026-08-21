@@ -2,8 +2,8 @@
  * Player bootstrap and the full-state snapshot.
  */
 
-import { MAX_PLOTS, SPECIES_ORDER, levelFor, plotCapacity, repSlots } from '@heirloom/genetics';
-import { accessionFor, cryptoRng, generateCommission, nurseryStock } from '@heirloom/genetics/server';
+import { MAX_PLOTS, SPECIES_ORDER, levelFor, plotCapacity, repSlots } from '@heirlom/genetics';
+import { accessionFor, cryptoRng, generateCommission, nurseryStock } from '@heirlom/genetics/server';
 import { Prisma } from '@prisma/client';
 import { prisma, type Tx } from './db.js';
 import { recordLedger } from './ledger.js';

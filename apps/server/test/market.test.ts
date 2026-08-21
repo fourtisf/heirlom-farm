@@ -7,7 +7,7 @@
 
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { MARKET_MIN_LEVEL, UPGRADES, marketFee, upgradeCost } from '@heirloom/genetics';
+import { MARKET_MIN_LEVEL, UPGRADES, marketFee, upgradeCost } from '@heirlom/genetics';
 import { prisma } from '../src/lib/db.js';
 import { closeRedis } from '../src/lib/redis.js';
 import { forceGenes, forceRipe, grantCoins, makeApp, resetRedis, setXp, signIn } from './helpers.js';

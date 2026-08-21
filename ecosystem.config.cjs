@@ -12,7 +12,7 @@
 module.exports = {
   apps: [
     {
-      name: 'heirloom-server',
+      name: 'heirlom-server',
       cwd: './apps/server',
       script: 'dist/index.js',
       instances: 1,
@@ -30,7 +30,7 @@ module.exports = {
       time: true,
     },
     {
-      name: 'heirloom-web',
+      name: 'heirlom-web',
       cwd: './apps/web',
       script: 'node_modules/next/dist/bin/next',
       args: 'start -p 3000',

@@ -40,7 +40,7 @@ export async function issueNonce(wallet: string): Promise<{ nonce: string; messa
 /** The exact string the wallet is asked to sign. Both sides must agree byte for byte. */
 export function buildLoginMessage(wallet: string, nonce: string, expiresAt: Date): string {
   return [
-    'HEIRLOOM wants you to sign in with your wallet.',
+    'HEIRLOM wants you to sign in with your wallet.',
     '',
     `Address: ${wallet}`,
     `Nonce: ${nonce}`,

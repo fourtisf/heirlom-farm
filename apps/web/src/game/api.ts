@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — API client.
+ * HEIRLOM — API client.
  *
  * This file is the entire surface through which the game changes. Part E of the
  * prototype — plant, harvest, breed, sell, commissions — was local simulation
@@ -11,7 +11,7 @@
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
-const TOKEN_KEY = 'heirloom.session';
+const TOKEN_KEY = 'heirlom.session';
 
 export function getToken(): string | null {
   if (typeof window === 'undefined') return null;

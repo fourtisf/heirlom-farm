@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM genetics — server-only surface.
+ * HEIRLOM genetics — server-only surface.
  *
  * Importing this module from a browser bundle is a bug. It carries every
  * function that rolls a die against the economy.

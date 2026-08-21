@@ -1,14 +1,14 @@
-# HEIRLOOM — Build Handoff
+# HEIRLOM — Build Handoff
 
 **For:** Michael (via Claude Code)
 **From:** ALFA
-**Prototype:** `HEIRLOOM.html` — single file, open it in a browser before reading further. Ten minutes of play will explain this document faster than the document will.
+**Prototype:** `HEIRLOM.html` — single file, open it in a browser before reading further. Ten minutes of play will explain this document faster than the document will.
 
 ---
 
 ## 0. Read this first
 
-HEIRLOOM is a browser farm game where **the crop is not the product — the genetics are**. Players cross plants, inherit alleles, chase recessive colour morphs, and fill collector commissions that specify exact gene thresholds. A rare strain is the only thing of value in the game.
+HEIRLOM is a browser farm game where **the crop is not the product — the genetics are**. Players cross plants, inherit alleles, chase recessive colour morphs, and fill collector commissions that specify exact gene thresholds. A rare strain is the only thing of value in the game.
 
 That single sentence dictates the entire architecture:
 
@@ -17,7 +17,7 @@ That single sentence dictates the entire architecture:
 The prototype does the opposite — it runs `breed()` in the browser with `Math.random()`. That is correct for a prototype and catastrophic in production. As shipped, anyone can open devtools and type:
 
 ```js
-HEIRLOOM.vaultAdd(HEIRLOOM.makeStrain('moonflower',
+HEIRLOM.vaultAdd(HEIRLOM.makeStrain('moonflower',
   {Y:[6,6],V:[6,6],H:[6,6],E:[6,6]}, ['ivory','ivory']), 99)
 ```
 
@@ -34,7 +34,7 @@ HEIRLOOM.vaultAdd(HEIRLOOM.makeStrain('moonflower',
 | `part_d.js` — UI panels, specimen plate, guided tutorial | **Keep the markup and CSS. Rewire the data source** from local state to API responses. |
 | `part_a.js` — genetics engine, formulas, tiers, traits | **Port the formulas to the server. Delete from the client.** The client may keep *read-only* helpers (`phenotype`, `tierOf`, `strainScore`) purely for display of data the server already sent. |
 | `part_e.js` — plant/harvest/breed/sell/commission logic | **Bin entirely.** Every one of these becomes an API call. |
-| `window.HEIRLOOM` debug bridge | **Strip in production builds.** Keep behind `NODE_ENV !== 'production'`. |
+| `window.HEIRLOM` debug bridge | **Strip in production builds.** Keep behind `NODE_ENV !== 'production'`. |
 
 The prototype has **no persistence at all** (no localStorage by design). State is in-memory and dies on refresh. Persistence is your job from day one.
 
@@ -99,7 +99,7 @@ unitValue    = round(species.price * (0.68 + E * 0.22) * (1 + COLOR_BONUS * 0.09
 blightChance = clamp(0.16 - H * 0.026, 0.006, 0.16)
 ```
 
-Tiers by score: `<10 Common · 10–14 Heirloom · 15–19 Rare · 20–24 Prized · ≥25 Legendary`
+Tiers by score: `<10 Common · 10–14 Heirlom · 15–19 Rare · 20–24 Prized · ≥25 Legendary`
 
 Traits (computed, not stored): `Abundant Y≥5 · Swift V≥5 · Ironleaf H≥5 · Gilded E≥5 · Balanced all≥4 · True-bred every locus homozygous`
 

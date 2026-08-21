@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — estate upgrades and severe blight.
+ * HEIRLOM — estate upgrades and severe blight.
  *
  * These are the two balance surfaces added after the prototype, and they are
  * deliberately kept in their own file so the line is obvious:

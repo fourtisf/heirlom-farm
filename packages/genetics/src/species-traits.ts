@@ -1,5 +1,5 @@
 /**
- * HEIRLOOM — what makes each species worth growing.
+ * HEIRLOM — what makes each species worth growing.
  *
  * The prototype gave every species a note describing how it behaves, and then
  * gave all five identical maths. Only `grow` and `price` differed, so the notes
