@@ -700,6 +700,30 @@ input{font-family:inherit}
   background:linear-gradient(180deg,#2C2016,#1D150D);border:1px solid var(--rule);
 }
 .signin__sheet p{font-size:13px;line-height:1.65;color:var(--bone-dim);margin:0 0 18px}
+
+/* Wallet chooser. One row per wallet the browser actually has, discovered
+   through EIP-6963 rather than assuming whoever claimed window.ethereum. */
+.wallets{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.wallet{
+  display:flex;align-items:center;gap:12px;width:100%;
+  padding:12px 14px;border-radius:12px;text-align:left;
+  background:rgba(232,220,192,.05);border:1px solid var(--rule-soft);
+  transition:background .14s ease,border-color .14s ease;
+}
+.wallet:hover:not(:disabled){background:rgba(201,162,39,.10);border-color:var(--rule)}
+.wallet:disabled{opacity:.5;cursor:default}
+.wallet img{border-radius:7px;flex:none;background:#fff}
+.wallet span{flex:1;font-weight:600;font-size:14.5px;color:var(--bone)}
+.wallet em{
+  font-style:normal;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--brass)
+}
+.signin__none{
+  padding:14px;border-radius:12px;border:1px dashed var(--rule-soft);
+  background:rgba(232,220,192,.04);text-align:center
+}
+.signin__none b{display:block;font-size:14px;color:var(--bone);margin-bottom:5px}
+.signin__none span{display:block;font-size:12.5px;color:var(--bone-dim);line-height:1.5}
 .signin__error{margin-top:12px;font-size:12px;color:#E0836F}
 
 .bootfail{
