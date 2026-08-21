@@ -41,6 +41,7 @@ model Player {
   purchases   Listing[]           @relation("buyer")
   upgrades    PlayerUpgrade[]
   milestones  PlayerMilestone[]
+  dailyClaims DailyClaim[]
 
   @@index([seedBalance])
 }
@@ -248,4 +249,25 @@ model PlayerMilestone {
 
   @@unique([playerId, key])
   @@index([playerId])
+}
+
+/// One row per daily task a player has actually claimed.
+///
+/// Only the claim is stored. Which tasks are on offer is derived from a hash of
+/// player and day, and progress is counted from the ledger — so nothing here
+/// can drift out of step with what the player really did.
+model DailyClaim {
+  id       String   @id @default(cuid())
+  playerId String
+  /// UTC date, YYYY-MM-DD. The reset is the server's clock, like every other.
+  day      String
+  key      String
+  coins    Int      @default(0)
+  xp       Int      @default(0)
+  claimedAt DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, day, key])
+  @@index([playerId, day])
 }

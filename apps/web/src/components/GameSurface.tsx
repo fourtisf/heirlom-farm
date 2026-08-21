@@ -54,6 +54,12 @@ export default function GameSurface() {
             <div className="xp__meta"><span id="xpText">0 / 0</span><span id="hudPhase">Morning</span></div>
           </div>
         </div>
+        {/* Today's tasks. In the HUD rather than the dock: the dock already
+            carries seven destinations, and this needs to be seen without
+            being looked for. */}
+        <button className="iconbtn iconbtn--daily" id="btnDaily" title="Today's tasks">
+          ✦<em className="iconbtn__badge" id="dailyBadge"></em>
+        </button>
         <button className="iconbtn" id="btnHelp" title="How breeding works">?</button>
         <button className="iconbtn" id="btnMute" title="Sound on">♪</button>
       </div>

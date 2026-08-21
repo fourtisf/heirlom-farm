@@ -141,6 +141,9 @@ export const G = {
   coachTarget: null,
   seenSpecies: { tomato: true },
 
+  /* today's tasks, fetched on demand rather than riding every snapshot */
+  daily: null,
+
   /* clock skew between this browser and the server, in ms */
   clockSkew: 0,
   busy: false,

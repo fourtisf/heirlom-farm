@@ -13,6 +13,7 @@ import { getState } from './lib/player.js';
 import { authRoutes } from './routes/auth.js';
 import { breedRoutes } from './routes/breed.js';
 import { commissionRoutes } from './routes/commission.js';
+import { dailyRoutes } from './routes/daily.js';
 import { estateRoutes } from './routes/estate.js';
 import { marketRoutes } from './routes/market.js';
 import { farmRoutes } from './routes/farm.js';
@@ -149,6 +150,7 @@ export async function buildApp(overrides: Partial<Env> = {}): Promise<FastifyIns
   await app.register(breedRoutes);
   await app.register(strainRoutes);
   await app.register(commissionRoutes);
+  await app.register(dailyRoutes);
   await app.register(withdrawRoutes);
   await app.register(marketRoutes);
   await app.register(estateRoutes);

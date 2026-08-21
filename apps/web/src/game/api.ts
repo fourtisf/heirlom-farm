@@ -348,3 +348,37 @@ export async function fetchSpecimen(accession: string) {
     gardener: string;
   };
 }
+
+/* ---------------- daily tasks ---------------- */
+
+export interface DailyTask {
+  key: string;
+  kind: 'harvest' | 'sale' | 'breed' | 'commission';
+  name: string;
+  blurb: string;
+  guide: 'bed' | 'market' | 'bench' | 'commission';
+  target: number;
+  progress: number;
+  complete: boolean;
+  claimed: boolean;
+  coins: number;
+  xp: number;
+}
+
+export interface DailyView {
+  day: string;
+  resetsAt: string;
+  tasks: DailyTask[];
+}
+
+export const fetchDaily = () => call<DailyView>('/api/daily');
+
+export const claimDaily = (key: string) =>
+  post<{
+    claimed: string;
+    coins: number;
+    xp: number;
+    levelledUp: boolean;
+    daily: DailyView;
+    state: StateSnapshot;
+  }>('/api/daily/claim', { key });

@@ -103,8 +103,12 @@ export function rewardFor(def: DailyDef, level: number): { coins: number; xp: nu
 export function dailyFor(playerId: string, day: string): DailyDef[] {
   const pool = [...DAILY_DEFS];
   const picked: DailyDef[] = [];
+  /* Count fixed before the loop: `pool.length` shrinks with every splice, and
+     re-evaluating it in the condition ended the loop one short — three tasks
+     were configured and two were served. */
+  const want = Math.min(DAILY_COUNT, pool.length);
   let h = hashStr(`${playerId}:${day}`);
-  for (let i = 0; i < Math.min(DAILY_COUNT, pool.length); i++) {
+  for (let i = 0; i < want; i++) {
     h = (h * 1103515245 + 12345) >>> 0;
     picked.push(pool.splice(h % pool.length, 1)[0]!);
   }

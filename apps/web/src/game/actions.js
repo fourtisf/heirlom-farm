@@ -408,6 +408,28 @@ export async function buyUpgrade(upgrade) {
   });
 }
 
+/* ---------------- daily tasks ---------------- */
+
+export async function loadDaily() {
+  try {
+    G.daily = await api.fetchDaily();
+    ui.updateHUD();
+    if (G.panel === 'daily') ui.renderPanel();
+  } catch {
+    /* the panel shows what it has; the next open tries again */
+  }
+}
+
+export async function claimDaily(task) {
+  await run(async () => {
+    const res = await api.claimDaily(task.key);
+    Audio_.rare();
+    G.daily = res.daily;
+    ui.toast(`${task.name} — ${res.coins} coins and ${res.xp} XP.`, 'good');
+    refresh(res.state);
+  });
+}
+
 /* ---------------- sharing ---------------- */
 
 /**
@@ -492,6 +514,8 @@ export function startPolling(intervalMs = 20_000) {
 
 export const actions = {
   plantAll,
+  loadDaily,
+  claimDaily,
   loadMarket,
   loadMyListings,
   buyListing,

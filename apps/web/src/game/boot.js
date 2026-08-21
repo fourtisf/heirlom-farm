@@ -136,6 +136,10 @@ function bindChrome() {
   };
   $('#harvestAll').onclick = () => void actions.harvestAll();
   $('#plantAll').onclick = () => void actions.plantAll();
+  $('#btnDaily').onclick = () => {
+    if (G.panel === 'daily') closePanel();
+    else { openPanel('daily'); void actions.loadDaily(); }
+  };
   $('#btnHelp').onclick = () => openPanel('help');
   $('#btnMute').onclick = (e) => {
     Audio_.on = !Audio_.on;

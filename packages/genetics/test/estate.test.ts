@@ -28,6 +28,11 @@ import {
   type ColorPair,
   type Genes,
   type UpgradeLevels,
+  DAILY_COUNT,
+  DAILY_DEFS,
+  dailyFor,
+  targetFor,
+  rewardFor,
 } from '../src/index.js';
 
 const genes = (y: number, v: number, h: number, e: number): Genes => ({
@@ -265,5 +270,40 @@ describe('milestones', () => {
     for (const key of awardable) expect(defined, `undefined milestone: ${key}`).toContain(key);
     // And with everything done, every milestone should be reachable.
     expect(awardable.length).toBe(defined.size);
+  });
+});
+
+describe('daily tasks', () => {
+  it('serves exactly DAILY_COUNT tasks, all distinct', () => {
+    for (const id of ['a', 'player-2', 'zzz', 'cuid-abc123']) {
+      const tasks = dailyFor(id, '2026-08-21');
+      expect(tasks).toHaveLength(DAILY_COUNT);
+      expect(new Set(tasks.map((t) => t.key)).size).toBe(DAILY_COUNT);
+    }
+  });
+
+  it('is stable for the same player and day, and rotates across days', () => {
+    const a = dailyFor('p1', '2026-08-21').map((t) => t.key);
+    const b = dailyFor('p1', '2026-08-21').map((t) => t.key);
+    expect(a).toEqual(b);
+
+    const week = new Set(
+      Array.from({ length: 7 }, (_, i) =>
+        dailyFor('p1', `2026-08-2${i + 1}`)
+          .map((t) => t.key)
+          .join(','),
+      ),
+    );
+    expect(week.size).toBeGreaterThan(1);
+  });
+
+  it('scales targets and rewards with level without ever reaching zero', () => {
+    for (const def of DAILY_DEFS) {
+      for (const level of [1, 5, 10, 15]) {
+        expect(targetFor(def, level)).toBeGreaterThanOrEqual(def.base);
+        expect(rewardFor(def, level).coins).toBeGreaterThan(0);
+        expect(rewardFor(def, level).xp).toBeGreaterThan(0);
+      }
+    }
   });
 });

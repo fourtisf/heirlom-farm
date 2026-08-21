@@ -77,6 +77,15 @@ function toast(msg, kind = 'info') {
 
 /* ---------------- HUD ---------------- */
 function updateHUD() {
+  /* The badge counts what is *claimable*, not what is outstanding — a number
+     that means "there are coins waiting" is worth looking at; one that means
+     "you have not finished today" is just nagging. */
+  const badge = document.getElementById('dailyBadge');
+  if (badge) {
+    const ready = (G.daily?.tasks ?? []).filter((x) => x.complete && !x.claimed).length;
+    badge.textContent = ready || '';
+    badge.style.display = ready ? 'grid' : 'none';
+  }
   const pct = clamp(G.xpInLevel / Math.max(1, G.xpForLevel), 0, 1) * 100;
   $('#hudCoins').textContent = fmtNum(G.coins);
   $('#hudSeed').textContent = G.seedToken.toFixed(2);
@@ -171,6 +180,7 @@ const PANEL_TITLES = {
   commission: ['Commission board', 'Collectors want specific genetics. Meet the brief, earn $SEED.'],
   exchange: ['Exchange', 'Buy and sell specimens with other gardeners. Coins only — $SEED never trades.'],
   estate: ['The estate', 'Permanent improvements, and the long record of what you have bred.'],
+  daily: ['Today', 'Three tasks, reset at midnight UTC. Tap Guide me and the game will walk you to each one.'],
   help: ['How breeding works', 'Four quantitative genes, one colour gene, and a mutation rate you can raise.'],
 };
 
@@ -225,7 +235,7 @@ function renderPanel() {
 
   const primer = primerFor(G.panel);
   if (primer) body.appendChild(primerCard(primer));
-  ({
+  const render = {
     vault: panelVault,
     bench: panelBench,
     codex: panelCodex,
@@ -233,8 +243,14 @@ function renderPanel() {
     commission: panelCommission,
     exchange: panelExchange,
     estate: panelEstate,
+    daily: panelDaily,
     help: panelHelp,
-  }[G.panel])(body);
+  }[G.panel];
+  /* An unknown kind used to call undefined and take the whole page down with a
+     TypeError. Nothing should be able to open a panel that does not exist, but
+     a missing entry is a typo, not a reason to lose the game. */
+  if (render) render(body);
+  else body.appendChild(el('div', 'empty', '<b>Nothing to show here.</b>'));
 }
 
 /* ---------------- vault ---------------- */
@@ -457,6 +473,134 @@ function panelCodex(body) {
     grid.appendChild(strainCard(s, { actions: [{ label: 'View plate', fn: () => showPlate(s, { mode: 'view' }) }] }));
   }
   body.appendChild(grid);
+}
+
+/* ---------------- today's tasks ---------------- */
+
+/**
+ * Three tasks, and a button that does the one thing a task list usually will
+ * not: takes the player to the thing instead of naming it.
+ */
+function panelDaily(body) {
+  const d = G.daily;
+  if (!d) {
+    body.appendChild(el('div', 'empty', '<b>Reading the day book…</b>'));
+    actions.loadDaily();
+    return;
+  }
+
+  const grid = el('div', 'dailies');
+  for (const t of d.tasks) {
+    const pct = Math.round((t.progress / t.target) * 100);
+    const card = el('div', 'daily' + (t.claimed ? ' is-claimed' : t.complete ? ' is-done' : ''));
+    card.innerHTML = `
+      <div class="daily__top">
+        <div>
+          <div class="daily__name">${esc(t.name)}</div>
+          <div class="daily__blurb">${esc(t.blurb)}</div>
+        </div>
+        <div class="daily__reward">+${t.coins}<i>◆</i> +${t.xp}<i>xp</i></div>
+      </div>
+      <div class="daily__bar"><i style="width:${pct}%"></i></div>
+      <div class="daily__count">${t.progress} of ${t.target}</div>`;
+
+    const row = el('div', 'daily__actions');
+    if (t.claimed) {
+      row.appendChild(el('span', 'daily__tag', 'Claimed'));
+    } else if (t.complete) {
+      const b = el('button', 'btn btn--brass', `Claim ${t.coins} coins`);
+      b.onclick = () => actions.claimDaily(t);
+      row.appendChild(b);
+    } else {
+      const g = el('button', 'btn btn--ghost', 'Guide me');
+      g.onclick = () => startTaskGuide(t);
+      row.appendChild(g);
+    }
+    card.appendChild(row);
+    grid.appendChild(card);
+  }
+  body.appendChild(grid);
+
+  const note = el('div', 'daily__reset');
+  note.textContent = 'Resets at midnight UTC.';
+  body.appendChild(note);
+}
+
+/**
+ * Walks the player to a task and stays until the count actually moves.
+ *
+ * It reuses the tutorial coach, so the spotlight, the placement rules and the
+ * "wait for the player" behaviour all come for free. Each step advances on a
+ * real change in server state rather than on a click, which is what makes it a
+ * guide rather than a slideshow — closing a panel by mistake cannot skip it,
+ * and the last step will not clear until the task is genuinely finished.
+ */
+function startTaskGuide(task) {
+  const before = task.progress;
+  const progressNow = () =>
+    (G.daily?.tasks.find((t) => t.key === task.key)?.progress ?? before);
+
+  /* Poll while the guide runs: progress is counted server-side from the
+     ledger, so nothing local can be trusted to know when it moved. */
+  const poll = setInterval(() => void actions.loadDaily(), 4000);
+
+  const openPanelStep = (panel, label, hint) => ({
+    id: `open-${panel}`,
+    title: label,
+    body: hint,
+    target: () => (G.panel === panel
+      ? domRect('#panelBody', 6, 16)
+      : domRect(`.dock__btn[data-panel="${panel}"]`, 6, 16)),
+    advance: () => G.panel === panel,
+    hint: () => (G.panel === panel ? '' : 'Tap it in the bar below.'),
+  });
+
+  const finish = {
+    id: 'finish',
+    title: task.name,
+    body: `${esc(task.blurb)} The guide stays until the count moves.`,
+    target: () => (G.panel ? domRect('#panelBody', 6, 16) : plotRect(0)),
+    advance: () => progressNow() > before,
+    hint: () => {
+      const t = G.daily?.tasks.find((x) => x.key === task.key);
+      return t ? `${t.progress} of ${t.target}.` : '';
+    },
+  };
+
+  const steps = {
+    bed: [
+      {
+        id: 'ripe',
+        title: 'Harvest a ripe bed',
+        body: 'A brass flower floats over any bed that is ready. Tap it, or use <b>Harvest all ripe beds</b>.',
+        target: () => {
+          const ripe = G.plots.find((p) => p.state === 'ripe');
+          return ripe ? plotRect(ripe.i) : domRect('#harvestAll', 8, 14) || plotRect(0);
+        },
+        advance: () => progressNow() > before,
+        hint: () => {
+          const g = G.plots.find((p) => p.state === 'growing');
+          if (G.plots.some((p) => p.state === 'ripe')) return 'One is ready now.';
+          return g ? 'Ripens in ' + fmtTime((g.ripeAt - serverNow()) / 1000) + '.' : 'Sow a bed first.';
+        },
+      },
+    ],
+    market: [openPanelStep('market', 'Open the market cart', 'Fruit becomes coins here.'), finish],
+    bench: [openPanelStep('bench', 'Open the breeding bench', 'Two parents of the same species.'), finish],
+    commission: [
+      openPanelStep('commission', 'Open the commission board', 'Collectors post what they want.'),
+      finish,
+    ],
+  }[task.guide] ?? [finish];
+
+  closePanel();
+  startCoach(true, {
+    steps,
+    onEnd: () => {
+      clearInterval(poll);
+      void actions.loadDaily();
+    },
+  });
 }
 
 /* ---------------- market ---------------- */
@@ -1223,7 +1367,7 @@ function buildCoachSteps() {
   ];
 }
 
-function startCoach(fromScratch = true) {
+function startCoach(fromScratch = true, opts = {}) {
   /* Clear whatever is on screen first. The opening step spotlights a patch of
      the farm, and a seed picker or panel left open sits over exactly that —
      the player gets an instruction pointing at something they cannot see. */
@@ -1231,10 +1375,15 @@ function startCoach(fromScratch = true) {
   closePicker();
   if (G.panel) closePanel();
 
-  Coach.steps = buildCoachSteps();
+  /* `opts.steps` lets the daily guide borrow the coach without becoming the
+     tutorial: a task walkthrough must not reset the player's tutorial flag or
+     claim to have taught them the game. */
+  Coach.steps = opts.steps ?? buildCoachSteps();
+  Coach.onEnd = opts.onEnd ?? null;
+  Coach.isTutorial = !opts.steps;
   if (fromScratch) Coach.i = 0;
   Coach.on = true;
-  setTutorialDone(false);
+  if (Coach.isTutorial) setTutorialDone(false);
   document.getElementById('coach').classList.add('is-on');
   enterCoachStep();
   if (!Coach.raf) Coach.raf = requestAnimationFrame(coachTick);
@@ -1242,11 +1391,14 @@ function startCoach(fromScratch = true) {
 
 function endCoach(completed) {
   Coach.on = false;
-  setTutorialDone(true);
+  if (Coach.isTutorial) setTutorialDone(true);
+  const after = Coach.onEnd;
+  Coach.onEnd = null;
   G.coachTarget = null;
   document.getElementById('coach').classList.remove('is-on');
   if (Coach.raf) { cancelAnimationFrame(Coach.raf); Coach.raf = 0; }
-  if (completed) toast('The estate is yours. Chase the Ivory.', 'good');
+  if (completed && Coach.isTutorial) toast('The estate is yours. Chase the Ivory.', 'good');
+  if (typeof after === 'function') after();
 }
 
 function enterCoachStep() {
