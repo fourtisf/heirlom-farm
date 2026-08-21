@@ -27,6 +27,8 @@ import {
   renderPanel,
   showPlate,
   startCoach,
+  nextCoachStep,
+  endCoach,
   toast,
   updateHUD,
   updateTutorial,
@@ -112,6 +114,19 @@ function bindChrome() {
     Audio_.on = !Audio_.on;
     e.currentTarget.classList.toggle('is-off', !Audio_.on);
     e.currentTarget.title = Audio_.on ? 'Sound on' : 'Sound off';
+  };
+
+  /* The tutorial's own two buttons. Neither had a handler, so "Show me" and
+     "Got it" did nothing at all and the coach sat on step 1 of 13 forever —
+     every step after the first was unreachable, and Skip could not dismiss it
+     either. */
+  $('#coachNext').onclick = () => {
+    Audio_.ui();
+    nextCoachStep();
+  };
+  $('#coachSkip').onclick = () => {
+    endCoach(false);
+    toast('Tutorial skipped. You can replay it from the ? menu.');
   };
 
   const title = $('#title');

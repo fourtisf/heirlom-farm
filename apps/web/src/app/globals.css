@@ -478,6 +478,9 @@ input{font-family:inherit}
 .coach__card[data-caret="up"]::before{top:-7px;transform:rotate(45deg)}
 .coach__card[data-caret="down"]::before{bottom:-7px;transform:rotate(225deg);
   background:linear-gradient(135deg,rgba(26,19,11,.985),rgba(26,19,11,.985))}
+.coach__card[data-caret="left"]::before{left:-7px;top:50%;margin:-6.5px 0 0;transform:rotate(-45deg)}
+.coach__card[data-caret="right"]::before{right:-7px;left:auto;top:50%;margin:-6.5px 0 0;transform:rotate(135deg);
+  background:linear-gradient(135deg,rgba(26,19,11,.985),rgba(26,19,11,.985))}
 .coach__card[data-caret="none"]::before{display:none}
 .coach__step{font-family:var(--f-mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass)}
 .coach__title{

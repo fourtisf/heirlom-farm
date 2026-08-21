@@ -1176,6 +1176,13 @@ function buildCoachSteps() {
 }
 
 function startCoach(fromScratch = true) {
+  /* Clear whatever is on screen first. The opening step spotlights a patch of
+     the farm, and a seed picker or panel left open sits over exactly that —
+     the player gets an instruction pointing at something they cannot see. */
+  if (G.plate) closePlate();
+  closePicker();
+  if (G.panel) closePanel();
+
   Coach.steps = buildCoachSteps();
   if (fromScratch) Coach.i = 0;
   Coach.on = true;
@@ -1220,25 +1227,59 @@ function nextCoachStep() {
   setTimeout(() => { if (Coach.on) enterCoachStep(); }, 180);
 }
 
+/**
+ * Puts the card beside what it is pointing at — never on top of it.
+ *
+ * The old version tried below, then above, then gave up and dropped the card
+ * at the bottom of the screen without checking anything. When the spotlight was
+ * large or low, that fallback landed the card squarely over the very thing the
+ * step was highlighting, so the player was told to look at something the
+ * instructions were covering.
+ *
+ * Now all four sides are candidates, each is rejected if it would overlap the
+ * spotlight or leave the viewport, and if nothing fits the card goes to the
+ * corner furthest from the target with no caret rather than over it.
+ */
+function overlaps(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
 function placeCoachCard(rect) {
   const card = document.getElementById('coachCard');
-  const cw = card.offsetWidth || 320, ch = card.offsetHeight || 170;
-  const M = 14;
-  let x = rect ? rect.x + rect.w / 2 - cw / 2 : window.innerWidth / 2 - cw / 2;
-  let y;
-  const below = rect ? rect.y + rect.h + 16 : 0;
-  const above = rect ? rect.y - ch - 16 : 0;
-  let caret = 'up';
-  if (!rect) { y = window.innerHeight - ch - 120; caret = 'none'; }
-  else if (below + ch < window.innerHeight - 96) { y = below; caret = 'up'; }
-  else if (above > 78) { y = above; caret = 'down'; }
-  else { y = window.innerHeight - ch - 110; caret = 'none'; }
-  x = clamp(x, M, window.innerWidth - cw - M);
-  y = clamp(y, 66, window.innerHeight - ch - M);
-  card.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
-  card.dataset.caret = caret;
-  const cx = rect ? clamp(rect.x + rect.w / 2 - x, 22, cw - 22) : cw / 2;
-  card.style.setProperty('--caret-x', cx + 'px');
+  const cw = card.offsetWidth || 320;
+  const ch = card.offsetHeight || 170;
+  const M = 14, TOP = 66, BOT = 96, GAP = 16;
+  const vw = window.innerWidth, vh = window.innerHeight;
+
+  const put = (x, y, caret) => {
+    x = clamp(x, M, vw - cw - M);
+    y = clamp(y, TOP, vh - ch - M);
+    card.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+    card.dataset.caret = caret;
+    const cx = rect ? clamp(rect.x + rect.w / 2 - x, 22, cw - 22) : cw / 2;
+    card.style.setProperty('--caret-x', cx + 'px');
+  };
+
+  if (!rect) return put(vw / 2 - cw / 2, vh - ch - 120, 'none');
+
+  const midX = rect.x + rect.w / 2 - cw / 2;
+  const midY = rect.y + rect.h / 2 - ch / 2;
+
+  for (const c of [
+    { x: midX, y: rect.y + rect.h + GAP, caret: 'up' },
+    { x: midX, y: rect.y - ch - GAP, caret: 'down' },
+    { x: rect.x + rect.w + GAP, y: midY, caret: 'left' },
+    { x: rect.x - cw - GAP, y: midY, caret: 'right' },
+  ]) {
+    const x = clamp(c.x, M, vw - cw - M);
+    const y = clamp(c.y, TOP, vh - ch - M);
+    const fits = c.y >= TOP && c.y + ch <= vh - BOT && c.x >= M && c.x + cw <= vw - M;
+    if (fits && !overlaps({ x, y, w: cw, h: ch }, rect)) return put(x, y, c.caret);
+  }
+
+  // Nothing clears it: take the corner furthest from the target's centre.
+  const tx = rect.x + rect.w / 2, ty = rect.y + rect.h / 2;
+  return put(tx < vw / 2 ? vw - cw - M : M, ty < vh / 2 ? vh - ch - BOT : TOP, 'none');
 }
 
 function coachTick() {
@@ -1312,6 +1353,8 @@ export {
   closePicker,
   beginPlantFlow,
   startCoach,
+  nextCoachStep,
+  endCoach,
   updateTutorial,
   buildCoachSteps,
   coachTick,
