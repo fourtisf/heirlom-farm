@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="HEIRLOOM — seed and ring">
+  <!-- 01 SEED AND RING. One shape, one ring, three colours. The veins are cut
+       heavy on purpose: at 24px a hairline vein disappears and the mark
+       collapses into a blank almond. -->
+  <rect width="512" height="512" fill="#241B12"/>
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#C9A227" stroke-width="8" opacity=".6"/>
+  <circle cx="256" cy="256" r="208" fill="none" stroke="#C9A227" stroke-width="3" opacity=".28"/>
+  <path d="M256 112 A176 176 0 0 1 256 400 A176 176 0 0 1 256 112Z" fill="#F0E6CE"/>
+  <g stroke="#241B12" stroke-linecap="round" fill="none">
+    <path d="M256 142 V372" stroke-width="14"/>
+    <path d="M256 226 L204 182 M256 226 L308 182 M256 296 L212 256 M256 296 L300 256" stroke-width="12" opacity=".62"/>
+  </g>
+  <circle cx="256" cy="344" r="26" fill="#C9A227"/>
+</svg>

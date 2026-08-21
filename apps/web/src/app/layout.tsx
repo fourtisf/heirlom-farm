@@ -23,10 +23,27 @@ const plexMono = IBM_Plex_Mono({
   display: 'swap',
 });
 
+/* Absolute URLs are required for link previews; a relative og:image is ignored
+   by every scraper. Set NEXT_PUBLIC_SITE_URL in production. */
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: 'HEIRLOOM — a breeding farm',
   description:
     'Anyone can grow a crop. Few can fix a line. Cross plants, inherit alleles, and chase recessive colour morphs.',
+  openGraph: {
+    type: 'website',
+    siteName: 'HEIRLOOM',
+    title: 'HEIRLOOM — a breeding farm',
+    description: 'Anyone can grow a crop. Few can fix a line.',
+    url: siteUrl,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'HEIRLOOM — a breeding farm',
+    description: 'Anyone can grow a crop. Few can fix a line.',
+  },
 };
 
 export const viewport: Viewport = {

@@ -1,8 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- A seed leaf on loam. Drawn, not an asset — same rule as the rest of the game. -->
+  <!-- The brand mark, redrawn for 16px rather than scaled down to it. The
+       double ring and the four veins of docs/brand/heirloom-mark.svg both
+       collapse into mud at this size, so the ring is single and the veins are
+       gone; what survives is the silhouette, the midrib and the brass seed. -->
   <rect width="32" height="32" rx="7" fill="#241B12"/>
-  <path d="M16 25V13" stroke="#7FB069" stroke-width="2.2" stroke-linecap="round"/>
-  <path d="M16 14c-1.6-4.4-4.6-6-8-6 0 4.2 2.8 7.2 8 7.6Z" fill="#3E6B44"/>
-  <path d="M16 12c1.6-4.8 4.8-6.6 8.4-6.6 0 4.6-3 7.8-8.4 8.2Z" fill="#7FB069"/>
-  <circle cx="16" cy="9.5" r="2.4" fill="#C9A227"/>
+  <circle cx="16" cy="16" r="13" fill="none" stroke="#C9A227" stroke-width="1.4" opacity=".65"/>
+  <path d="M16 5.6 A11.2 11.2 0 0 1 16 26.4 A11.2 11.2 0 0 1 16 5.6Z" fill="#F0E6CE"/>
+  <path d="M16 8.4 V23" stroke="#241B12" stroke-width="1.7" stroke-linecap="round"/>
+  <circle cx="16" cy="21.4" r="2.5" fill="#C9A227"/>
 </svg>

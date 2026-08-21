@@ -1,0 +1,72 @@
+<!doctype html><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,900;1,9..144,300&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  html,body{margin:0;padding:0;background:#0C0805}
+  .banner{
+    position:relative;width:1200px;height:630px;overflow:hidden;
+    background:
+      radial-gradient(120% 150% at 74% 42%, #33251733 0%, #00000000 55%),
+      radial-gradient(90% 120% at 22% 60%, #1D160E 0%, #00000000 60%),
+      linear-gradient(160deg, #241B12 0%, #180F09 52%, #0E0906 100%);
+    font-family:"Fraunces",Georgia,serif;
+  }
+  /* the farm's own tiling, at a whisper */
+  .grid{position:absolute;inset:0;opacity:.30}
+  .vig{position:absolute;inset:0;
+    background:radial-gradient(78% 105% at 50% 45%, transparent 42%, rgba(6,4,2,.82) 100%)}
+  .grain{position:absolute;inset:0;opacity:.05;mix-blend-mode:overlay}
+
+  .mark{position:absolute;left:50%;top:96px;transform:translateX(-50%);
+    width:300px;height:300px;filter:drop-shadow(0 22px 48px rgba(0,0,0,.62))}
+  .halo{position:absolute;left:50%;top:36px;transform:translateX(-50%);
+    width:412px;height:412px;border-radius:50%;
+    background:radial-gradient(circle, rgba(201,162,39,.20) 0%, rgba(201,162,39,0) 62%)}
+
+  .type{position:absolute;left:0;right:0;top:392px;width:100%;text-align:center}
+  .est{font-family:"IBM Plex Mono",monospace;font-size:13px;letter-spacing:.42em;
+    text-transform:uppercase;color:#C9A227;margin:0 0 20px;opacity:.92}
+  h1{margin:0;font-weight:900;font-size:76px;line-height:.9;letter-spacing:.055em;
+    color:#F2EADA;text-shadow:0 3px 0 rgba(0,0,0,.28)}
+  .rule{display:flex;align-items:center;gap:14px;margin:22px auto 20px;width:420px}
+  .rule i{height:1px;background:linear-gradient(90deg,rgba(201,162,39,.06),#C9A227,rgba(201,162,39,.06));flex:1}
+  .rule b{width:7px;height:7px;background:#C9A227;transform:rotate(45deg);flex:none}
+  .tag{margin:0;font-style:italic;font-weight:300;font-size:23px;line-height:1.35;
+    color:#D8CCB2;letter-spacing:.005em}
+  .meta{display:none;position:absolute;left:0;right:0;text-align:center;bottom:44px;
+    font-family:"IBM Plex Mono",monospace;font-size:12.5px;letter-spacing:.26em;
+    text-transform:uppercase;color:#9C8F78}
+  .meta em{font-style:normal;color:#C9A227}
+</style>
+<div class="banner">
+  <svg class="grid" viewBox="0 0 1200 630" preserveAspectRatio="none">
+    <defs><pattern id="iso" width="104" height="52" patternUnits="userSpaceOnUse">
+      <path d="M0 26 L52 0 L104 26 L52 52 Z" fill="none" stroke="#C9A227" stroke-width="1" opacity=".16"/>
+    </pattern></defs>
+    <rect width="1200" height="630" fill="url(#iso)"/>
+  </svg>
+  <svg class="grain" viewBox="0 0 300 100" preserveAspectRatio="none">
+    <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3"/></filter>
+    <rect width="300" height="100" filter="url(#n)"/>
+  </svg>
+  <div class="vig"></div>
+  <div class="halo"></div>
+  <svg class="mark" viewBox="0 0 512 512"><!-- The mark without its ground, for use over artwork or a light surface.
+       Same geometry as heirloom-mark.svg; only the soil disc is removed. -->
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#C9A227" stroke-width="8" opacity=".85"/>
+  <circle cx="256" cy="256" r="208" fill="none" stroke="#C9A227" stroke-width="3" opacity=".45"/>
+  <path d="M256 112 A176 176 0 0 1 256 400 A176 176 0 0 1 256 112Z" fill="#F0E6CE"/>
+  <g stroke="#241B12" stroke-linecap="round" fill="none">
+    <path d="M256 142 V372" stroke-width="14"/>
+    <path d="M256 226 L204 182 M256 226 L308 182 M256 296 L212 256 M256 296 L300 256" stroke-width="12" opacity=".62"/>
+  </g>
+  <circle cx="256" cy="344" r="26" fill="#C9A227"/></svg>
+  <div class="type">
+    <p class="est">Est. Vale</p>
+    <h1>HEIRLOOM</h1>
+    <div class="rule"><i></i><b></b><i></i></div>
+    <p class="tag">Anyone can grow a crop. Few can fix a line.</p>
+  </div>
+  <div class="meta">A breeding farm &nbsp;<em>&middot;</em>&nbsp; Five genes &nbsp;<em>&middot;</em>&nbsp; Five colour morphs</div>
+</div>
