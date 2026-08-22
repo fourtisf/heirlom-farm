@@ -86,6 +86,7 @@ export async function bootGame(canvas) {
   };
   actions.ui.updateTutorial = updateTutorial;
   actions.ui.showPlate = showPlate;
+  actions.ui.openDaily = () => openPanel('daily');
   actions.ui.closePlate = closePlate;
   actions.ui.levelBanner = (level) => {
     const banner = $('#levelBanner');
@@ -136,6 +137,10 @@ function bindChrome() {
   };
   $('#harvestAll').onclick = () => void actions.harvestAll();
   $('#plantAll').onclick = () => void actions.plantAll();
+  /* Fetched at boot so the HUD count is right before anything is clicked, and
+     so the once-a-day announce can fire. */
+  void actions.loadDaily({ announce: true });
+
   $('#btnDaily').onclick = () => {
     if (G.panel === 'daily') closePanel();
     else { openPanel('daily'); void actions.loadDaily(); }

@@ -57,8 +57,12 @@ export default function GameSurface() {
         {/* Today's tasks. In the HUD rather than the dock: the dock already
             carries seven destinations, and this needs to be seen without
             being looked for. */}
-        <button className="iconbtn iconbtn--daily" id="btnDaily" title="Today's tasks">
-          ✦<em className="iconbtn__badge" id="dailyBadge"></em>
+        {/* Labelled, not a bare glyph. The first version was an unlabelled ✦
+            and players simply did not find it — a retention hook nobody can
+            see is not a hook. */}
+        <button className="dailybtn" id="btnDaily" title="Today's tasks">
+          <i>✦</i><b>Today</b><span id="dailyCount">0/3</span>
+          <em className="iconbtn__badge" id="dailyBadge"></em>
         </button>
         <button className="iconbtn" id="btnHelp" title="How breeding works">?</button>
         <button className="iconbtn" id="btnMute" title="Sound on">♪</button>

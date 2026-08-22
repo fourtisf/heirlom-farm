@@ -437,7 +437,17 @@ input{font-family:inherit}
 .pmut b{font-weight:600;color:#2E1F45}
 
 /* ---- today's tasks ---- */
-.iconbtn--daily{position:relative}
+.dailybtn{
+  position:relative;display:flex;align-items:center;gap:7px;
+  padding:7px 12px;border-radius:11px;
+  background:rgba(201,162,39,.13);border:1px solid var(--rule);
+  color:var(--bone);transition:background .14s ease;
+}
+.dailybtn:hover{background:rgba(201,162,39,.22)}
+.dailybtn i{font-style:normal;color:var(--brass);font-size:13px;line-height:1}
+.dailybtn b{font-weight:600;font-size:13px;letter-spacing:.01em}
+.dailybtn span{font-family:var(--f-mono);font-size:11px;color:var(--bone-dim)}
+@media (max-width:640px){ .dailybtn b{display:none} .dailybtn{padding:7px 9px} }
 .iconbtn__badge{
   position:absolute;top:-5px;right:-5px;display:none;place-items:center;
   min-width:17px;height:17px;padding:0 4px;border-radius:9px;

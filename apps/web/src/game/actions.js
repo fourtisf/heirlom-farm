@@ -30,6 +30,7 @@ export const ui = {
   renderPanel: () => {},
   updateTutorial: () => {},
   showPlate: () => {},
+  openDaily: () => {},
   closePlate: () => {},
   levelBanner: () => {},
 };
@@ -410,11 +411,27 @@ export async function buyUpgrade(upgrade) {
 
 /* ---------------- daily tasks ---------------- */
 
-export async function loadDaily() {
+const DAILY_SEEN_KEY = 'heirlom.daily.seen';
+
+export async function loadDaily({ announce = false } = {}) {
   try {
     G.daily = await api.fetchDaily();
     ui.updateHUD();
     if (G.panel === 'daily') ui.renderPanel();
+
+    /* Open the panel once per day, unprompted. A labelled button was still
+       missed — the surest way to make a daily discoverable is to show it,
+       once, and then never nag again. Keyed by the server's day, so it cannot
+       fire twice on one day or be skipped by a clock that disagrees. */
+    if (announce && G.daily?.day) {
+      let seen = null;
+      try { seen = window.localStorage.getItem(DAILY_SEEN_KEY); } catch { /* private */ }
+      if (seen !== G.daily.day) {
+        try { window.localStorage.setItem(DAILY_SEEN_KEY, G.daily.day); } catch { /* private */ }
+        const left = G.daily.tasks.filter((t) => !t.claimed).length;
+        if (left) ui.openDaily();
+      }
+    }
   } catch {
     /* the panel shows what it has; the next open tries again */
   }

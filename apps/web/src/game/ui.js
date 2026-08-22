@@ -81,8 +81,14 @@ function updateHUD() {
      that means "there are coins waiting" is worth looking at; one that means
      "you have not finished today" is just nagging. */
   const badge = document.getElementById('dailyBadge');
+  const count = document.getElementById('dailyCount');
+  const tasks = G.daily?.tasks ?? [];
+  if (count) {
+    const done = tasks.filter((x) => x.claimed).length;
+    count.textContent = tasks.length ? `${done}/${tasks.length}` : '—';
+  }
   if (badge) {
-    const ready = (G.daily?.tasks ?? []).filter((x) => x.complete && !x.claimed).length;
+    const ready = tasks.filter((x) => x.complete && !x.claimed).length;
     badge.textContent = ready || '';
     badge.style.display = ready ? 'grid' : 'none';
   }
