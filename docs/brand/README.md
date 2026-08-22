@@ -20,6 +20,8 @@ folder now descends from it.
 | `export/x-*@2x.png` | 3200×1800 versions of the same. |
 | `banner.src.html` / `opengraph.src.html` / `daily-banner.src.html` / `x-*.src.html` | the sources every PNG is rendered from. Edit these, re-render, never touch the PNGs by hand. |
 | `render-x-posts.mjs` | re-renders the five post banners at both scales. |
+| `x-posts.md` | **the copy for every post**, both languages, with the order to post them in. |
+| `check-x-posts.mjs` | verifies every post in `x-posts.md` still fits in one tweet. |
 
 ## Where it is wired into the app
 
@@ -65,13 +67,13 @@ One idea each, so they can be posted on five different days without repeating a 
 number and colour on them is read out of `packages/genetics/src/constants.ts` — if the balance
 constants change, these are wrong and have to be re-rendered.
 
-| file | the idea | suggested caption |
+| file | the idea | full copy |
 |---|---|---|
-| `x-ladder` | five colours, each rung recessive to the last | "Five colours. Ivory is recessive to all four. Nobody has ever recorded one." |
-| `x-punnett` | three of four offspring look identical, two are hiding Ivory | "The plainest plant you own may be the most valuable one. Here's why." |
-| `x-receipt` | 130 scripted crosses, never past Amber | "I let a bot play it greedily for 130 crosses. It never got past rung two. Breeding for what a plant *hides* is the whole game." |
-| `x-fair` | every roll, clock and coin is server-side | "The rare strain is the only thing of value here, so the browser is never allowed to decide one." |
-| `x-specimen` | a pressed specimen with an accession number and a public page | "Name it, press it, and it outlives the farm." |
+| `x-ladder` | five colours, each rung recessive to the last | `x-posts.md` post 1 |
+| `x-punnett` | three of four offspring look identical, two are hiding Ivory | `x-posts.md` post 2 |
+| `x-receipt` | 130 scripted crosses, never past Amber | `x-posts.md` post 3 |
+| `x-fair` | every roll, clock and coin is server-side | `x-posts.md` post 4 |
+| `x-specimen` | a pressed specimen with an accession number and a public page | `x-posts.md` post 5 |
 
 Re-render them with:
 
