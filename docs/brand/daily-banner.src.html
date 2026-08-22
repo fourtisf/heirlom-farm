@@ -1,0 +1,119 @@
+<!doctype html><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,900;1,9..144,300&family=Karla:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+ html,body{margin:0;background:#0C0805}
+ .b{position:relative;width:1600px;height:900px;overflow:hidden;font-family:"Karla",system-ui,sans-serif;
+   background:
+     radial-gradient(120% 150% at 78% 40%, #3A2A1933 0%, #00000000 55%),
+     radial-gradient(90% 120% at 18% 62%, #1E170F 0%, #00000000 60%),
+     linear-gradient(158deg,#241B12 0%,#180F09 54%,#0D0806 100%);}
+ .grid{position:absolute;inset:0;opacity:.26}
+ .vig{position:absolute;inset:0;background:radial-gradient(80% 105% at 50% 45%,transparent 40%,rgba(6,4,2,.86) 100%)}
+ .L{position:absolute;left:92px;top:50%;transform:translateY(-52%);width:660px}
+ .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:14px;letter-spacing:.4em;text-transform:uppercase;
+   color:#C9A227;margin:0 0 26px}
+ h1{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:74px;line-height:1.02;letter-spacing:-.015em;
+   color:#F2EADA;margin:0}
+ h1 em{font-style:normal;color:#C9A227}
+ .rule{display:flex;align-items:center;gap:14px;margin:34px 0 26px;width:470px}
+ .rule i{height:1px;background:linear-gradient(90deg,#C9A227,rgba(201,162,39,.05));flex:1}
+ .rule b{width:7px;height:7px;background:#C9A227;transform:rotate(45deg);flex:none}
+ .sub{font-family:"Fraunces",Georgia,serif;font-style:italic;font-weight:300;font-size:27px;line-height:1.45;
+   color:#D8CCB2;margin:0;max-width:560px}
+ .meta{position:absolute;left:92px;bottom:72px;font-family:"IBM Plex Mono",monospace;font-size:14px;
+   letter-spacing:.26em;text-transform:uppercase;color:#9C8F78}
+ .meta em{font-style:normal;color:#C9A227}
+
+ /* the panel, in the game's own dressing */
+ .P{position:absolute;right:86px;top:96px;width:576px;
+   background:linear-gradient(180deg,rgba(46,34,22,.97),rgba(28,20,13,.97));
+   border:1px solid rgba(201,162,39,.32);border-radius:20px;padding:30px 28px 26px;
+   box-shadow:0 34px 90px rgba(0,0,0,.62)}
+ .P__h{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:34px;color:#EFE7D6;margin:0}
+ .P__s{font-size:14.5px;color:#B9AC94;margin:8px 0 22px;line-height:1.5}
+ .t{padding:16px 17px;border-radius:13px;background:rgba(232,220,192,.05);
+   border:1px solid rgba(232,220,192,.10);margin-bottom:11px}
+ .t.is-done{border-color:rgba(201,162,39,.5);background:rgba(201,162,39,.10)}
+ .t__top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+ .t__name{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:19px;color:#EFE7D6}
+ .t__blurb{font-size:13px;color:#B9AC94;margin-top:3px}
+ .t__rw{font-family:"IBM Plex Mono",monospace;font-size:12px;color:#C9A227;white-space:nowrap;text-align:right}
+ .t__rw i{font-style:normal;opacity:.7}
+ .t__bar{height:6px;border-radius:3px;background:rgba(8,6,3,.6);margin:14px 0 9px;overflow:hidden}
+ .t__bar i{display:block;height:100%;background:#7FB069;border-radius:3px}
+ .t.is-done .t__bar i{background:#C9A227}
+ .t__foot{display:flex;justify-content:space-between;align-items:center}
+ .t__foot span{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:#B9AC94}
+ .t__btn{font-size:12.5px;font-weight:700;color:#241B12;background:#C9A227;padding:6px 15px;border-radius:9px}
+ .t__ghost{font-size:12.5px;font-weight:600;color:#E8DCC0;border:1px solid rgba(232,220,192,.24);
+   padding:5px 14px;border-radius:9px}
+ .P__f{margin-top:16px;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:11px;
+   letter-spacing:.2em;text-transform:uppercase;color:#9C8F78;opacity:.75}
+ .mark{position:absolute;left:92px;top:-2px;width:0;height:0}
+   .lock{position:absolute;left:92px;top:74px;display:flex;align-items:center;gap:14px}
+ .lock svg{width:46px;height:46px}
+ .lock b{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:24px;letter-spacing:.14em;color:#F2EADA}
+ .lock i{font-family:"IBM Plex Mono",monospace;font-style:normal;font-size:10.5px;letter-spacing:.3em;
+   text-transform:uppercase;color:#C9A227;opacity:.85}
+</style>
+<div class="b">
+  <svg class="grid" viewBox="0 0 1600 900" preserveAspectRatio="none">
+    <defs><pattern id="iso" width="112" height="56" patternUnits="userSpaceOnUse">
+      <path d="M0 28 L56 0 L112 28 L56 56 Z" fill="none" stroke="#C9A227" stroke-width="1" opacity=".15"/>
+    </pattern></defs><rect width="1600" height="900" fill="url(#iso)"/>
+  </svg>
+  <div class="vig"></div>
+
+  <div class="L">
+    <p class="eyebrow">Daily tasks</p>
+    <h1>Most games <em>list</em><br>your dailies.</h1>
+    <div class="rule"><b></b><i></i></div>
+    <p class="sub">HEIRLOM walks you to them — and the guide stays until the task is actually finished.</p>
+  </div>
+  <div class="meta">Three a day &nbsp;<em>&middot;</em>&nbsp; Reset at midnight UTC &nbsp;<em>&middot;</em>&nbsp; heirlom.fun</div>
+
+  <div class="P">
+    <p class="P__h">Today</p>
+    <p class="P__s">Three tasks. Tap Guide me and the game takes you there.</p>
+    
+  <div class="t is-done">
+    <div class="t__top">
+      <div><div class="t__name">Bring in the crop</div><div class="t__blurb">Harvest ripe beds.</div></div>
+      <div class="t__rw">+60<i>◆</i> +20<i>xp</i></div>
+    </div>
+    <div class="t__bar"><i style="width:100%"></i></div>
+    <div class="t__foot"><span>3 of 3</span><b class="t__btn">Claim</b></div>
+  </div>
+    
+  <div class="t ">
+    <div class="t__top">
+      <div><div class="t__name">Work the bench</div><div class="t__blurb">Cross two parents.</div></div>
+      <div class="t__rw">+80<i>◆</i> +28<i>xp</i></div>
+    </div>
+    <div class="t__bar"><i style="width:67%"></i></div>
+    <div class="t__foot"><span>2 of 3</span><b class="t__ghost">Guide me</b></div>
+  </div>
+    
+  <div class="t ">
+    <div class="t__top">
+      <div><div class="t__name">Answer a collector</div><div class="t__blurb">Fulfil a commission.</div></div>
+      <div class="t__rw">+120<i>◆</i> +44<i>xp</i></div>
+    </div>
+    <div class="t__bar"><i style="width:0%"></i></div>
+    <div class="t__foot"><span>0 of 1</span><b class="t__ghost">Guide me</b></div>
+  </div>
+    <div class="P__f">Resets at midnight UTC</div>
+  </div>
+  <div class="lock"><svg viewBox="0 0 512 512"><!-- The mark without its ground, for use over artwork or a light surface.
+       Same geometry as heirlom-mark.svg; only the soil disc is removed. -->
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#C9A227" stroke-width="8" opacity=".85"/>
+  <circle cx="256" cy="256" r="208" fill="none" stroke="#C9A227" stroke-width="3" opacity=".45"/>
+  <path d="M256 112 A176 176 0 0 1 256 400 A176 176 0 0 1 256 112Z" fill="#F0E6CE"/>
+  <g stroke="#241B12" stroke-linecap="round" fill="none">
+    <path d="M256 142 V372" stroke-width="14"/>
+    <path d="M256 226 L204 182 M256 226 L308 182 M256 296 L212 256 M256 296 L300 256" stroke-width="12" opacity=".62"/>
+  </g>
+  <circle cx="256" cy="344" r="26" fill="#C9A227"/></svg><b>HEIRLOM</b><i>Est. Vale</i></div>
+</div>

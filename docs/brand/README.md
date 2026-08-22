@@ -14,7 +14,9 @@ folder now descends from it.
 | `export/heirlom-banner.png` | **X header.** 1500×500. |
 | `export/heirlom-banner@2x.png` | 3000×1000, for retina or print. |
 | `export/opengraph-image.png` | 1200×630 link-preview card. |
-| `banner.src.html` / `opengraph.src.html` | the sources both PNGs are rendered from. Edit these, re-render, never touch the PNGs by hand. |
+| `export/heirlom-daily-banner.png` | 1600×900 feature card for the daily tasks. Sized for an X post image. |
+| `export/heirlom-daily-banner@2x.png` | 3200×1800, for retina or a pinned post. |
+| `banner.src.html` / `opengraph.src.html` / `daily-banner.src.html` | the sources both PNGs are rendered from. Edit these, re-render, never touch the PNGs by hand. |
 
 ## Where it is wired into the app
 
