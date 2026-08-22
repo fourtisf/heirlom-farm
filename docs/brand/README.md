@@ -16,7 +16,10 @@ folder now descends from it.
 | `export/opengraph-image.png` | 1200×630 link-preview card. |
 | `export/heirlom-daily-banner.png` | 1600×900 feature card for the daily tasks. Sized for an X post image. |
 | `export/heirlom-daily-banner@2x.png` | 3200×1800, for retina or a pinned post. |
-| `banner.src.html` / `opengraph.src.html` / `daily-banner.src.html` | the sources both PNGs are rendered from. Edit these, re-render, never touch the PNGs by hand. |
+| `export/x-*.png` | **the five X post banners**, 1600×900. See the table below. |
+| `export/x-*@2x.png` | 3200×1800 versions of the same. |
+| `banner.src.html` / `opengraph.src.html` / `daily-banner.src.html` / `x-*.src.html` | the sources every PNG is rendered from. Edit these, re-render, never touch the PNGs by hand. |
+| `render-x-posts.mjs` | re-renders the five post banners at both scales. |
 
 ## Where it is wired into the app
 
@@ -55,6 +58,32 @@ Kept for the record; none of them is the brand.
 | 04 | Monogram H | yes |
 | 05 | Colour ladder | as a coloured asterisk; launch art, not an avatar |
 | 06 | Herbarium tag | no — header and OG art only |
+
+## The five post banners
+
+One idea each, so they can be posted on five different days without repeating a beat. Every
+number and colour on them is read out of `packages/genetics/src/constants.ts` — if the balance
+constants change, these are wrong and have to be re-rendered.
+
+| file | the idea | suggested caption |
+|---|---|---|
+| `x-ladder` | five colours, each rung recessive to the last | "Five colours. Ivory is recessive to all four. Nobody has ever recorded one." |
+| `x-punnett` | three of four offspring look identical, two are hiding Ivory | "The plainest plant you own may be the most valuable one. Here's why." |
+| `x-receipt` | 130 scripted crosses, never past Amber | "I let a bot play it greedily for 130 crosses. It never got past rung two. Breeding for what a plant *hides* is the whole game." |
+| `x-fair` | every roll, clock and coin is server-side | "The rare strain is the only thing of value here, so the browser is never allowed to decide one." |
+| `x-specimen` | a pressed specimen with an accession number and a public page | "Name it, press it, and it outlives the farm." |
+
+Re-render them with:
+
+```
+node docs/brand/render-x-posts.mjs          # all five, 1x and 2x
+NAMES=ladder node docs/brand/render-x-posts.mjs
+```
+
+Layout notes, since they all share one grid: the copy block and the right-hand rail both sit on
+**y=470**, not 450 — the footer meta line is heavier than the lockup, so a true centre reads
+bottom-heavy. The ladder cards are staggered 34px per rung on purpose; a flat row of five chips
+does not read as a ladder.
 
 ## Rules
 

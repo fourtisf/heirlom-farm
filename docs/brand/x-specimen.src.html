@@ -1,0 +1,88 @@
+<!doctype html><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,900;1,9..144,300&family=Karla:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+ html,body{margin:0;background:#0C0805}
+ .b{position:relative;width:1600px;height:900px;overflow:hidden;font-family:"Karla",system-ui,sans-serif;
+   background:
+     radial-gradient(120% 150% at 74% 38%, #3A2A1933 0%, #00000000 55%),
+     radial-gradient(90% 120% at 20% 64%, #1E170F 0%, #00000000 60%),
+     linear-gradient(158deg,#241B12 0%,#180F09 54%,#0D0806 100%);}
+ .grid{position:absolute;inset:0;opacity:.24}
+ .vig{position:absolute;inset:0;background:radial-gradient(82% 108% at 50% 46%,transparent 40%,rgba(6,4,2,.88) 100%)}
+ .lock{position:absolute;left:92px;top:74px;display:flex;align-items:center;gap:14px;z-index:3}
+ .lock svg{width:46px;height:46px}
+ .lock b{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:24px;letter-spacing:.14em;color:#F2EADA}
+ .lock i{font-family:"IBM Plex Mono",monospace;font-style:normal;font-size:10.5px;letter-spacing:.3em;
+   text-transform:uppercase;color:#C9A227;opacity:.85}
+ .meta{position:absolute;left:92px;bottom:66px;font-family:"IBM Plex Mono",monospace;font-size:14px;
+   letter-spacing:.26em;text-transform:uppercase;color:#9C8F78;z-index:3}
+ .meta em{font-style:normal;color:#C9A227}
+ .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:14px;letter-spacing:.4em;text-transform:uppercase;
+   color:#C9A227;margin:0 0 24px}
+ h1{font-family:"Fraunces",Georgia,serif;font-weight:900;line-height:1.02;letter-spacing:-.015em;
+   color:#F2EADA;margin:0}
+ h1 em{font-style:normal;color:#C9A227}
+ .sub{font-family:"Fraunces",Georgia,serif;font-style:italic;font-weight:300;line-height:1.45;
+   color:#D8CCB2;margin:26px 0 0}
+ .rule{display:flex;align-items:center;gap:14px;margin:30px 0 0}
+ .rule i{height:1px;background:linear-gradient(90deg,#C9A227,rgba(201,162,39,.05));flex:1}
+ .rule b{width:7px;height:7px;background:#C9A227;transform:rotate(45deg);flex:none}
+</style><style>.plate{position:absolute;right:120px;top:470px;transform:translateY(-50%) rotate(1.4deg);width:452px;
+   background:linear-gradient(180deg,#F6F0E0,#E6DCC4);border-radius:10px;padding:30px 30px 26px;
+   box-shadow:0 40px 90px rgba(0,0,0,.66);z-index:2;text-align:center;
+   border:1px solid rgba(140,120,80,.45)}
+ .pl__rib{position:absolute;top:-11px;right:22px;border-radius:3px;background:#D06CA8;color:#FFF6E6;padding:5px 13px;
+   font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
+ .pl__eye{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+   color:rgba(70,55,32,.66);white-space:nowrap}
+ .pl__sp{font-family:"Fraunces",Georgia,serif;font-size:25px;color:#2B2116;margin-top:9px;letter-spacing:.04em}
+ .pl__lat{font-family:"Fraunces",Georgia,serif;font-style:italic;font-size:15px;color:#6B5C43;margin-top:2px}
+ .pl__art{height:186px;margin:18px 0 14px;border-radius:5px;position:relative;overflow:hidden;
+   background:
+     repeating-linear-gradient(0deg,rgba(120,100,60,.13) 0 1px,transparent 1px 26px),
+     repeating-linear-gradient(90deg,rgba(120,100,60,.13) 0 1px,transparent 1px 26px),
+     #EFE7D2}
+ .pl__art svg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:168px;height:168px}
+ .pl__name{font-family:"Fraunces",Georgia,serif;font-weight:700;font-size:31px;color:#231A10}
+ .pl__gen{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+   color:#6B5C43;margin-top:5px}
+ .pl__not{margin-top:17px;padding:11px;border-radius:7px;background:rgba(255,252,244,.8);
+   border:1px solid rgba(140,120,80,.3);font-family:"IBM Plex Mono",monospace;font-size:14px;color:#2B2116}
+ .pl__carry{margin-top:11px;padding:9px 12px;border-radius:9px;background:rgba(201,162,39,.16);
+   border:1px solid rgba(201,162,39,.5);font-size:14px;color:#2B2116;
+   display:flex;align-items:center;justify-content:center;gap:9px}
+ .pl__carry i{width:15px;height:15px;border-radius:50%;background:#F0E6CE;
+   box-shadow:0 0 0 1.5px rgba(43,33,22,.62),inset 0 -3px 5px rgba(140,120,80,.35)}
+ .pl__carry b{font-weight:700}
+ .pl__par{margin-top:14px;font-family:"Fraunces",Georgia,serif;font-style:italic;font-size:13.5px;color:#5A4B36}</style>
+<div class="b"><svg class="grid" viewBox="0 0 1600 900" preserveAspectRatio="none"><defs><pattern id="iso" width="112" height="56" patternUnits="userSpaceOnUse"><path d="M0 28 L56 0 L112 28 L56 56 Z" fill="none" stroke="#C9A227" stroke-width="1" opacity=".15"/></pattern></defs><rect width="1600" height="900" fill="url(#iso)"/></svg><div class="vig"></div><div class="lock"><svg viewBox="0 0 512 512"><!-- The mark without its ground, for use over artwork or a light surface.
+       Same geometry as heirlom-mark.svg; only the soil disc is removed. -->
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#C9A227" stroke-width="8" opacity=".85"/>
+  <circle cx="256" cy="256" r="208" fill="none" stroke="#C9A227" stroke-width="3" opacity=".45"/>
+  <path d="M256 112 A176 176 0 0 1 256 400 A176 176 0 0 1 256 112Z" fill="#F0E6CE"/>
+  <g stroke="#241B12" stroke-linecap="round" fill="none">
+    <path d="M256 142 V372" stroke-width="14"/>
+    <path d="M256 226 L204 182 M256 226 L308 182 M256 296 L212 256 M256 296 L300 256" stroke-width="12" opacity=".62"/>
+  </g>
+  <circle cx="256" cy="344" r="26" fill="#C9A227"/></svg><b>HEIRLOM</b><i>Est. Vale</i></div>
+  <div style="position:absolute;left:92px;top:470px;transform:translateY(-50%);width:620px">
+    <p class="eyebrow">The herbarium</p>
+    <h1 style="font-size:64px">Name it, press it,<br>and it <em>outlives</em><br>the farm.</h1>
+    <div class="rule" style="width:430px"><b></b><i></i></div>
+    <p class="sub" style="font-size:24px;max-width:540px">Every pressed specimen gets an accession number, its parentage, its mutations — and a page anyone can open.</p>
+  </div>
+  <div class="plate">
+    <div class="pl__rib">Legendary</div>
+    <div class="pl__eye">Vale Herbarium &middot; Accession HB-4417</div>
+    <div class="pl__sp">Tomato</div>
+    <div class="pl__lat">Solanum lycopersicum</div>
+    <div class="pl__art"><svg viewBox="0 0 200 200"><g fill="none" stroke="#2F5F49" stroke-width="3" stroke-linecap="round" opacity=".8"><path d="M100 52 V30"/></g><path d="M100 66 C137 66 158 90 158 118 C158 148 132 168 100 168 C68 168 42 148 42 118 C42 90 63 66 100 66 Z" fill="#4E9E7A" opacity=".72"/><path d="M100 66 C137 66 158 90 158 118 C158 148 132 168 100 168 C68 168 42 148 42 118 C42 90 63 66 100 66 Z" fill="none" stroke="#2F5F49" stroke-width="2.2" opacity=".55"/><g fill="#3C7C5F" opacity=".85"><path d="M100 68 L66 50 L84 72 L52 74 L88 82 Z"/><path d="M100 68 L134 50 L116 72 L148 74 L112 82 Z"/><path d="M100 68 L100 44 L110 66 Z"/></g><g stroke="#2F5F49" stroke-width="1.4" fill="none" opacity=".28"><path d="M100 78 V162"/><path d="M74 84 C64 110 66 140 82 158"/><path d="M126 84 C136 110 134 140 118 158"/></g></svg></div>
+    <div class="pl__name">Pale Row Jade</div>
+    <div class="pl__gen">Generation 97</div>
+    <div class="pl__not">Y6/6&nbsp; V6/6&nbsp; H6/6&nbsp; E6/5&nbsp; CJa/Iv</div>
+    <div class="pl__carry"><i></i> Carries <b>Ivory</b></div>
+    <div class="pl__par">Crossed from <b>Bramwell&rsquo;s Crown</b> &times; <b>Copper Wick</b></div>
+  </div>
+  <div class="meta">heirlom.fun/herbarium/HB-4417</div></div>

@@ -1,0 +1,85 @@
+<!doctype html><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,900;1,9..144,300&family=Karla:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+ html,body{margin:0;background:#0C0805}
+ .b{position:relative;width:1600px;height:900px;overflow:hidden;font-family:"Karla",system-ui,sans-serif;
+   background:
+     radial-gradient(120% 150% at 74% 38%, #3A2A1933 0%, #00000000 55%),
+     radial-gradient(90% 120% at 20% 64%, #1E170F 0%, #00000000 60%),
+     linear-gradient(158deg,#241B12 0%,#180F09 54%,#0D0806 100%);}
+ .grid{position:absolute;inset:0;opacity:.24}
+ .vig{position:absolute;inset:0;background:radial-gradient(82% 108% at 50% 46%,transparent 40%,rgba(6,4,2,.88) 100%)}
+ .lock{position:absolute;left:92px;top:74px;display:flex;align-items:center;gap:14px;z-index:3}
+ .lock svg{width:46px;height:46px}
+ .lock b{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:24px;letter-spacing:.14em;color:#F2EADA}
+ .lock i{font-family:"IBM Plex Mono",monospace;font-style:normal;font-size:10.5px;letter-spacing:.3em;
+   text-transform:uppercase;color:#C9A227;opacity:.85}
+ .meta{position:absolute;left:92px;bottom:66px;font-family:"IBM Plex Mono",monospace;font-size:14px;
+   letter-spacing:.26em;text-transform:uppercase;color:#9C8F78;z-index:3}
+ .meta em{font-style:normal;color:#C9A227}
+ .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:14px;letter-spacing:.4em;text-transform:uppercase;
+   color:#C9A227;margin:0 0 24px}
+ h1{font-family:"Fraunces",Georgia,serif;font-weight:900;line-height:1.02;letter-spacing:-.015em;
+   color:#F2EADA;margin:0}
+ h1 em{font-style:normal;color:#C9A227}
+ .sub{font-family:"Fraunces",Georgia,serif;font-style:italic;font-weight:300;line-height:1.45;
+   color:#D8CCB2;margin:26px 0 0}
+ .rule{display:flex;align-items:center;gap:14px;margin:30px 0 0}
+ .rule i{height:1px;background:linear-gradient(90deg,#C9A227,rgba(201,162,39,.05));flex:1}
+ .rule b{width:7px;height:7px;background:#C9A227;transform:rotate(45deg);flex:none}
+</style><style>.ladder{position:absolute;right:84px;top:470px;transform:translateY(-50%);display:flex;align-items:flex-end;gap:16px;z-index:2}
+ .c{width:140px;text-align:center;padding:24px 12px 22px;border-radius:16px;position:relative;
+   background:rgba(232,220,192,.04);border:1px solid rgba(232,220,192,.09)}
+ .c.is-last{background:rgba(201,162,39,.11);border-color:rgba(201,162,39,.45)}
+ .c__swatch{width:74px;height:74px;border-radius:50%;margin:0 auto 18px}
+ .c__name{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:19px;color:#EFE7D6}
+ .c__rank{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+   color:#9C8F78;margin-top:6px}
+ .c__bonus{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:#C9A227;margin-top:12px}
+ .c__step{position:absolute;left:14px;right:14px;top:100%;height:var(--drop);
+   background:linear-gradient(180deg,rgba(232,220,192,.05),rgba(232,220,192,0))}</style>
+<div class="b"><svg class="grid" viewBox="0 0 1600 900" preserveAspectRatio="none"><defs><pattern id="iso" width="112" height="56" patternUnits="userSpaceOnUse"><path d="M0 28 L56 0 L112 28 L56 56 Z" fill="none" stroke="#C9A227" stroke-width="1" opacity=".15"/></pattern></defs><rect width="1600" height="900" fill="url(#iso)"/></svg><div class="vig"></div><div class="lock"><svg viewBox="0 0 512 512"><!-- The mark without its ground, for use over artwork or a light surface.
+       Same geometry as heirlom-mark.svg; only the soil disc is removed. -->
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#C9A227" stroke-width="8" opacity=".85"/>
+  <circle cx="256" cy="256" r="208" fill="none" stroke="#C9A227" stroke-width="3" opacity=".45"/>
+  <path d="M256 112 A176 176 0 0 1 256 400 A176 176 0 0 1 256 112Z" fill="#F0E6CE"/>
+  <g stroke="#241B12" stroke-linecap="round" fill="none">
+    <path d="M256 142 V372" stroke-width="14"/>
+    <path d="M256 226 L204 182 M256 226 L308 182 M256 296 L212 256 M256 296 L300 256" stroke-width="12" opacity=".62"/>
+  </g>
+  <circle cx="256" cy="344" r="26" fill="#C9A227"/></svg><b>HEIRLOM</b><i>Est. Vale</i></div>
+  <div style="position:absolute;left:92px;top:470px;transform:translateY(-50%);width:600px">
+    <p class="eyebrow">The colour locus</p>
+    <h1 style="font-size:68px">Five colours.<br>The last one is <em>recessive</em>.</h1>
+    <div class="rule" style="width:430px"><b></b><i></i></div>
+    <p class="sub" style="font-size:25px;max-width:470px">Each rung is harder than the one before it. No ivory moonflower has ever been recorded.</p>
+  </div>
+  <div class="ladder"><div class="c" style="margin-bottom:0px;--drop:0px">
+      <div class="c__swatch" style="background:#C0392B;box-shadow:0 18px 40px #7E211888"></div>
+      <div class="c__name">Crimson</div>
+      <div class="c__rank">Rung 1 of 5</div>
+      <div class="c__bonus">+0 score</div>
+    </div><div class="c" style="margin-bottom:34px;--drop:34px">
+      <div class="c__swatch" style="background:#D99A2B;box-shadow:0 18px 40px #8A5A1188"></div>
+      <div class="c__name">Amber</div>
+      <div class="c__rank">Rung 2 of 5</div>
+      <div class="c__bonus">+1 score</div><div class="c__step"></div>
+    </div><div class="c" style="margin-bottom:68px;--drop:68px">
+      <div class="c__swatch" style="background:#4E9E7A;box-shadow:0 18px 40px #27604988"></div>
+      <div class="c__name">Jade</div>
+      <div class="c__rank">Rung 3 of 5</div>
+      <div class="c__bonus">+2 score</div><div class="c__step"></div>
+    </div><div class="c" style="margin-bottom:102px;--drop:102px">
+      <div class="c__swatch" style="background:#7D5BA6;box-shadow:0 18px 40px #452F6388"></div>
+      <div class="c__name">Violet</div>
+      <div class="c__rank">Rung 4 of 5</div>
+      <div class="c__bonus">+4 score</div><div class="c__step"></div>
+    </div><div class="c is-last" style="margin-bottom:136px;--drop:136px">
+      <div class="c__swatch" style="background:#F0E6CE;box-shadow:0 18px 40px #B7A68188"></div>
+      <div class="c__name">Ivory</div>
+      <div class="c__rank">Rung 5 of 5</div>
+      <div class="c__bonus">+7 score</div><div class="c__step"></div>
+    </div></div>
+  <div class="meta">Crimson to Ivory &nbsp;<em>&middot;</em>&nbsp; heirlom.fun</div></div>
